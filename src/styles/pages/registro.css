@@ -1,0 +1,175 @@
+.formulario h1{
+    font-size: 1.8rem;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.button-volver{
+    background-color: rgb(85, 61, 88);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.4rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button-volver:hover{
+    background-color: var(--accent);
+    transform: scale(1.1);
+    
+}
+
+.button-volver:active{
+    transform: scale(0.6);
+}
+
+.contenedor-formulario{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem; 
+}
+
+.formulario{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    background-color: rgb(255, 255, 255, 0.1);
+    margin: 8px 0;
+    padding: 1rem;
+    border-radius: 16px;
+    border: 1px solid rgb(255, 255, 255, 0.2);
+    box-shadow: 2px 1px 7px var(--accent);
+    backdrop-filter: blur(16px) saturate(180%);
+}
+
+
+.grupos-elem{
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+}
+
+.grupos-elem label{
+    color: #dbbd43;
+    text-shadow: 0px 0px 1px #dbbd43;
+    font-size: 1rem;
+}
+
+.input-nombre{width: 70%;}
+
+.input-apellido{width: 40%;}
+
+.input-email{width: 70%;}
+
+.nom-ape{
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.password-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.enlaces{
+   margin-top: 0.2rem;
+   align-items: center;
+   gap: 0.6rem;
+}
+
+.link-principal{
+    color: #dbbd43;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.link-principal:hover{
+    transform: translateY(-2px);
+} 
+
+.button-submit{
+    display: flex;
+    justify-content: center;
+    background-color: rgb(85, 61, 88);
+    color: #CCC;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.4rem;
+    cursor: pointer;
+    width: 60%;
+    transition: all 0.3s ease;
+}
+
+.button-submit:hover{
+    background-color: var(--accent);
+    transform: scale(1.1);
+}
+
+.button-sub{
+    justify-content: center;
+    align-items: center;
+}
+
+.error-message {
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    min-height: 14px;
+}
+
+.input-error {
+    border: 2px solid #ff4d4d;
+}
+
+/* Estilos para pantallas medianas y grandes */
+@media (min-width: 768px) {
+    .backgoundLogin{
+        background-image: url(../../assets/images/RLDesktop.png);
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .formulario h1{font-size: 2rem;}
+
+    .grupos-elem Link{font-size: 1.1rem;}
+
+    .input-nombre{width: 60%;}
+
+    .input-apellido{width: 60%;}
+
+    .input-dni{width: 50%;}
+
+    .grupos-elem .nom-ape{
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .formulario{width: 50%;}
+
+    .link-principal{font-size: 1rem;}    
+}

@@ -1,0 +1,176 @@
+.backgroundLogin{
+    min-height: 100dvh;
+    background-image: url(../../assets/images/RLMobile.png);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.formulario-login h1{
+    font-size: 1.8rem;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.button-volver{
+    background-color: rgb(85, 61, 88);
+    color: var(--card);
+    border: 2px solid var(--purple);
+    border-radius: 10px;
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.button-volver:hover{
+    background-color: var(--accent);
+    transform: scale(1.05);
+    
+}
+
+.button-volver:active{
+    transform: scale(0.8);
+}
+
+.contenedor-formulario{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem; 
+}
+
+.formulario-login{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 450px;
+    background-color: rgb(255, 255, 255, 0.1);
+    margin: 8px 0;
+    padding: 1.5rem;
+    border-radius: 18px;
+    border: 1px solid rgb(255, 255, 255, 0.2);
+    box-shadow: 2px 1px 7px var(--accent);
+    backdrop-filter: blur(16px) saturate(180%);
+}
+
+.grupos-elem{
+    gap: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+}
+
+.grupos-elem label{
+    color: #dbbd43;
+    text-shadow: 0px 0px 1px #dbbd43;
+    font-size: 1rem;
+}
+
+
+.grupos-elem input:focus{
+    outline: none;
+    border-color: #dbbd43;
+    box-shadow: 0 0 2px #dbbd43;
+}
+
+.password-wrapper{
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input{
+    padding-right: 45px;
+}
+
+.toggle-password{
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.enlaces{
+   margin-top: 0.2rem;
+   align-items: center;
+   gap: 0.6rem;
+}
+
+.link-secundario{
+    color: var(--card);
+    font-size: 0.9rem;
+    opacity: 0.9;
+    transition: 0.3s ease;
+}
+
+.link-principal{
+    color: #dbbd43;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.link-secundario:hover,
+.link-principal:hover{
+    transform: translateY(-2px);
+}   
+
+.button-submit{
+    display: flex;
+    justify-content: center;
+    font-size: 1rem;
+    background-color: rgb(85, 61, 88);
+    color: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.5rem;
+    cursor: pointer;
+    width: 70%;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.button-submit:hover{
+    background-color: var(--accent);
+    transform: scale(1.1);
+}
+
+.button-sub{
+    margin-top: 0.5rem;
+    align-items: center;
+}
+
+.grupos-elem .error-message{
+    min-height: 14px;
+    color: #ff4d4d;
+    font-size: 0.8rem;
+}
+
+.input-error{border: 2px solid #ff4d4d;}
+
+@media (min-width: 768px) {
+    .backgroundLogin{background-image: url(../../assets/images/RLDesktop.png);}
+
+    .formulario-login h1{font-size: 2rem;}
+
+    .grupos-elem label{font-size: 0.9rem;}
+
+    .enlaces{
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .link-secundario{font-size: 0.95rem;}
+
+    .link-principal{font-size: 1rem;}
+
+    .button-submit{width: 55%;}
+
+    .formulario-login{width: 50%;}    
+}

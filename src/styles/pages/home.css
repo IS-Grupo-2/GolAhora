@@ -1,0 +1,529 @@
+.backgroundHome{
+    background-image: url('../../assets/images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+.container-header {
+    background-color: #ffffff;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 15px;
+}
+
+.presentacion-hero h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--color-text); 
+}
+
+.container h2 {color: var(--color-text);}
+
+.logo {
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 100%;
+    width: 90px;
+    object-fit: contain;
+}
+
+/* NAV oculto en mobile */
+.nav-header {
+    position: absolute;
+    top: 80px;
+    right: 0;
+    background-color: #7a7979;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 5;
+}
+
+.nav-header.active {
+    display: flex;
+}
+
+.ul-nav-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.li-nav-header {
+    list-style: none;
+    margin-right: 10px;
+    transition: transform 0.1s ease;
+}
+
+.li-nav-header:active {
+    color: var(--color-primary); 
+    transform: scale(0.95);
+}
+
+.a-nav-header {
+    background-color: var(--color-primary); 
+    color: #fff;
+    padding: 6px;
+    font-size: 1.2rem;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border: 2px solid var(--color-primary);
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+    display: block;
+    margin-top: 8px;
+}
+
+.a-nav-header:active {
+    color: var(--color-primary);
+    transform: scale(0.95);
+}
+
+/* MODAL */
+.modal-contacto {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100dvw;
+    height: 100dvh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+.modal-contacto.activo {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-box {
+    background: rgb(132, 115, 227);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 1px 1px 20px rgba(0, 0, 0);
+    position: relative;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    z-index: 200;
+}
+
+.cerrar-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+/* BOTONES HEADER */
+.buttons-header {
+    display: flex;
+}
+
+.button-header {
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: var(--color-primary);
+    color: #fff;
+    border: 2px solid var(--color-primary); 
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 5px 2px;
+    transition: transform 0.2s ease;
+    margin-left: 0.3rem;
+}
+
+.button-header:hover:active {
+    transform: scale(0.95);
+}
+
+/* HAMBURGUESA */
+.menu-toggle {
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: block;
+}
+
+/* =====================================================
+                    MAIN
+   ===================================================== */
+.backgroundHome main {
+    backdrop-filter: blur(1px);
+}
+
+.hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+}
+
+.presentacion-hero {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: -2px 8px 20px rgba(0, 0, 0);
+    transition: 0.3s;
+    margin-bottom: 8px;
+}
+
+.presentacion-hero:hover {
+    transform: translateY(-5px);
+}
+
+.hero h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.hero-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: 0.3s;
+    display: block;
+    width: 60%;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    border: 2px solid var(--color-primary); 
+    color: white;
+}
+
+.btn-primary:active {
+    transform: scale(0.95);
+}
+
+.btn-secondary {
+    border: 2px solid var(--color-primary);
+    color: #ffffff;
+    background: rgba(11, 15, 36, 0.78);
+}
+
+.btn-secondary:active {
+    transform: scale(0.95);
+}
+
+.galeria {
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s ease;
+    /* SIN aspect-ratio en mobile */
+}
+
+.galeria.abierta {
+    max-height: 250px;
+}
+
+.galeria img {
+    flex: 1;
+    width: 0;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: all 0.4s ease;
+}
+
+.galeria img:active,
+.galeria img:focus {
+    flex: 3;
+    opacity: 1;
+    filter: contrast(120%);
+}
+
+/* INFO / CARDS */
+.info {
+    padding: 2rem 0;
+}
+
+.h2 {
+    padding: 0.5rem;
+    border-radius: 16px;
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: 2px 2px 15px rgba(0, 0, 0);
+    transition: 0.3s;
+    margin-bottom: 8px;
+}
+
+.info h2 {
+    text-align: center;
+}
+
+.grid-info {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.card {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+    text-align: center;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--color-text); 
+}
+
+.card p {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+/* CÓMO FUNCIONA */
+.como-funciona {
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.step {
+    background: var(--color-bg-glass); 
+    padding: 1.2rem;
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+}
+
+.step span {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    background: var(--color-accent);
+    color: white;
+    border-radius: 50%;
+    line-height: 35px;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* BENEFICIOS */
+.beneficios {
+    padding: 2.4rem 0;
+}
+
+.beneficios h2 {
+    text-align: center;
+    margin-bottom: 0.7rem;
+    padding-bottom: 0;
+}
+
+.beneficios-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    gap: 0.7rem;
+}
+
+.beneficios-list li {
+    background: var(--color-bg-glass);
+    padding: 0.8rem;
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    font-size: 0.95rem;
+    width: 100%;
+    max-width: 380px;
+}
+
+.beneficios-list li:active {
+    transform: scale(0.90);
+}
+
+/* CTA */
+.container-end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.h2-end {
+    padding: 0.4rem;
+    border-radius: 16px;
+    background: var(--color-bg-glass); /* era rgba(255,255,255,0.6) */
+    backdrop-filter: blur(10px);
+    box-shadow: 2px 2px 15px rgba(0, 0, 0);
+    transition: 0.3s;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.cta {text-align: center; padding: 3rem 0 4rem;}
+
+.cta h2 {margin-bottom: 0.5rem;}
+
+.cta p {margin-bottom: 1rem; color: var(--color-text); /* era #000 */}
+
+footer {
+    background-color: var(--color-footer-bg);
+    text-align: center;
+    padding: 10px;
+    color: var(--color-footer-txt);
+}
+
+footer p {color: var(--color-footer-txt);}
+
+/* =====================================================
+    Breakpoint intermedio 480px (NUEVO)
+   ===================================================== */
+@media (min-width: 480px) {
+    .hero-buttons {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .grid-info {grid-template-columns: repeat(2, 1fr);}
+
+    .steps {flex-direction: row; justify-content: space-between;}
+
+    .step {flex: 1;}
+
+    .beneficios-list {grid-template-columns: repeat(2, 1fr);}
+
+    .beneficios-list li {max-width: none; width: 85%;}
+}
+
+/* =====================================================
+   BREAKPOINT 690px — sin cambios al original
+   ===================================================== */
+@media (min-width: 690px) {
+    .logo img {width: auto;}
+}
+
+/* =====================================================
+   BREAKPOINT DESKTOP 776px
+   ===================================================== */
+@media (min-width: 776px) {
+
+    .menu-toggle {display: none;}
+
+    .nav-header {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        background: none;
+        width: auto;
+        padding: 0;
+    }
+
+    .ul-nav-header {flex-direction: row; gap: 15px;}
+
+    .container-header {padding: 20px;}
+
+    .a-nav-header {margin-top: 0;}
+
+    .a-nav-header:hover {
+        background-color: #8797be;
+        color: var(--color-primary); /* era #0b0f24 */
+        box-shadow: 1px 0px 10px #17193b;
+    }
+
+    .button-header {
+        font-size: 1.3rem;
+        padding: 5px;
+        margin-left: 1rem;
+    }
+
+    .button-header:hover {
+        background-color: #8797be;
+        color: var(--color-primary); /* era #0b0f24 */
+        box-shadow: 1px 0px 10px #17193b;
+    }
+
+    .hero h1 {font-size: 2.5rem;}
+
+    .hero-buttons {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn-primary,
+    .btn-secondary {max-width: 24rem;}
+
+    .btn-primary:hover {background: #8797be; transform: scale(1.03);}
+
+    .btn-secondary:hover {background: #8797be; color: white;}
+
+    .galeria {
+        aspect-ratio: 4 / 3;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+    }
+
+    .galeria.abierta {max-height: 430px;}
+
+    .galeria img:hover {
+        flex: 3;
+        opacity: 1;
+        filter: contrast(120%);
+        cursor: crosshair;
+    }
+
+    .grid-info {grid-template-columns: repeat(2, 1fr);}
+
+    .steps {flex-direction: row; justify-content: space-between;}
+
+    .step {flex: 1;}
+
+    .beneficios-list {grid-template-columns: repeat(2, 1fr);}
+
+    .beneficios-list li {width: 80%; max-width: none;}
+}
