@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ProfesoresTable from '../../components/profesores/ProfesoresTable';
 import ProfesorModal from '../../components/profesores/ProfesorModal';
-import ProfesorModalDetalle from '../../components/profesores ProfesorModalDetalle';
+import ProfesorModalDetalle from '../../components/profesores/ProfesorModalDetalle';
 import ProfesorModalBaja from '../../components/profesores/ProfesorModalBaja';
 
 // ── Datos mock (reemplazar por fetch al backend) ───────────────────────────────
