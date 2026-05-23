@@ -1,6 +1,4 @@
-// =====================================================
-//  CONFIGURACIÓN DE NAVEGACIÓN Y ROLES
-// =====================================================
+// src/config/navConfig.js
 
 export const ROLES = {
     ADMIN:    'admin',
@@ -9,17 +7,13 @@ export const ROLES = {
     CLIENTE:  'cliente',
 };
 
-/**
- * Cada ítem define qué roles pueden verlo.
- * Agregar o quitar roles según reglas de negocio.
- */
 export const NAV_CONFIG = [
     {
         section: 'General',
         items: [
             {
                 path:  '/dashboard',
-                end:   true,           // NavLink exact match
+                end:   true,
                 label: 'Dashboard',
                 icon:  'layout-dashboard',
                 roles: ['admin', 'empleado', 'profesor', 'cliente'],
@@ -33,19 +27,19 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/reservas',
                 label: 'Reservas',
                 icon:  'calendar-days',
-                roles: ['admin', 'empleado', 'cliente'],
+                roles: ['admin', 'empleado', 'profesor', 'cliente'],
             },
             {
                 path:  '/dashboard/canchas',
                 label: 'Canchas',
                 icon:  'goal',
-                roles: ['admin', 'empleado'],
+                roles: ['admin', 'empleado', 'profesor', 'cliente'],
             },
             {
                 path:  '/dashboard/torneos',
                 label: 'Torneos',
                 icon:  'trophy',
-                roles: ['admin', 'empleado'],
+                roles: ['admin', 'empleado', 'profesor', 'cliente'],
             },
             {
                 path:  '/dashboard/clases',
@@ -68,7 +62,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/profesores',
                 label: 'Profesores',
                 icon:  'user-round',
-                roles: ['admin'],
+                roles: ['admin', 'empleado'], // Agregamos empleado según tus reglas
             },
             {
                 path:  '/dashboard/empleados',
@@ -80,7 +74,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/asistencias',
                 label: 'Asistencias',
                 icon:  'clipboard-check',
-                roles: ['admin', 'empleado', 'profesor'],
+                roles: ['admin', 'empleado', 'profesor'], 
             },
         ],
     },
@@ -103,7 +97,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/reportes',
                 label: 'Reportes',
                 icon:  'bar-chart-3',
-                roles: ['admin'],
+                roles: ['admin', 'empleado'], // Agregamos empleado según tus reglas
             },
         ],
     },
@@ -114,16 +108,12 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/configuracion',
                 label: 'Configuración',
                 icon:  'settings',
-                roles: ['admin'],
+                roles: ['admin', 'empleado', 'profesor', 'cliente'],
             },
         ],
     },
 ];
 
-/**
- * Filtra la config de nav según el rol del usuario.
- * Devuelve solo las secciones/ítems visibles para ese rol.
- */
 export function getNavForRole(role) {
     return NAV_CONFIG
         .map(section => ({

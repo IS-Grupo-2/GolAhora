@@ -37,7 +37,7 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                     <tr>
                         <th>Cliente</th>
                         <th>DNI</th>
-                        <th>Email</th>
+                        <th className="td-email">Email</th>
                         <th>Teléfono</th>
                         <th>Estado</th>
                         <th>Acciones</th>
