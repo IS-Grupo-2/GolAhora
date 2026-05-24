@@ -1,14 +1,16 @@
 // src/components/usuarios/UsuariosTable.jsx
+import Can from '../Can';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(u) {
+    if (!u.nombre || !u.apellido) return '??';
     return (u.nombre[0] + u.apellido[0]).toUpperCase();
 }
 
-function BadgeEstado({ estado }) {
+function BadgeEstado({ activo }) {
     return (
-        <span className={`badge ${estado === 'activo' ? 'success' : 'danger'}`}>
-            {estado === 'activo' ? 'Activo' : 'Inactivo'}
+        <span className={`badge ${activo ? 'success' : 'danger'}`}>
+            {activo ? 'Activo' : 'Inactivo'}
         </span>
     );
 }
@@ -16,7 +18,7 @@ function BadgeEstado({ estado }) {
 // ── Componente ────────────────────────────────────────────────────────────────
 export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer, onEditar, onBaja }) {
 
-    if (usuarios.length === 0) {
+    if (!usuarios || usuarios.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="search-x" />
@@ -44,50 +46,65 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                     </tr>
                 </thead>
                 <tbody>
-                    {usuarios.map(u => (
-                        <tr key={u.id}>
-                            <td>
-                                <div className="user-cell">
-                                    <div className={`user-avatar-sm${u.estado === 'inactivo' ? ' inactive' : ''}`}>
-                                        {iniciales(u)}
+                    {usuarios.map(u => {
+                        // Adaptación para soportar tanto el mock nuevo (activo: bool) 
+                        // como el estado viejo (estado: 'activo')
+                        const isActivo = u.activo ?? (u.estado === 'activo');
+
+                        return (
+                            <tr key={u.idUsuario || u.id}>
+                                <td>
+                                    <div className="user-cell">
+                                        <div className={`user-avatar-sm${!isActivo ? ' inactive' : ''}`}>
+                                            {iniciales(u)}
+                                        </div>
+                                        <div className="user-cell-info">
+                                            <strong>{u.nombre} {u.apellido}</strong>
+                                            <span>@{u.userName || u.username}</span>
+                                        </div>
                                     </div>
-                                    <div className="user-cell-info">
-                                        <strong>{u.nombre} {u.apellido}</strong>
-                                        <span>@{u.username}</span>
+                                </td>
+                                <td>{u.dni}</td>
+                                <td className="td-email">{u.email}</td>
+                                <td>{u.telefono}</td>
+                                <td><BadgeEstado activo={isActivo} /></td>
+                                <td>
+                                    <div className="action-btns">
+                                        {/* Ver Detalle: visible para todos los que accedan a la tabla */}
+                                        <button
+                                            className="action-btn view"
+                                            title="Ver detalle"
+                                            onClick={() => onVer(u)}
+                                        >
+                                            <i data-lucide="eye" />
+                                        </button>
+                                        
+                                        {/* Editar: Solo admin y empleado */}
+                                        <Can roles={['admin', 'empleado']}>
+                                            <button
+                                                className="action-btn edit"
+                                                title="Editar"
+                                                onClick={() => onEditar(u)}
+                                            >
+                                                <i data-lucide="pencil" />
+                                            </button>
+                                        </Can>
+
+                                        {/* Dar de baja / Reactivar: Solo admin */}
+                                        <Can roles={['admin']}>
+                                            <button
+                                                className="action-btn toggle"
+                                                title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                                onClick={() => onBaja(u)}
+                                            >
+                                                <i data-lucide={isActivo ? 'user-x' : 'user-check'} />
+                                            </button>
+                                        </Can>
                                     </div>
-                                </div>
-                            </td>
-                            <td>{u.dni}</td>
-                            <td className="td-email">{u.email}</td>
-                            <td>{u.telefono}</td>
-                            <td><BadgeEstado estado={u.estado} /></td>
-                            <td>
-                                <div className="action-btns">
-                                    <button
-                                        className="action-btn view"
-                                        title="Ver detalle"
-                                        onClick={() => onVer(u)}
-                                    >
-                                        <i data-lucide="eye" />
-                                    </button>
-                                    <button
-                                        className="action-btn edit"
-                                        title="Editar"
-                                        onClick={() => onEditar(u)}
-                                    >
-                                        <i data-lucide="pencil" />
-                                    </button>
-                                    <button
-                                        className="action-btn toggle"
-                                        title={u.estado === 'activo' ? 'Dar de baja' : 'Reactivar'}
-                                        onClick={() => onBaja(u)}
-                                    >
-                                        <i data-lucide={u.estado === 'activo' ? 'user-x' : 'user-check'} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>
