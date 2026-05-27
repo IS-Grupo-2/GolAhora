@@ -5,7 +5,6 @@ import HomePage from '../pages/public/HomePage';
 import RegistroPage from '../pages/auth/RegistroPage';
 import LoginPage from '../pages/auth/LoginPage';
 import Dashboard from '../pages/dashboard/Dashboard';
-import ComingSoon from '../components/ComingSoon';
 import UsuariosPage from '../pages/dashboard/UsuariosPage';
 import ProfesoresPage from '../pages/dashboard/ProfesoresPage';
 import EmpleadosPage from '../pages/dashboard/EmpleadosPage';
@@ -17,6 +16,7 @@ import CobrosPage from '../pages/dashboard/CobrosPage';
 import RecibosPage from '../pages/dashboard/RecibosPage';
 import ReportesPage from '../pages/dashboard/ReportesPage';
 import AsistenciasPage from '../pages/dashboard/AsistenciasPage';
+import ConfiguracionPage from '../pages/dashboard/ConfiguracionPage';
 
 function PrivateRoute({ children }) {
     const { user } = useAuth();
@@ -98,7 +98,7 @@ function AppRouter() {
                     } />
     
                     {/* Sistema (Todos) */}
-                    <Route path="configuracion" element={<ComingSoon title="Configuración" />} />
+                    <Route path="configuracion" element={<ConfiguracionPage />} />
                 </Route>
     
                 {/* Fallback */}

@@ -9,7 +9,7 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
     const [formData, setFormData] = useState({
         nombre: '',
         tipo: 'liga',
-        estado: 'inscripcion' // Cambiado por defecto a 'inscripcion'
+        estado: 'inscripcion'
     });
 
     useEffect(() => {

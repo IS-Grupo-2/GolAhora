@@ -37,10 +37,10 @@ function Icon({ name }) {
 
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const location                      = useLocation();
+    const location = useLocation();
 
     const meta = PATH_META[location.pathname] ?? {
-        title:    'Dashboard',
+        title: 'Dashboard',
         subtitle: 'Bienvenido al panel de administración.',
     };
 

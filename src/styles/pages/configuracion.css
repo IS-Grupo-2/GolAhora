@@ -1,0 +1,222 @@
+/* Contenedor Principal de la Sección */
+.config-container {
+    display: flex;
+    gap: 32px;
+    background: #0b0f19; /* Gris oscuro premium estilo estadio nocturno */
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    min-height: calc(100vh - 160px);
+    color: #f3f4f6;
+}
+
+/* Sidebar interno de pestañas */
+.config-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 240px;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #9ca3af;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+}
+
+/* Pestaña Activa con Acento Verde Cancha Eléctrico */
+.tab-btn.active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Pestaña de peligro activa */
+.tab-btn-danger.active {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Área de Contenido */
+.config-content {
+    flex-grow: 1;
+}
+
+.config-card {
+    background: #111827; /* Fondo de tarjeta un toque más claro */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.config-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.card-subtitle {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+}
+
+/* Formularios y Inputs */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group.block {
+    margin-bottom: 18px;
+}
+
+.input-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-group input, 
+.input-group textarea {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+    border-color: #22c55e; /* Foco verde vívido */
+}
+
+/* Inputs de solo lectura para denotar el UML */
+.input-group.readonly input {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+/* El toque técnico para el examen */
+.uml-badge-section {
+    background: rgba(34, 197, 94, 0.03);
+    border: 1px dashed rgba(34, 197, 94, 0.2);
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+}
+
+.uml-badge {
+    display: inline-block;
+    background: #22c55e;
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+
+/* Botón de Guardado Exitoso */
+.btn-save {
+    background: #22c55e;
+    color: #0b0f19;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.btn-save:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Estilo Zona de Peligro */
+.card-danger {
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.danger-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(239, 68, 68, 0.03);
+    border: 1px solid rgba(239, 68, 68, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.danger-text strong {
+    color: #ef4444;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.danger-text p {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    max-width: 500px;
+}
+
+.btn-danger-action {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-danger-action:hover {
+    background: #dc2626;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+/* Animación Simple de Entrada */
+.animate-fade-in {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}

@@ -1,15 +1,15 @@
 // src/components/clases/ClasesTable.jsx
+import Can from '../Can';
 
 function BadgeEstado({ estado }) {
     const colores = {
-        programada: 'info',      // Azul/Purple
-        en_curso:   'warning',   // Amarillo
-        finalizada: 'success',   // Verde
-        cancelada:  'danger'     // Rojo
+        programada: 'info',
+        en_curso:   'warning',
+        finalizada: 'success',
+        cancelada:  'danger',
     };
-    const color = colores[estado] || 'info';
     return (
-        <span className={`badge ${color}`} style={{ textTransform: 'capitalize' }}>
+        <span className={`badge ${colores[estado] || 'info'}`} style={{ textTransform: 'capitalize' }}>
             {estado.replace('_', ' ')}
         </span>
     );
@@ -57,7 +57,7 @@ export default function ClasesTable({
                             <td>
                                 <div className="user-cell-info">
                                     <strong>{c.nombre}</strong>
-                                    <span>{c.tipoClase} - {c.cancha}</span>
+                                    <span>{c.tipoClase} — {c.cancha}</span>
                                 </div>
                             </td>
                             <td>
@@ -88,18 +88,52 @@ export default function ClasesTable({
                             </td>
                             <td>
                                 <div className="action-btns">
-                                    <button className="action-btn view" title="Ver detalle" onClick={() => onVer(c)}>
+
+                                    {/* Ver detalle — todos los roles */}
+                                    <button
+                                        className="action-btn view"
+                                        title="Ver detalle"
+                                        onClick={() => onVer(c)}
+                                    >
                                         <i data-lucide="eye" />
                                     </button>
-                                    <button className="action-btn edit" title="Modificar" onClick={() => onEditar(c)} disabled={c.estado === 'cancelada'}>
-                                        <i data-lucide="pencil" />
-                                    </button>
-                                    <button className="action-btn view" title="Registrar Asistencia" onClick={() => onAsistencia(c)} disabled={c.estado === 'cancelada'}>
-                                        <i data-lucide="clipboard-check" />
-                                    </button>
-                                    <button className="action-btn toggle" title="Cancelar Clase" onClick={() => onCancelar(c)} disabled={c.estado === 'cancelada' || c.estado === 'finalizada'}>
-                                        <i data-lucide="x-circle" />
-                                    </button>
+
+                                    {/* Editar — solo admin y empleado */}
+                                    <Can roles={['admin', 'empleado']}>
+                                        <button
+                                            className="action-btn edit"
+                                            title="Modificar clase"
+                                            onClick={() => onEditar(c)}
+                                            disabled={c.estado === 'cancelada'}
+                                        >
+                                            <i data-lucide="pencil" />
+                                        </button>
+                                    </Can>
+
+                                    {/* Registrar asistencia — admin, empleado y profesor */}
+                                    <Can roles={['admin', 'empleado', 'profesor']}>
+                                        <button
+                                            className="action-btn view"
+                                            title="Registrar asistencia"
+                                            onClick={() => onAsistencia(c)}
+                                            disabled={c.estado === 'cancelada' || c.estado === 'finalizada'}
+                                        >
+                                            <i data-lucide="clipboard-check" />
+                                        </button>
+                                    </Can>
+
+                                    {/* Cancelar — solo admin y empleado */}
+                                    <Can roles={['admin', 'empleado']}>
+                                        <button
+                                            className="action-btn toggle"
+                                            title={c.estado === 'cancelada' ? 'Reactivar clase' : 'Cancelar clase'}
+                                            onClick={() => onCancelar(c)}
+                                            disabled={c.estado === 'finalizada'}
+                                        >
+                                            <i data-lucide={c.estado === 'cancelada' ? 'calendar-check' : 'x-circle'} />
+                                        </button>
+                                    </Can>
+
                                 </div>
                             </td>
                         </tr>
