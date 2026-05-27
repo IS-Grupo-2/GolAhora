@@ -1,4 +1,6 @@
 // src/components/canchas/CanchasTable.jsx
+import Can from '../Can';
+
 export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {
     const activas = canchas.filter(c => c.estado === 'activa').length;
     const inactivas = canchas.filter(c => c.estado === 'inactiva').length;
@@ -22,9 +24,11 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                         <i data-lucide="search" />
                         <input type="text" placeholder="Buscar por nombre o tipo…" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
                     </div>
-                    <button className="btn-primary-action" onClick={onNuevo}>
-                        <i data-lucide="plus" /> Nueva cancha
-                    </button>
+                    <Can roles={['admin']}>
+                        <button className="btn-primary-action" onClick={onNuevo}>
+                            <i data-lucide="plus" /> Nueva cancha
+                        </button>
+                    </Can>
                 </div>
             </div>
 
@@ -89,15 +93,19 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                                                     <button className="action-btn view" title="Ver detalle" onClick={() => onVer(c)}>
                                                         <i data-lucide="eye" />
                                                     </button>
-                                                    <button className="action-btn edit" title="Editar" onClick={() => onEditar(c)}>
-                                                        <i data-lucide="pencil" />
-                                                    </button>
+                                                    <Can roles={['admin', 'empleado']}>
+                                                        <button className="action-btn edit" title="Editar" onClick={() => onEditar(c)}>
+                                                            <i data-lucide="pencil" />
+                                                        </button>
+                                                    </Can>
                                                     <button className="action-btn view" title={c.estado === 'activa' ? 'Ver disponibilidad' : 'Cancha inactiva'} style={{ opacity: c.estado !== 'activa' ? 0.5 : 1 }} onClick={() => onVerDisp(c)}>
                                                         <i data-lucide="calendar-clock" />
                                                     </button>
-                                                    <button className="action-btn toggle" title={c.estado === 'activa' ? 'Dar de baja' : 'Reactivar'} onClick={() => onBaja(c)}>
-                                                        <i data-lucide={c.estado === 'activa' ? 'x-circle' : 'check-circle'} />
-                                                    </button>
+                                                    <Can roles={['admin']}>
+                                                        <button className="action-btn toggle" title={c.estado === 'activa' ? 'Dar de baja' : 'Reactivar'} onClick={() => onBaja(c)}>
+                                                            <i data-lucide={c.estado === 'activa' ? 'x-circle' : 'check-circle'} />
+                                                        </button>
+                                                    </Can>
                                                 </div>
                                             </td>
                                         </tr>

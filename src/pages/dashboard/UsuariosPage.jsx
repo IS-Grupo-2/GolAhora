@@ -7,6 +7,8 @@ import UsuarioModalBaja from '../../components/usuarios/UsuarioModalBaja';
 import Can from '../../components/Can';
 import { ClientesProvider, useClientes } from '../../context/ClientesContext';
 import '../../styles/pages/usuarios.css';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ErrorMessage from '../../components/ui/ErrorMessage';
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -96,8 +98,8 @@ function UsuariosPageContent() {
           })
         : clientes;
 
-    if (loading) return <p style={{ padding: '2rem' }}>Cargando clientes...</p>;
-    if (error) return <p style={{ padding: '2rem', color: 'red' }}>Error: {error}</p>;
+    if (loading) return <LoadingSpinner message="Cargando clientes..." />;
+    if (error) return <ErrorMessage message={`Ocurrió un error: ${error}`} />;
 
     return (
         <>

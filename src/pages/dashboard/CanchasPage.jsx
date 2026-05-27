@@ -1,51 +1,21 @@
 // src/pages/dashboard/CanchasPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-
-// Tablas & Paneles
-import CanchasTable        from '../../components/canchas/CanchasTable';
-import TiposTable          from '../../components/canchas/TiposTable';
+import CanchasTable from '../../components/canchas/CanchasTable';
+import TiposTable from '../../components/canchas/TiposTable';
 import DisponibilidadPanel from '../../components/canchas/DisponibilidadPanel';
+import CanchaModal from '../../components/canchas/modales/CanchaModal';
+import CanchaModalDetalle from '../../components/canchas/modales/CanchaModalDetalle';
+import CanchaModalBaja from '../../components/canchas/modales/CanchaModalBaja';
+import TipoModal from '../../components/canchas/modales/TipoModal';
+import TipoModalDetalle from '../../components/canchas/modales/TipoModalDetalle';
+import TipoModalBaja from '../../components/canchas/modales/TipoModalBaja';
+import DispModal from '../../components/canchas/modales/DispModal';
 
-// Modales Canchas
-import CanchaModal         from '../../components/canchas/modales/CanchaModal';
-import CanchaModalDetalle  from '../../components/canchas/modales/CanchaModalDetalle';
-import CanchaModalBaja     from '../../components/canchas/modales/CanchaModalBaja';
+import Can from '../../components/Can';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ErrorMessage from '../../components/ui/ErrorMessage';
+import { CanchasProvider, useCanchas } from '../../context/CanchasContext';
 
-// Modales Tipos
-import TipoModal           from '../../components/canchas/modales/TipoModal';
-import TipoModalDetalle    from '../../components/canchas/modales/TipoModalDetalle';
-import TipoModalBaja       from '../../components/canchas/modales/TipoModalBaja';
-
-// Modal Disponibilidad
-import DispModal           from '../../components/canchas/modales/DispModal';
-
-// ── Datos Mock ──────────────────────────────────────────────────────────────
-const INITIAL_TIPOS = [
-    { id: 1, nombre: 'Fútbol 5',  superficie: 'Césped sintético', capacidadJugadores: 10, duracionMaxReservaMin: 60,  precioHora: 15000, descripcion: 'Cancha pequeña ideal para grupos reducidos.' },
-    { id: 2, nombre: 'Fútbol 7',  superficie: 'Césped natural',   capacidadJugadores: 14, duracionMaxReservaMin: 90,  precioHora: 22000, descripcion: 'Formato intermedio, muy popular en torneos.' },
-    { id: 3, nombre: 'Fútbol 11', superficie: 'Tierra',           capacidadJugadores: 22, duracionMaxReservaMin: 120, precioHora: 35000, descripcion: 'Cancha reglamentaria para partidos completos.' },
-    { id: 4, nombre: 'Paddle',    superficie: 'Cristal y césped', capacidadJugadores: 4,  duracionMaxReservaMin: 60,  precioHora: 12000, descripcion: 'Canchas de paddle cubiertas y ventiladas.' },
-];
-
-const INITIAL_CANCHAS = [
-    { id: 1, numero: 1, nombre: 'Cancha 1', idTipo: 1, estado: 'activa',   descripcion: 'Ubicada en sector norte, iluminación LED.' },
-    { id: 2, numero: 2, nombre: 'Cancha 2', idTipo: 1, estado: 'activa',   descripcion: 'Sector sur, vestuarios propios.' },
-    { id: 3, numero: 3, nombre: 'Cancha 3', idTipo: 2, estado: 'activa',   descripcion: 'Vista panorámica, ideal para torneos.' },
-    { id: 4, numero: 4, nombre: 'Cancha 4', idTipo: 2, estado: 'inactiva', descripcion: 'En mantenimiento por renovación de césped.' },
-    { id: 5, numero: 5, nombre: 'Cancha 5', idTipo: 3, estado: 'activa',   descripcion: 'La más grande del complejo.' },
-    { id: 6, numero: 6, nombre: 'Cancha 6', idTipo: 4, estado: 'activa',   descripcion: 'Paddle cubierta, techada y climatizada.' },
-];
-
-const INITIAL_DISP = [
-    { id: 1, idCancha: 1, diaSemana: 'Lunes',     horaInicio: 8,  horaFin: 23, disponible: true },
-    { id: 2, idCancha: 1, diaSemana: 'Martes',    horaInicio: 8,  horaFin: 23, disponible: true },
-    { id: 3, idCancha: 1, diaSemana: 'Miércoles', horaInicio: 8,  horaFin: 23, disponible: true },
-    { id: 6, idCancha: 1, diaSemana: 'Sábado',    horaInicio: 9,  horaFin: 22, disponible: true },
-    { id: 7, idCancha: 1, diaSemana: 'Domingo',   horaInicio: 10, horaFin: 20, disponible: false },
-    { id: 8, idCancha: 2, diaSemana: 'Lunes',     horaInicio: 8,  horaFin: 22, disponible: true },
-];
-
-// ── Toast Interno ─────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
     return (
         <div className="toast-container" aria-live="polite">
@@ -59,42 +29,37 @@ function Toast({ toasts }) {
     );
 }
 
-export default function CanchasPage() {
-    // Estados base
-    const [tabActivo, setTabActivo] = useState('canchas');
-    const [canchas, setCanchas]     = useState(INITIAL_CANCHAS);
-    const [tipos, setTipos]         = useState(INITIAL_TIPOS);
-    const [disps, setDisps]         = useState(INITIAL_DISP);
-    const [canchaSelDispId, setCanchaSelDispId] = useState(null);
+function CanchasPageContent() {
+    const { 
+        canchas, tiposCanchas: tipos, disponibilidades: disps, loading, error,
+        crearCancha, modificarCancha, toggleEstadoCancha,
+        crearTipo, modificarTipo, eliminarTipo,
+        crearDisp, modificarDisp, toggleDisp, eliminarDisp
+    } = useCanchas();
 
-    // Contadores de IDs simulados
-    const [nextIds, setNextIds] = useState({ cancha: 7, tipo: 5, disp: 17 });
-    
+    const [tabActivo, setTabActivo] = useState('canchas');
+    const [canchaSelDispId, setCanchaSelDispId] = useState(null);
     const [filtroCanchas, setFiltroCanchas] = useState('');
-    const [filtroTipos, setFiltroTipos]     = useState('');
+    const [filtroTipos, setFiltroTipos] = useState('');
     const [toasts, setToasts] = useState([]);
 
-    // Modales Canchas
-    const [modalCancha, setModalCancha]     = useState({ open: false, modo: 'nuevo', data: null });
+    // Modales
+    const [modalCancha, setModalCancha] = useState({ open: false, modo: 'nuevo', data: null });
     const [modalDetCancha, setModalDetCancha] = useState({ open: false, data: null });
     const [modalBajaCancha, setModalBajaCancha] = useState({ open: false, data: null });
 
-    // Modales Tipos
-    const [modalTipo, setModalTipo]     = useState({ open: false, modo: 'nuevo', data: null });
+    const [modalTipo, setModalTipo] = useState({ open: false, modo: 'nuevo', data: null });
     const [modalDetTipo, setModalDetTipo] = useState({ open: false, data: null });
     const [modalBajaTipo, setModalBajaTipo] = useState({ open: false, data: null });
 
-    // Modal Disponibilidad
     const [modalDisp, setModalDisp] = useState({ open: false, modo: 'nuevo', data: null, idCanchaFallback: null });
 
-    // Re-render íconos
     useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
     });
 
-    // Mantenimiento de estado: asegurar cancha activa en tab Disponibilidad
     useEffect(() => {
-        if (tabActivo === 'disponibilidad') {
+        if (tabActivo === 'disponibilidad' && canchas.length > 0) {
             const check = canchas.find(c => c.id === canchaSelDispId);
             if (!check || check.estado !== 'activa') {
                 const primeraActiva = canchas.find(c => c.estado === 'activa');
@@ -109,86 +74,66 @@ export default function CanchasPage() {
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3200);
     }, []);
 
-    // =====================================================
-    //  HANDLERS: CANCHAS
-    // =====================================================
-    function guardarCancha(datos) {
+    // ── Handlers Canchas ──
+    async function guardarCancha(datos) {
         if (modalCancha.modo === 'editar') {
-            setCanchas(prev => prev.map(c => c.id === datos.id ? { ...c, ...datos } : c));
+            await modificarCancha(datos);
             mostrarToast('Cancha actualizada.');
         } else {
-            setCanchas(prev => [...prev, { ...datos, id: nextIds.cancha, estado: 'activa' }]);
-            setNextIds(prev => ({ ...prev, cancha: prev.cancha + 1 }));
+            await crearCancha(datos);
             mostrarToast('Cancha registrada.');
         }
         setModalCancha({ open: false, modo: 'nuevo', data: null });
     }
-
-    function toggleEstadoCancha(cancha) {
-        const esActiva = cancha.estado === 'activa';
-        setCanchas(prev => prev.map(c => c.id === cancha.id ? { ...c, estado: esActiva ? 'inactiva' : 'activa' } : c));
-        
-        // Regla de negocio: Si se da de baja, bloquear sus disponibilidades
-        if (esActiva) {
-            setDisps(prev => prev.map(d => d.idCancha === cancha.id ? { ...d, disponible: false } : d));
-        }
-
+    async function handleToggleEstadoCancha(cancha) {
+        await toggleEstadoCancha(cancha);
         mostrarToast(`Estado de "${cancha.nombre}" actualizado.`);
         setModalBajaCancha({ open: false, data: null });
     }
 
-    // =====================================================
-    //  HANDLERS: TIPOS
-    // =====================================================
-    function guardarTipo(datos) {
+    // ── Handlers Tipos ──
+    async function guardarTipo(datos) {
         if (modalTipo.modo === 'editar') {
-            setTipos(prev => prev.map(t => t.id === datos.id ? { ...t, ...datos } : t));
+            await modificarTipo(datos);
             mostrarToast('Tipo de cancha actualizado.');
         } else {
-            setTipos(prev => [...prev, { ...datos, id: nextIds.tipo }]);
-            setNextIds(prev => ({ ...prev, tipo: prev.tipo + 1 }));
+            await crearTipo(datos);
             mostrarToast('Tipo de cancha registrado.');
         }
         setModalTipo({ open: false, modo: 'nuevo', data: null });
     }
-
-    function eliminarTipo(tipo) {
-        setTipos(prev => prev.filter(t => t.id !== tipo.id));
+    async function handleEliminarTipo(tipo) {
+        await eliminarTipo(tipo.id);
         mostrarToast('Tipo de cancha eliminado.');
         setModalBajaTipo({ open: false, data: null });
     }
 
-    // =====================================================
-    //  HANDLERS: DISPONIBILIDAD
-    // =====================================================
-    function guardarDisp(datos) {
+    // ── Handlers Disponibilidad ──
+    async function guardarDisp(datos) {
         if (modalDisp.modo === 'editar') {
-            setDisps(prev => prev.map(d => d.id === datos.id ? { ...d, ...datos } : d));
+            await modificarDisp(datos);
             mostrarToast('Franja horaria actualizada.');
         } else {
-            setDisps(prev => [...prev, { ...datos, id: nextIds.disp }]);
-            setNextIds(prev => ({ ...prev, disp: prev.disp + 1 }));
+            await crearDisp(datos);
             mostrarToast('Franja horaria registrada.');
         }
         setCanchaSelDispId(datos.idCancha);
         setModalDisp({ open: false, modo: 'nuevo', data: null, idCanchaFallback: null });
     }
-
-    function toggleDisp(disp) {
-        setDisps(prev => prev.map(d => d.id === disp.id ? { ...d, disponible: !d.disponible } : d));
+    async function handleToggleDisp(disp) {
+        await toggleDisp(disp.id);
         mostrarToast(disp.disponible ? 'Franja bloqueada.' : 'Franja habilitada.', disp.disponible ? 'warning' : 'success');
     }
-
-    function eliminarDisp(disp) {
+    async function handleEliminarDisp(disp) {
         if (window.confirm('¿Eliminar esta franja horaria permanentemente?')) {
-            setDisps(prev => prev.filter(d => d.id !== disp.id));
+            await eliminarDisp(disp.id);
             mostrarToast('Franja eliminada.');
         }
     }
 
-    // =====================================================
-    //  RENDER
-    // =====================================================
+    if (loading) return <LoadingSpinner message="Cargando configuración de canchas..." />;
+    if (error) return <ErrorMessage message={`Ocurrió un error: ${error}`} />;
+
     return (
         <div className="canchas-module">
             {/* TABS */}
@@ -196,9 +141,11 @@ export default function CanchasPage() {
                 <button className={`module-tab ${tabActivo === 'canchas' ? 'active' : ''}`} onClick={() => setTabActivo('canchas')}>
                     <i data-lucide="goal" /> Canchas
                 </button>
-                <button className={`module-tab ${tabActivo === 'tipos' ? 'active' : ''}`} onClick={() => setTabActivo('tipos')}>
-                    <i data-lucide="layers" /> Tipos de Cancha
-                </button>
+                <Can roles={['admin']}>
+                    <button className={`module-tab ${tabActivo === 'tipos' ? 'active' : ''}`} onClick={() => setTabActivo('tipos')}>
+                        <i data-lucide="layers" /> Tipos de Cancha
+                    </button>
+                </Can>
                 <button className={`module-tab ${tabActivo === 'disponibilidad' ? 'active' : ''}`} onClick={() => setTabActivo('disponibilidad')}>
                     <i data-lucide="calendar-clock" /> Disponibilidad
                 </button>
@@ -230,7 +177,7 @@ export default function CanchasPage() {
                 {tabActivo === 'tipos' && (
                     <TiposTable 
                         tipos={tipos} 
-                        canchas={canchas} // Necesario para calcular uso
+                        canchas={canchas}
                         filtro={filtroTipos}
                         setFiltro={setFiltroTipos}
                         onNuevo={() => setModalTipo({ open: true, modo: 'nuevo', data: null })}
@@ -251,27 +198,33 @@ export default function CanchasPage() {
                         canchaActivaId={canchaSelDispId}
                         setCanchaActivaId={setCanchaSelDispId}
                         onNuevaDisp={() => setModalDisp({ open: true, modo: 'nuevo', data: null, idCanchaFallback: canchaSelDispId })}
-                        onToggleDisp={toggleDisp}
+                        onToggleDisp={handleToggleDisp}
                         onEditarDisp={(d) => setModalDisp({ open: true, modo: 'editar', data: d })}
-                        onEliminarDisp={eliminarDisp}
+                        onEliminarDisp={handleEliminarDisp}
                     />
                 )}
             </div>
 
-            {/* MODALES CANCHAS */}
+            {/* MODALES */}
             <CanchaModal open={modalCancha.open} modo={modalCancha.modo} cancha={modalCancha.data} tipos={tipos} canchasActivas={canchas} onGuardar={guardarCancha} onCerrar={() => setModalCancha({ open: false, modo: 'nuevo', data: null })} />
             <CanchaModalDetalle open={modalDetCancha.open} cancha={modalDetCancha.data} tipos={tipos} onCerrar={() => setModalDetCancha({ open: false, data: null })} />
-            <CanchaModalBaja open={modalBajaCancha.open} cancha={modalBajaCancha.data} onConfirmar={toggleEstadoCancha} onCerrar={() => setModalBajaCancha({ open: false, data: null })} />
-
-            {/* MODALES TIPOS */}
+            <CanchaModalBaja open={modalBajaCancha.open} cancha={modalBajaCancha.data} onConfirmar={handleToggleEstadoCancha} onCerrar={() => setModalBajaCancha({ open: false, data: null })} />
+            
             <TipoModal open={modalTipo.open} modo={modalTipo.modo} tipo={modalTipo.data} onGuardar={guardarTipo} onCerrar={() => setModalTipo({ open: false, modo: 'nuevo', data: null })} />
             <TipoModalDetalle open={modalDetTipo.open} tipo={modalDetTipo.data} onCerrar={() => setModalDetTipo({ open: false, data: null })} />
-            <TipoModalBaja open={modalBajaTipo.open} tipo={modalBajaTipo.data} onConfirmar={eliminarTipo} onCerrar={() => setModalBajaTipo({ open: false, data: null })} />
-
-            {/* MODALES DISPONIBILIDAD */}
+            <TipoModalBaja open={modalBajaTipo.open} tipo={modalBajaTipo.data} onConfirmar={handleEliminarTipo} onCerrar={() => setModalBajaTipo({ open: false, data: null })} />
+            
             <DispModal open={modalDisp.open} modo={modalDisp.modo} disp={modalDisp.data} idCanchaFallback={modalDisp.idCanchaFallback} canchas={canchas} dispsExistentes={disps} onGuardar={guardarDisp} onCerrar={() => setModalDisp({ open: false, modo: 'nuevo', data: null })} />
 
             <Toast toasts={toasts} />
         </div>
+    );
+}
+
+export default function CanchasPage() {
+    return (
+        <CanchasProvider>
+            <CanchasPageContent />
+        </CanchasProvider>
     );
 }

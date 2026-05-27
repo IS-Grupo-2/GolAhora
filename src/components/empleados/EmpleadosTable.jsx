@@ -1,6 +1,7 @@
 // src/components/empleados/EmpleadosTable.jsx
 
 function iniciales(e) {
+    if (!e.nombre || !e.apellido) return '??';
     return (e.nombre[0] + e.apellido[0]).toUpperCase();
 }
 
@@ -20,7 +21,7 @@ export default function EmpleadosTable({
     onEditar,
     onBaja,
 }) {
-    if (empleados.length === 0) {
+    if (!empleados || empleados.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="search-x" />
@@ -41,59 +42,63 @@ export default function EmpleadosTable({
                     <tr>
                         <th>Empleado</th>
                         <th>Cargo</th>
-                        <th>Turno</th>
                         <th>Sector</th>
+                        <th>Turno</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {empleados.map(e => (
-                        <tr key={e.id}>
-                            <td>
-                                <div className="user-cell">
-                                    <div className={`user-avatar-sm${!e.activo ? ' inactive' : ''}`}>
-                                        {iniciales(e)}
+                    {empleados.map(e => {
+                        const isActivo = e.activo ?? (e.estado === 'activo');
+
+                        return (
+                            <tr key={e.idUsuario || e.id}>
+                                <td>
+                                    <div className="user-cell">
+                                        <div className={`user-avatar-sm${!isActivo ? ' inactive' : ''}`}>
+                                            {iniciales(e)}
+                                        </div>
+                                        <div className="user-cell-info">
+                                            <strong>{e.nombre} {e.apellido}</strong>
+                                            <span>@{e.userName || e.username}</span>
+                                        </div>
                                     </div>
-                                    <div className="user-cell-info">
-                                        <strong>{e.nombre} {e.apellido}</strong>
-                                        <span>{e.legajo}</span>
+                                </td>
+                                <td>{e.cargo || '—'}</td>
+                                <td>{e.sector || '—'}</td>
+                                <td>{e.turno || '—'}</td>
+                                <td>
+                                    <BadgeEstado activo={isActivo} />
+                                </td>
+                                <td>
+                                    <div className="action-btns">
+                                        <button
+                                            className="action-btn view"
+                                            title="Ver detalle"
+                                            onClick={() => onVer(e)}
+                                        >
+                                            <i data-lucide="eye" />
+                                        </button>
+                                        <button
+                                            className="action-btn edit"
+                                            title="Editar"
+                                            onClick={() => onEditar(e)}
+                                        >
+                                            <i data-lucide="pencil" />
+                                        </button>
+                                        <button
+                                            className="action-btn toggle"
+                                            title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                            onClick={() => onBaja(e)}
+                                        >
+                                            <i data-lucide={isActivo ? 'user-x' : 'user-check'} />
+                                        </button>
                                     </div>
-                                </div>
-                            </td>
-                            <td>{e.cargo}</td>
-                            <td>{e.turno}</td>
-                            <td>{e.sector}</td>
-                            <td>
-                                <BadgeEstado activo={e.activo} />
-                            </td>
-                            <td>
-                                <div className="action-btns">
-                                    <button
-                                        className="action-btn view"
-                                        title="Ver detalle"
-                                        onClick={() => onVer(e)}
-                                    >
-                                        <i data-lucide="eye" />
-                                    </button>
-                                    <button
-                                        className="action-btn edit"
-                                        title="Editar"
-                                        onClick={() => onEditar(e)}
-                                    >
-                                        <i data-lucide="pencil" />
-                                    </button>
-                                    <button
-                                        className="action-btn toggle"
-                                        title={e.activo ? 'Dar de baja' : 'Reactivar'}
-                                        onClick={() => onBaja(e)}
-                                    >
-                                        <i data-lucide={e.activo ? 'user-x' : 'user-check'} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

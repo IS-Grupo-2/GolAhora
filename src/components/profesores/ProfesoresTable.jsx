@@ -1,13 +1,15 @@
 // src/components/profesores/ProfesoresTable.jsx
+import Can from '../Can';
 
 function iniciales(p) {
+    if (!p.nombre || !p.apellido) return '??';
     return (p.nombre[0] + p.apellido[0]).toUpperCase();
 }
 
-function BadgeEstado({ estado }) {
+function BadgeEstado({ activo }) {
     return (
-        <span className={`badge ${estado === 'activo' ? 'success' : 'danger'}`}>
-            {estado === 'activo' ? 'Activo' : 'Inactivo'}
+        <span className={`badge ${activo ? 'success' : 'danger'}`}>
+            {activo ? 'Activo' : 'Inactivo'}
         </span>
     );
 }
@@ -20,7 +22,7 @@ export default function ProfesoresTable({
     onEditar,
     onBaja,
 }) {
-    if (profesores.length === 0) {
+    if (!profesores || profesores.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="search-x" />
@@ -41,57 +43,72 @@ export default function ProfesoresTable({
                     <tr>
                         <th>Profesor</th>
                         <th>Especialidad</th>
-                        <th>Turno</th>
+                        <th>Teléfono</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {profesores.map(p => (
-                        <tr key={p.id}>
-                            <td>
-                                <div className="user-cell">
-                                    <div className={`user-avatar-sm${p.estado === 'inactivo' ? ' inactive' : ''}`}>
-                                        {iniciales(p)}
+                    {profesores.map(p => {
+                        const isActivo = p.activo ?? (p.estado === 'activo');
+
+                        return (
+                            <tr key={p.idUsuario || p.id}>
+                                <td>
+                                    <div className="user-cell">
+                                        <div className={`user-avatar-sm${!isActivo ? ' inactive' : ''}`}>
+                                            {iniciales(p)}
+                                        </div>
+                                        <div className="user-cell-info">
+                                            <strong>{p.nombre} {p.apellido}</strong>
+                                            <span>@{p.userName || p.username}</span>
+                                        </div>
                                     </div>
-                                    <div className="user-cell-info">
-                                        <strong>{p.nombre} {p.apellido}</strong>
-                                        <span>@{p.username}</span>
+                                </td>
+                                <td>{p.especialidad || '—'}</td>
+                                <td>{p.telefono || '—'}</td>
+                                <td>
+                                    <BadgeEstado activo={isActivo} />
+                                </td>
+                                <td>
+                                    <div className="action-btns">
+                                        {/* Ver Detalle: visible para admin y empleado */}
+                                        <Can roles={['admin', 'empleado']}>
+                                            <button
+                                                className="action-btn view"
+                                                title="Ver detalle"
+                                                onClick={() => onVer(p)}
+                                            >
+                                                <i data-lucide="eye" />
+                                            </button>
+                                        </Can>
+
+                                        {/* Editar: Solo admin */}
+                                        <Can roles={['admin']}>
+                                            <button
+                                                className="action-btn edit"
+                                                title="Editar"
+                                                onClick={() => onEditar(p)}
+                                            >
+                                                <i data-lucide="pencil" />
+                                            </button>
+                                        </Can>
+
+                                        {/* Dar de baja / Reactivar: Solo admin */}
+                                        <Can roles={['admin']}>
+                                            <button
+                                                className="action-btn toggle"
+                                                title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                                onClick={() => onBaja(p)}
+                                            >
+                                                <i data-lucide={isActivo ? 'user-x' : 'user-check'} />
+                                            </button>
+                                        </Can>
                                     </div>
-                                </div>
-                            </td>
-                            <td>{p.especialidad}</td>
-                            <td>{p.turno}</td>
-                            <td>
-                                <BadgeEstado estado={p.estado} />
-                            </td>
-                            <td>
-                                <div className="action-btns">
-                                    <button
-                                        className="action-btn view"
-                                        title="Ver detalle"
-                                        onClick={() => onVer(p)}
-                                    >
-                                        <i data-lucide="eye" />
-                                    </button>
-                                    <button
-                                        className="action-btn edit"
-                                        title="Editar"
-                                        onClick={() => onEditar(p)}
-                                    >
-                                        <i data-lucide="pencil" />
-                                    </button>
-                                    <button
-                                        className="action-btn toggle"
-                                        title={p.estado === 'activo' ? 'Dar de baja' : 'Reactivar'}
-                                        onClick={() => onBaja(p)}
-                                    >
-                                        <i data-lucide={p.estado === 'activo' ? 'user-x' : 'user-check'} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

@@ -1,4 +1,6 @@
 // src/components/canchas/DisponibilidadPanel.jsx
+import Can from '../Can';
+
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActivaId, setCanchaActivaId, onNuevaDisp, onToggleDisp, onEditarDisp, onEliminarDisp }) {
@@ -23,9 +25,11 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left"><h2 className="crud-title">Disponibilidad de Canchas</h2></div>
                 <div className="crud-toolbar-right">
-                    <button className="btn-primary-action" onClick={onNuevaDisp} disabled={!cancha} style={{ opacity: !cancha ? 0.5 : 1 }}>
-                        <i data-lucide="plus" /> Agregar franja
-                    </button>
+                    <Can roles={['admin', 'empleado']}>
+                        <button className="btn-primary-action" onClick={onNuevaDisp} disabled={!cancha} style={{ opacity: !cancha ? 0.5 : 1 }}>
+                            <i data-lucide="plus" /> Agregar franja
+                        </button>
+                    </Can>
                 </div>
             </div>
 
@@ -65,7 +69,17 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                             <div className="panel-card tabla-panel" style={{ marginTop: '16px' }}>
                                 <div className="table-wrapper">
                                     <table>
-                                        <thead><tr><th>Día</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Acciones</th></tr></thead>
+                                        <thead>
+                                            <tr>
+                                                <th>Día</th>
+                                                <th>Inicio</th>
+                                                <th>Fin</th>
+                                                <th>Estado</th>
+                                                <Can roles={['admin', 'empleado']}>
+                                                    <th>Acciones</th>
+                                                </Can>
+                                            </tr>
+                                        </thead>
                                         <tbody>
                                             {dispsCancha.length === 0 ? (
                                                 <tr><td colSpan="5" className="tabla-empty"><p>Sin franjas configuradas.</p></td></tr>
@@ -80,13 +94,15 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                                                 {f.disponible ? 'Habilitada' : 'Bloqueada'}
                                                             </span>
                                                         </td>
-                                                        <td>
-                                                            <div className="action-btns">
-                                                                <button className="action-btn view" onClick={() => onToggleDisp(f)}><i data-lucide={f.disponible ? 'eye-off' : 'eye'} /></button>
-                                                                <button className="action-btn edit" onClick={() => onEditarDisp(f)}><i data-lucide="pencil" /></button>
-                                                                <button className="action-btn toggle" onClick={() => onEliminarDisp(f)}><i data-lucide="trash-2" /></button>
-                                                            </div>
-                                                        </td>
+                                                        <Can roles={['admin', 'empleado']}>
+                                                            <td>
+                                                                <div className="action-btns">
+                                                                    <button className="action-btn view" onClick={() => onToggleDisp(f)}><i data-lucide={f.disponible ? 'eye-off' : 'eye'} /></button>
+                                                                    <button className="action-btn edit" onClick={() => onEditarDisp(f)}><i data-lucide="pencil" /></button>
+                                                                    <button className="action-btn toggle" onClick={() => onEliminarDisp(f)}><i data-lucide="trash-2" /></button>
+                                                                </div>
+                                                            </td>
+                                                        </Can>
                                                     </tr>
                                                 ))
                                             )}

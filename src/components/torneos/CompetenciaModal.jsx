@@ -1,3 +1,4 @@
+// src/components/torneos/CompetenciaModal.jsx
 import { useState, useEffect } from 'react';
 
 function Icon({ name }) {
@@ -8,10 +9,9 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
     const [formData, setFormData] = useState({
         nombre: '',
         tipo: 'liga',
-        estado: 'activo'
+        estado: 'inscripcion' // Cambiado por defecto a 'inscripcion'
     });
 
-    // Escuchar si abrimos para editar o para crear
     useEffect(() => {
         if (competenciaEditar) {
             setFormData(competenciaEditar);
@@ -19,7 +19,7 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
             setFormData({
                 nombre: '',
                 tipo: 'liga',
-                estado: 'activo'
+                estado: 'inscripcion'
             });
         }
     }, [competenciaEditar, isOpen]);
@@ -37,7 +37,6 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
             <div className="dash-modal" onClick={e => e.stopPropagation()}>
                 
                 <div className="dash-modal-header">
-                    {/* Título dinámico */}
                     <h3>{competenciaEditar ? 'Editar Competencia' : 'Nueva Competencia'}</h3>
                     <button className="dash-modal-close" onClick={onClose}>
                         <Icon name="x" />
@@ -45,20 +44,19 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
                 </div>
 
                 <div className="dash-modal-body">
-                    <form id="form-competencia" onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} id="competencia-form">
                         <div className="form-group">
-                            <label>Nombre <span className="req">*</span></label>
+                            <label>Nombre de la Competencia</label>
                             <input 
                                 type="text" 
-                                required 
-                                placeholder="Ej: Liga Apertura 2026"
+                                required
                                 value={formData.nombre}
                                 onChange={e => setFormData({...formData, nombre: e.target.value})}
                             />
                         </div>
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Tipo <span className="req">*</span></label>
+                                <label>Tipo de Formato</label>
                                 <select 
                                     value={formData.tipo}
                                     onChange={e => setFormData({...formData, tipo: e.target.value})}
@@ -73,7 +71,8 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
                                     value={formData.estado}
                                     onChange={e => setFormData({...formData, estado: e.target.value})}
                                 >
-                                    <option value="activo">Activo</option>
+                                    <option value="inscripcion">Inscripción Abierta</option>
+                                    <option value="en_curso">En Curso</option>
                                     <option value="finalizado">Finalizado</option>
                                 </select>
                             </div>
@@ -82,8 +81,8 @@ export default function CompetenciaModal({ isOpen, onClose, onSave, competenciaE
                 </div>
 
                 <div className="dash-modal-footer">
-                    <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
-                    <button className="btn-modal-save" onClick={handleSubmit}>
+                    <button type="button" className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
+                    <button type="submit" form="competencia-form" className="btn-modal-save">
                         <Icon name="save" /> Guardar
                     </button>
                 </div>
