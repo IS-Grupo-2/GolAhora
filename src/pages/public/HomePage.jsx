@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import logo from '../../assets/logo/logo.png'
+import LG from '../../assets/logo/LG.png'
 import cancha1 from '../../assets/images/Cancha1.png'
 import cancha2 from '../../assets/images/Cancha2.png'
 import cancha3 from '../../assets/images/Cancha3.png'
@@ -17,7 +17,7 @@ function HomePage() {
             <header>
                 <div className="container-header">
                     <div className="logo">
-                        <img src={logo} alt="Logo de Gol Ahora" />
+                        <img src={LG} alt="Logo de Gol Ahora" />
                     </div>
                     <nav className={`nav-header ${menuOpen ? 'active' : ''}`} aria-label="Navegación principal">
                         <ul className="ul-nav-header">

@@ -72,12 +72,11 @@
 }
 
 .grupos-elem label {
-    color: #cbd5e1;
+    color: #8ab8f0;
     font-size: 0.9rem;
     font-weight: 600;
 }
 
-/* Forzar estilos del input para acoplarse al neón oscuro */
 .grupos-elem input {
     background-color: rgba(5, 8, 20, 0.5) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -86,7 +85,7 @@
     border-radius: 12px !important;
     max-width: 100% !important;
     font-size: 0.95rem !important;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .grupos-elem input:focus {
@@ -96,13 +95,8 @@
 }
 
 .grupos-elem input::placeholder {
-    color: #64748b !important; /* Gris claro/clásico de Tailwind */
-    opacity: 0.7;             /* Un toque de transparencia para que no compita con el texto real */
-}
-
-.password-wrapper {
-    position: relative;
-    width: 100%;
+    color: #64748b !important; 
+    opacity: 0.7;         
 }
 
 .password-wrapper input {
