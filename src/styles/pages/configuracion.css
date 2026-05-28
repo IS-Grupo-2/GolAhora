@@ -1,222 +1,567 @@
-/* Contenedor Principal de la Sección */
-.config-container {
-    display: flex;
-    gap: 32px;
-    background: #0b0f19; /* Gris oscuro premium estilo estadio nocturno */
-    padding: 24px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    min-height: calc(100vh - 160px);
-    color: #f3f4f6;
+/* ==========================================================================
+   VARIABLES Y ANIMACIONES GLOBALES
+   ========================================================================== */
+@keyframes floatOrb {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, -50px) scale(1.1); }
 }
 
-/* Sidebar interno de pestañas */
+@keyframes spinRing {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDanger {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL & ESTRUCTURA (Fondo Premium con Orbes)
+   ========================================================================== */
+.config-page {
+    position: relative;
+    display: flex;
+    gap: 32px;
+    background: #0b0f19;
+    padding: 32px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    min-height: calc(100vh - 120px);
+    color: #f3f4f6;
+    overflow: hidden; /* Para contener los orbes */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Orbes animados de fondo */
+.config-page::before,
+.config-page::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    z-index: 0;
+    pointer-events: none;
+    animation: floatOrb 8s ease-in-out infinite alternate;
+}
+
+.config-page::before {
+    width: 400px; height: 400px;
+    background: rgba(34, 197, 94, 0.08); /* Verde flúor suave */
+    top: -100px; left: -100px;
+}
+
+.config-page::after {
+    width: 500px; height: 500px;
+    background: rgba(59, 130, 246, 0.05); /* Azul eléctrico de contraste */
+    bottom: -150px; right: -150px;
+    animation-delay: -4s;
+}
+
+/* Sidebar Izquierdo */
+.config-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 280px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   ACCOUNT SUMMARY (Sidebar Arriba) - Efecto Anillo Giratorio
+   ========================================================================== */
+.account-summary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+}
+
+.account-summary-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.account-avatar {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #4ade80;
+    background: #111827;
+    z-index: 1;
+}
+
+/* El anillo giratorio premium */
+.account-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, #22c55e, #10b981, transparent);
+    animation: spinRing 4s linear infinite;
+    z-index: -2;
+}
+
+/* Fondo interno del avatar para tapar el centro del gradiente */
+.account-avatar::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: #111827;
+    z-index: -1;
+}
+
+.account-user-info h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.role-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.account-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.account-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.account-meta-item i, .account-meta-item svg {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+}
+
+.status-active { color: #4ade80; font-weight: 700; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+.status-inactive { color: #f87171; font-weight: 700; }
+
+/* ==========================================================================
+   PESTAÑAS DE NAVEGACIÓN
+   ========================================================================== */
 .config-tabs {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 240px;
-    flex-shrink: 0;
 }
 
-.tab-btn {
+.config-tab {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 14px;
+    padding: 14px 18px;
     background: transparent;
     border: 1px solid transparent;
     color: #9ca3af;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     text-align: left;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tab-btn:hover {
+.config-tab:hover {
     background: rgba(255, 255, 255, 0.03);
     color: #fff;
+    transform: translateX(4px);
 }
 
-/* Pestaña Activa con Acento Verde Cancha Eléctrico */
-.tab-btn.active {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.3);
+.config-tab.active {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    box-shadow: inset 3px 0 0 #22c55e;
 }
 
-/* Pestaña de peligro activa */
-.tab-btn-danger.active {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
+.config-tab.danger:hover {
+    background: rgba(239, 68, 68, 0.05);
+    color: #f87171;
 }
 
-/* Área de Contenido */
+.config-tab.danger.active {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.2);
+    box-shadow: inset 3px 0 0 #ef4444;
+}
+
+.config-tab i, .config-tab svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+.config-tab.active i { transform: scale(1.15); }
+
+/* ==========================================================================
+   ÁREA DE CONTENIDO & TARJETAS
+   ========================================================================== */
 .config-content {
     flex-grow: 1;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .config-card {
-    background: #111827; /* Fondo de tarjeta un toque más claro */
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    padding: 32px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 18px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Línea superior brillante */
+.config-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+    opacity: 0.7;
+}
+
+.config-card.card-danger::before {
+    background: linear-gradient(90deg, transparent, #ef4444, transparent);
+}
+
+.config-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .config-card h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
-    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: #fff;
 }
 
 .card-subtitle {
     color: #9ca3af;
-    font-size: 0.85rem;
-    margin-bottom: 24px;
+    font-size: 0.95rem;
+    margin: 0;
 }
 
-/* Formularios y Inputs */
+/* Badges de cabecera */
+.profile-status, .security-badge, .support-badge, .danger-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 600;
+}
+.profile-status { background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+.security-badge { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+.support-badge  { background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.2); }
+.danger-badge   { 
+    background: rgba(239, 68, 68, 0.1); 
+    color: #f87171; 
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    animation: pulseDanger 2s infinite; 
+}
+
+/* ==========================================================================
+   FORMULARIOS, INPUTS Y SECCIONES
+   ========================================================================== */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-bottom: 24px;
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
-.input-group.block {
-    margin-bottom: 18px;
-}
+.input-group.block { margin-bottom: 24px; }
 
 .input-group label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
+/* Inputs con Glow expansivo */
 .input-group input, 
 .input-group textarea {
-    background: #1f2937;
-    border: 1px solid #374151;
-    border-radius: 8px;
-    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px 16px;
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .input-group input:focus,
 .input-group textarea:focus {
-    border-color: #22c55e; /* Foco verde vívido */
+    border-color: #22c55e;
+    background: #0b0f19;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15), 0 0 20px rgba(34, 197, 94, 0.1);
 }
 
-/* Inputs de solo lectura para denotar el UML */
 .input-group.readonly input {
     background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.05);
+    border-color: transparent;
     color: #6b7280;
     cursor: not-allowed;
 }
 
-/* El toque técnico para el examen */
-.uml-badge-section {
-    background: rgba(34, 197, 94, 0.03);
-    border: 1px dashed rgba(34, 197, 94, 0.2);
-    padding: 16px;
-    border-radius: 10px;
+.readonly-section h3 {
+    font-size: 1.1rem;
+    color: #e5e7eb;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 10px;
+}
+
+.security-rules {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 24px;
 }
+.security-rules h4 { color: #e5e7eb; margin: 0 0 12px 0; font-size: 0.95rem; }
+.security-rules ul { color: #9ca3af; padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin: 0;}
 
-.uml-badge {
-    display: inline-block;
-    background: #22c55e;
-    color: #000;
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 14px;
+/* ==========================================================================
+   SOPORTE (Grid de tarjetas)
+   ========================================================================== */
+.support-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
 }
 
-/* Botón de Guardado Exitoso */
-.btn-save {
-    background: #22c55e;
-    color: #0b0f19;
-    border: none;
-    padding: 12px 24px;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
+.support-info-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    transition: transform 0.3s ease, background 0.3s ease;
 }
 
-.btn-save:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+.support-info-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(34, 197, 94, 0.2);
 }
 
-/* Estilo Zona de Peligro */
-.card-danger {
-    border-color: rgba(239, 68, 68, 0.2);
+.support-info-card i, .support-info-card svg { color: #4ade80; width: 24px; height: 24px; margin-bottom: 8px; }
+.support-info-card strong { color: #f3f4f6; font-size: 0.95rem; }
+.support-info-card span { color: #9ca3af; font-size: 0.85rem; }
+
+/* ==========================================================================
+   ZONA DE PELIGRO (Legibilidad y Contraste Arreglados)
+   ========================================================================== */
+.danger-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .danger-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     background: rgba(239, 68, 68, 0.03);
-    border: 1px solid rgba(239, 68, 68, 0.1);
-    padding: 20px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.danger-box::before {
+    content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: #ef4444;
+}
+
+.danger-box-content h3 { color: #f87171; margin: 0 0 12px 0; font-size: 1.2rem; }
+.danger-box-content p { color: #d1d5db; margin: 0 0 16px 0; line-height: 1.6; }
+.danger-box-content ul { color: #9ca3af; padding-left: 20px; line-height: 1.8; margin: 0;}
+.danger-box-content li::marker { color: #ef4444; }
+
+.danger-confirmation {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px dashed rgba(239, 68, 68, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.danger-confirmation label { color: #e5e7eb; font-size: 1rem; text-align: center; }
+.danger-confirmation strong { color: #ef4444; font-weight: 800; letter-spacing: 1px; }
+
+.danger-confirmation input {
+    background: #111827;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.danger-confirmation input:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15), 0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+/* ==========================================================================
+   ALERTAS Y BOTONES PREMIUM (Shimmer Effect)
+   ========================================================================== */
+.form-alert {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; border-radius: 10px; margin-bottom: 24px;
+    font-weight: 600; font-size: 0.95rem;
+    animation: slideUp 0.3s ease;
+}
+.form-alert.success { background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+.form-alert.error   { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.config-actions {
+    display: flex; justify-content: flex-end;
+    margin-top: 32px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 24px;
+}
+
+.btn-save, .btn-danger-action {
+    position: relative;
+    border: none;
+    padding: 14px 32px;
+    font-weight: 700;
+    font-size: 0.95rem;
     border-radius: 10px;
-    margin-top: 10px;
+    cursor: pointer;
+    overflow: hidden; /* Para el efecto Shimmer */
+    transition: all 0.3s ease;
 }
 
-.danger-text strong {
-    color: #ef4444;
-    display: block;
-    margin-bottom: 4px;
+/* Efecto Shimmer (Brillo atravesando el botón) */
+.btn-save::after, .btn-danger-action::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: skewX(-20deg); transition: 0.6s ease;
 }
+.btn-save:hover::after, .btn-danger-action:hover::after { left: 150%; }
 
-.danger-text p {
-    font-size: 0.85rem;
-    color: #9ca3af;
-    max-width: 500px;
+.btn-save {
+    background: #22c55e; color: #0b0f19;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+.btn-save:hover {
+    background: #4ade80; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5); transform: translateY(-2px);
 }
 
 .btn-danger-action {
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    padding: 10px 18px;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: #ef4444; color: #fff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+.btn-danger-action:hover:not(:disabled) {
+    background: #f87171; box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6); transform: translateY(-2px);
+}
+.btn-danger-action:disabled {
+    background: rgba(239, 68, 68, 0.2); color: rgba(255,255,255,0.4); box-shadow: none; cursor: not-allowed;
 }
 
-.btn-danger-action:hover {
-    background: #dc2626;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-}
+/* ==========================================================================
+   MOBILE FIRST RESPONSIVE (Sidebar colapsable a Tabs horizontales)
+   ========================================================================== */
+@media (max-width: 900px) {
+    .config-page {
+        flex-direction: column;
+        padding: 20px;
+        gap: 24px;
+        border-radius: 12px;
+    }
 
-/* Animación Simple de Entrada */
-.animate-fade-in {
-    animation: fadeIn 0.25s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    .config-sidebar { width: 100%; gap: 16px; }
+    
+    .account-summary-top { flex-direction: column; text-align: center; }
+    .account-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    /* Convierte el menú vertical en horizontal scrolleable */
+    .config-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    .config-tabs::-webkit-scrollbar { display: none; /* Chrome, Safari */ }
+    
+    .config-tab { flex: 0 0 auto; white-space: nowrap; padding: 12px 20px; }
+    
+    .config-card { padding: 24px; }
+    .config-card-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    
+    .form-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+    .support-info-grid { grid-template-columns: 1fr; }
+    
+    .config-actions { justify-content: stretch; }
+    .btn-save, .btn-danger-action { width: 100%; }
 }

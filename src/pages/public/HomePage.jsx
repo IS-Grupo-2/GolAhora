@@ -13,7 +13,7 @@ function HomePage() {
     const [modalOpen, setModalOpen] = useState(false)
 
     return (
-        <>
+        <div className='home-page'>
             <header>
                 <div className="container-header">
                     <div className="logo">
@@ -62,7 +62,7 @@ function HomePage() {
                     {/* HERO */}
                     <section className="hero">
                         <div className="container">
-                            <div className="presentacion-hero">
+                            <div className="presentacion-hero h2">
                                 <h1>Reservá tu cancha en segundos ⚽</h1>
                                 <p>Gestioná reservas, torneos, clases y mucho más en un solo lugar.</p>
                             </div>
@@ -179,7 +179,7 @@ function HomePage() {
                 <p>Creado por el grupo 2 de la comisión 1</p>
                 <p>Integrantes: Franco Díaz, Milena, Nahuel, Cristian, Mateo, Julieta, Joaquin</p>
             </footer>
-        </>
+        </div>
     )
 }
 

@@ -1,76 +1,77 @@
-.formulario h1{
-    font-size: 1.8rem;
-    color: var(--accent);
+.formulario h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
 }
 
-.button-volver{
-    background-color: rgb(85, 61, 88);
-    color: var(--text);
-    border: 2px solid var(--accent);
-    border-radius: 10px;
-    padding: 0.4rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.button-volver:hover{
-    background-color: var(--accent);
-    transform: scale(1.1);
-    
-}
-
-.button-volver:active{
-    transform: scale(0.6);
-}
-
-.contenedor-formulario{
+.contenedor-formulario {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem; 
+    padding: 2rem 1rem;
+    width: 600px;
 }
 
-.formulario{
+.formulario {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 80%;
-    background-color: rgb(255, 255, 255, 0.1);
-    margin: 8px 0;
-    padding: 1rem;
-    border-radius: 16px;
-    border: 1px solid rgb(255, 255, 255, 0.2);
-    box-shadow: 2px 1px 7px var(--accent);
+    width: 100%;
+    max-width: 550px;
+    background-color: rgba(11, 17, 32, 0.55);
     backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    padding: 2.5rem 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.15);
 }
 
-
-.grupos-elem{
-    padding: 0.5rem;
+.grupos-elem {
     display: flex;
     flex-direction: column;
-    width: 90%;
-}
-
-.grupos-elem label{
-    color: #dbbd43;
-    text-shadow: 0px 0px 1px #dbbd43;
-    font-size: 1rem;
-}
-
-.input-nombre{width: 70%;}
-
-.input-apellido{width: 40%;}
-
-.input-email{width: 70%;}
-
-.nom-ape{
-    display: flex;
-    flex-direction: column;
+    width: 100%;
     gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.grupos-elem label {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Inputs unificados con el tema oscuro */
+.formulario input {
+    background-color: rgba(5, 8, 20, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease;
+}
+
+.formulario input:focus {
+    outline: none !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4) !important;
+}
+
+.formulario input::placeholder {
+    color: #64748b !important;
+    opacity: 0.7;
+}
+
+.nom-ape {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
 }
 
 .password-wrapper {
@@ -78,17 +79,16 @@
     align-items: center;
     position: relative;
     width: 100%;
-    max-width: 400px;
 }
 
 .password-wrapper input {
-    width: 100%;
-    padding-right: 45px;
+    padding-right: 45px !important;
 }
+
 
 .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -97,79 +97,70 @@
     font-size: 1.2rem;
 }
 
-.enlaces{
-   margin-top: 0.2rem;
+.enlaces {
+   margin-top: 0.5rem;
    align-items: center;
-   gap: 0.6rem;
 }
 
-.link-principal{
-    color: #dbbd43;
-    font-weight: 600;
-    transition: 0.3s ease;
-}
-
-.link-principal:hover{
-    transform: translateY(-2px);
-} 
-
-.button-submit{
-    display: flex;
-    justify-content: center;
-    background-color: rgb(85, 61, 88);
-    color: #CCC;
-    border: 2px solid var(--accent);
-    border-radius: 10px;
-    padding: 0.4rem;
-    cursor: pointer;
-    width: 60%;
+.link-principal {
+    color: #ff6b00;
+    font-weight: 700;
     transition: all 0.3s ease;
 }
 
-.button-submit:hover{
-    background-color: var(--accent);
-    transform: scale(1.1);
-}
+.link-principal:hover {
+    color: #ff8800;
+    transform: translateY(-1px);
+} 
 
-.button-sub{
+.button-sub {
     justify-content: center;
     align-items: center;
+    margin-top: 1.5rem;
+}
+
+.button-submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8800 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.85rem;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.button-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
 }
 
 .error-message {
-    color: #ff4d4d;
+    color: #ef4444;
     font-size: 0.8rem;
-    min-height: 14px;
+    min-height: 16px;
 }
 
 .input-error {
-    border: 2px solid #ff4d4d;
+    border: 1px solid #ef4444 !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
 }
 
-/* Estilos para pantallas medianas y grandes */
+/* Control Responsivo */
 @media (min-width: 768px) {
-    .backgoundLogin{
-        background-image: url(../../assets/images/RLDesktop.png);
-        background-size: cover;
-        background-repeat: no-repeat;
+    /* Reparado error de tipeo en backgoundLogin */
+    .backgroundLogin {
+        background-image: linear-gradient(to bottom, rgba(5, 8, 20, 0.7), rgba(5, 8, 20, 0.95)), url('../../assets/images/BG.png');
     }
 
-    .formulario h1{font-size: 2rem;}
-
-    .grupos-elem Link{font-size: 1.1rem;}
-
-    .input-nombre{width: 60%;}
-
-    .input-apellido{width: 60%;}
-
-    .input-dni{width: 50%;}
-
-    .grupos-elem .nom-ape{
-        flex-direction: row;
-        align-items: center;
+    .nom-ape {
+        grid-template-columns: 1fr 1fr; /* Se divide a la mitad de forma balanceada */
+        gap: 1.5rem;
     }
-
-    .formulario{width: 50%;}
-
-    .link-principal{font-size: 1rem;}    
 }

@@ -18,6 +18,18 @@
     --green:        #22c55e;
     --blue:         #3b82f6;
     --red:          #ef4444;
+
+    
+    --bg-dark: #050814;
+    --bg-cardd: rgba(11, 17, 32, 0.75);
+    --neon-blue: #00f0ff;
+    --neon-orange: #ff6b00;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glow-blue: 0 0 15px rgba(0, 240, 255, 0.4);
+    --glow-orange: 0 0 15px rgba(255, 107, 0, 0.5);
+
     
     /* Efectos */
     --shadow:       0 10px 30px rgba(15, 23, 42, 0.06);
