@@ -9,6 +9,14 @@
     font-family: 'Inter', sans-serif;
 }
 
+/* ✅ FIX: mismo problema que en home — background-attachment: fixed
+   rompe el scroll en iOS Safari y Android. */
+@media (max-width: 768px) {
+    .backgroundLogin {
+        background-attachment: scroll;
+    }
+}
+
 .backgroundLogin p {
     color: #94a3b8 !important;
     font-weight: 400 !important;
@@ -27,7 +35,7 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 450px; /* Control del ancho máximo garantizado */
+    max-width: 450px;
     background-color: rgba(11, 17, 32, 0.75);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -97,6 +105,15 @@
 .grupos-elem input::placeholder {
     color: #64748b !important; 
     opacity: 0.7;         
+}
+
+/* ✅ FIX: faltaba position: relative — sin esto el toggle-password
+   con position: absolute se posicionaba fuera del wrapper. */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 .password-wrapper input {

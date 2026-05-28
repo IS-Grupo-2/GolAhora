@@ -28,11 +28,10 @@
     min-height: 100vh;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--text-main);
-    overflow-x: hidden;
     animation: stadiumLights 6s ease-in-out infinite;
 }
 
-/* Forzar reset de párrafos molestos de global.css dentro del home */
+
 .backgroundHome p {
     color: var(--text-muted) !important;
     font-weight: 400 !important;
@@ -55,7 +54,7 @@ section {
 .home-page h1, .home-page h2,
 .backgroundLogin h1, .backgroundLogin h2 {
     position: relative;
-    padding-bottom: 16px; /* Espacio para que la línea no pise el texto */
+    padding-bottom: 16px;
 }
 
 .home-page h1::after, .home-page h2::after,
@@ -65,9 +64,9 @@ section {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    height: 3px; /* Grosor de la línea */
+    height: 3px;
     background: linear-gradient(to right, transparent, #ff6b00 50%, transparent);
-    filter: drop-shadow(0 0 4px #ff6b00); /* Brillo LED sutil */
+    filter: drop-shadow(0 0 4px #ff6b00);
 }
 
 .home-page h1::after,
@@ -133,7 +132,7 @@ section {
     font-weight: 600;
     font-size: 0.95rem;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -146,6 +145,7 @@ section {
 .a-nav-header.contacto {
     background: rgba(255, 107, 0, 0.1);
     border: 1px solid rgba(255, 107, 0, 0.3);
+    border-radius: 14px;
     color: var(--neon-orange);
 }
 
@@ -166,7 +166,7 @@ section {
     border: 1px solid var(--glass-border);
     color: #fff;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 14px;
     font-weight: 600;
     transition: all 0.2s ease;
 }
@@ -175,6 +175,11 @@ section {
     background: rgba(0, 240, 255, 0.1);
     color: var(--neon-blue);
     border-color: rgba(0, 240, 255, 0.3);
+}
+
+/* ✅ FIX: El botón hamburger estaba visible en desktop (faltaba display:none por defecto) */
+.menu-toggle {
+    display: none;
 }
 
 /* ==========================================================================
@@ -270,7 +275,7 @@ section {
 }
 
 .galeria.abierta {
-    max-height: 500px; /* Suficiente para contener las imágenes */
+    max-height: 500px;
     opacity: 1;
     margin-top: 40px;
     margin-bottom: 40px;
@@ -286,7 +291,6 @@ section {
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Efecto de expansión controlada */
 .galeria img:hover {
     transform: scale(1.04);
     border-color: var(--neon-blue);
@@ -390,7 +394,7 @@ section {
 }
 
 /* ==========================================================================
-   CTA SECTION & MODAL
+   CTA SECTION
    ========================================================================== */
 .cta {
     background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.08), transparent), rgba(11, 17, 32, 0.85);
@@ -411,16 +415,21 @@ section {
 
 .h2-end h2 { font-size: 2.5rem; color: #fff; margin-bottom: 8px;}
 
-/* Modal Contacto */
+/* ==========================================================================
+   MODAL CONTACTO
+   ========================================================================== */
 .modal-contacto {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(2, 4, 10, 0.8);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    /* ✅ FIX: padding para que en mobile no quede pegado a los bordes */
+    padding: 16px;
 }
 
 .modal-box {
@@ -430,18 +439,24 @@ section {
     border-radius: 20px;
     position: relative;
     max-width: 400px;
-    width: 90%;
+    width: 100%; /* ✅ FIX: era width: 90%, ahora usa el padding del padre para el margen */
     box-shadow: var(--glow-blue);
 }
 
 .modal-box h3 { color: #fff; margin-bottom: 20px; font-size: 1.5rem;}
 .modal-box p { color: #cbd5e1 !important; margin-bottom: 12px; font-weight: 400 !important;}
 
+/* ✅ FIX: botón cerrar más fácil de tocar en mobile */
 .cerrar-modal {
     position: absolute;
-    top: 15px; right: 15px;
+    top: 12px; right: 16px;
     cursor: pointer;
     color: var(--text-muted);
+    font-size: 1.1rem;
+    padding: 6px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 0.2s ease;
 }
 .cerrar-modal:hover { color: #fff; }
 
@@ -457,13 +472,102 @@ footer {
 }
 footer p { color: #64748b !important; font-weight: 400 !important; font-size: 0.9rem !important;}
 
+/* ==========================================================================
+   RESPONSIVE MOBILE
+   ========================================================================== */
 @media (max-width: 768px) {
-    .menu-toggle {
-        background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer;
+
+    /* --- Header --- */
+    .container-header {
+        height: auto;
+        min-height: 70px;
+        padding: 14px 20px;
+        flex-wrap: wrap;
+        row-gap: 0;
     }
-    .buttons-header { display: none; }
-    .nav-header { display: none; }
-    .nav-header.active { display: flex; position: absolute; top: 70px; left: 0; width: 100%; background: #050814; flex-direction: column; padding: 20px; }
-    .ul-nav-header { flex-direction: column; gap: 15px; }
+
+    .logo {
+        height: 44px;
+        margin-top: 0;
+        flex: 1;
+    }
+
+    /* ✅ FIX: el hamburger ahora está oculto por defecto (display:none arriba)
+       y se activa solo en mobile */
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+    }
+
+    /* ✅ FIX: los botones de Login/Registro ya NO se ocultan.
+       Se muestran como fila completa debajo del logo+hamburger */
+    .buttons-header {
+        display: flex;
+        order: 3; /* van al final del flex-wrap */
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+        padding: 8px 0 10px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 4px;
+    }
+
+    .button-header {
+        font-size: 0.85rem;
+        padding: 7px 18px;
+        flex: 1;
+        max-width: 160px;
+        text-align: center;
+    }
+
+    /* --- Nav mobile dropdown --- */
+    .nav-header {
+        display: none;
+        order: 2;
+        width: 100%;
+    }
+
+    /* ✅ FIX: top corregido para que coincida con la altura real del header mobile.
+       Ya no usa position:absolute (que rompe el flujo del sticky header),
+       sino que se despliega dentro del contenedor header gracias al flex-wrap. */
+    .nav-header.active {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        background: rgba(5, 8, 20, 0.97);
+        border-top: 1px solid var(--glass-border);
+        padding: 12px 0 16px 0;
+    }
+
+    .ul-nav-header {
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .a-nav-header {
+        display: block;
+        padding: 12px 20px;
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* --- Hero --- */
     .presentacion-hero h1 { font-size: 2.2rem; }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* --- CTA --- */
+    .h2-end h2 { font-size: 1.8rem; }
+    .cta { padding: 36px 24px; }
 }

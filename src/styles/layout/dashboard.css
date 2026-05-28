@@ -389,8 +389,6 @@ td {
 }
 
 @media (max-width: 900px) {
-    body { overflow: hidden; }
-
     .dashboard-layout {grid-template-columns: 1fr;}
 
     .sidebar {

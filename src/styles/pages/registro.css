@@ -6,13 +6,17 @@
     margin-bottom: 2rem;
 }
 
+/* ✅ FIX: width: 600px fijo causaba desborde horizontal en viewports chicos,
+   disparando el bug de scroll en .backgroundHome. Ahora es responsivo. */
 .contenedor-formulario {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
-    width: 600px;
+    width: 100%;
+    max-width: 640px;
 }
 
 .formulario {
@@ -38,8 +42,10 @@
     margin-bottom: 1rem;
 }
 
+/* ✅ FIX: color era #081b33 (azul oscuro casi invisible sobre fondo oscuro).
+   Ahora coincide con login.css. */
 .grupos-elem label {
-    color: #081b33;
+    color: #8ab8f0;
     font-size: 0.9rem;
     font-weight: 600;
 }
@@ -74,17 +80,18 @@
     gap: 1rem;
 }
 
+/* ✅ FIX: faltaba position: relative — sin esto el toggle-password
+   con position: absolute se posicionaba respecto al ancestro incorrecto. */
 .password-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
-    position: relative;
     width: 100%;
 }
 
 .password-wrapper input {
     padding-right: 45px !important;
 }
-
 
 .toggle-password {
     position: absolute;
@@ -154,13 +161,8 @@
 
 /* Control Responsivo */
 @media (min-width: 768px) {
-    /* Reparado error de tipeo en backgoundLogin */
-    .backgroundLogin {
-        background-image: linear-gradient(to bottom, rgba(5, 8, 20, 0.7), rgba(5, 8, 20, 0.95)), url('../../assets/images/BG.png');
-    }
-
     .nom-ape {
-        grid-template-columns: 1fr 1fr; /* Se divide a la mitad de forma balanceada */
+        grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
     }
 }
