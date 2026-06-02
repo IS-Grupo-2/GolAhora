@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ReportesProvider, useReportes } from '../../context/ReportesContext';
+import { useReportes } from '../../context/ReportesContext';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ReporteIngresos from '../../components/reportes/ReporteIngresos';
@@ -7,12 +7,7 @@ import ReporteAsistencias from '../../components/reportes/ReporteAsistencias';
 import ReporteReservas from '../../components/reportes/ReporteReservas';
 import '../../styles/pages/reportes.css';
 
-// Agrega los imports de los otros contextos si realmente los necesitas inyectar a nivel de proveedor
-import { CobrosProvider } from '../../context/CobrosContext';
-import { ReservasProvider } from '../../context/ReservasContext';
-// import { AsistenciasProvider } from '../../context/AsistenciasContext';
-
-function ReportesPageContent() {
+export default function ReportesPageContent() {
     const [tabActiva, setTabActiva] = useState('ingresos');
     const { loading } = useReportes();
     const date = new Date();
@@ -56,18 +51,5 @@ function ReportesPageContent() {
                 </div>
             </div>
         </Can>
-    );
-}
-
-export default function ReportesPage() {
-    return (
-        // Anidamos los contextos necesarios según tu UML
-        <ReportesProvider>
-            <CobrosProvider>
-                <ReservasProvider>
-                    <ReportesPageContent />
-                </ReservasProvider>
-            </CobrosProvider>
-        </ReportesProvider>
     );
 }

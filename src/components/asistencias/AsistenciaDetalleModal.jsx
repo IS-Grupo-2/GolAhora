@@ -1,4 +1,3 @@
-// src/components/asistencias/AsistenciaDetalleModal.jsx
 import { useEffect } from 'react';
 
 export default function AsistenciaDetalleModal({ open, clase, registros, onCerrar }) {

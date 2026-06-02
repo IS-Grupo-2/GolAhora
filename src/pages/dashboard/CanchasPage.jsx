@@ -14,7 +14,7 @@ import DispModal from '../../components/canchas/modales/DispModal';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import { CanchasProvider, useCanchas } from '../../context/CanchasContext';
+import { useCanchas } from '../../context/CanchasContext';
 
 function Toast({ toasts }) {
     return (
@@ -29,7 +29,7 @@ function Toast({ toasts }) {
     );
 }
 
-function CanchasPageContent() {
+export default function CanchasPageContent() {
     const { 
         canchas, tiposCanchas: tipos, disponibilidades: disps, loading, error,
         crearCancha, modificarCancha, toggleEstadoCancha,
@@ -218,13 +218,5 @@ function CanchasPageContent() {
 
             <Toast toasts={toasts} />
         </div>
-    );
-}
-
-export default function CanchasPage() {
-    return (
-        <CanchasProvider>
-            <CanchasPageContent />
-        </CanchasProvider>
     );
 }

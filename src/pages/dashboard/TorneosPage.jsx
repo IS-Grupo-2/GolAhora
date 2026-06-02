@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TorneosProvider, useTorneos } from '../../context/TorneosContext';
+import { useTorneos } from '../../context/TorneosContext';
 import CompetenciasTable from '../../components/torneos/CompetenciasTable';
 import CompetenciaModal from '../../components/torneos/CompetenciaModal';
 import CompetenciaModalDetalle from '../../components/torneos/CompetenciaModalDetalle';
@@ -10,15 +10,7 @@ import FixturesTab from '../../components/torneos/FixturesTab';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 
-export default function TorneosPage() {
-    return (
-        <TorneosProvider>
-            <TorneosPageContent />
-        </TorneosProvider>
-    );
-}
-
-function TorneosPageContent() {
+export default function TorneosPageContent() {
     const { 
         competencias, equipos, fixtures, loading, error, 
         guardarCompetencia, eliminarCompetencia, 
@@ -45,12 +37,10 @@ function TorneosPageContent() {
         }
     }, [activeTab, modalCompOpen, modalDetalleCompOpen, modalEquipoOpen, modalDetalleEquipoOpen, competencias, equipos, fixtures]);
 
-    // HANDLERS COMPETENCIAS
     const handleNuevaCompetenciaClick = () => { setCompetenciaAEditar(null); setModalCompOpen(true); };
     const handleEditarCompetenciaClick = (competencia) => { setCompetenciaAEditar(competencia); setModalCompOpen(true); };
     const handleVerDetalleComp = (competencia) => { setCompetenciaDetalle(competencia); setModalDetalleCompOpen(true); };
 
-    // HANDLERS EQUIPOS
     const handleNuevoEquipoClick = () => { setEquipoAEditar(null); setModalEquipoOpen(true); };
     const handleEditarEquipoClick = (equipo) => { setEquipoAEditar(equipo); setModalEquipoOpen(true); };
     const handleVerDetalleEquipoClick = (equipo) => { setEquipoDetalle(equipo); setModalDetalleEquipoOpen(true); };

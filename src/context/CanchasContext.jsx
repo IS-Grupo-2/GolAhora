@@ -6,7 +6,6 @@ const CanchasContext = createContext();
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const USE_MOCK = true;
 
-// ── Datos Mock (Mantenemos la estructura que ya tenías para no romper tus modales) ──
 const MOCK_TIPOS = [
     { id: 1, nombre: 'Fútbol 5', superficie: 'Césped sintético', capacidadJugadores: 10, duracionMaxReservaMin: 60, precioHora: 15000, descripcion: 'Cancha pequeña ideal para grupos reducidos.' },
     { id: 2, nombre: 'Fútbol 7', superficie: 'Césped natural', capacidadJugadores: 14, duracionMaxReservaMin: 90, precioHora: 22000, descripcion: 'Formato intermedio, muy popular en torneos.' },
@@ -45,7 +44,7 @@ export function CanchasProvider({ children }) {
         try {
             if (USE_MOCK) {
                 await new Promise(resolve => setTimeout(resolve, 300));
-                setCanchas(MOCK_CANCHAS);
+                setCanchas(prev => prev.length === 0 ? MOCK_CANCHAS : prev);
                 setTiposCanchas(MOCK_TIPOS);
                 setDisponibilidades(MOCK_DISP);
             } else {

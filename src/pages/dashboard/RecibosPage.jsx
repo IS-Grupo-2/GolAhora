@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { RecibosProvider, useRecibos } from '../../context/RecibosContext';
+import { useRecibos } from '../../context/RecibosContext';
+import { useCobros } from '../../context/CobrosContext';
 import useRole from '../../hooks/useRole';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -10,8 +11,9 @@ import ReciboModal from '../../components/recibos/ReciboModal';
 import ReciboModalDetalle from '../../components/recibos/ReciboModalDetalle';
 import ReciboModalBaja from '../../components/recibos/ReciboModalBaja';
 
-function RecibosPageContent() {
+export default function RecibosPageContent() {
     const { items: recibos, loading, error, crearItem, modificarItem } = useRecibos();
+    const { items: cobros, modificarItem: modificarCobro} = useCobros();
     const { isAdmin } = useRole();
     const [filtro, setFiltro] = useState('');
     const [modalForm, setModalForm] = useState({ open: false, modo: 'nuevo', recibo: null });
@@ -19,7 +21,18 @@ function RecibosPageContent() {
     const [modalBaja, setModalBaja] = useState({ open: false, recibo: null });
 
     const handleGuardar = (datos) => {
-        modalForm.modo === 'editar' ? modificarItem(datos) : crearItem(datos);
+        if (modalForm.modo === 'editar') {
+            modificarItem(datos);
+        } else {
+            crearItem(datos);
+            
+            if (datos.cobro) {
+                modificarCobro({
+                    ...datos.cobro,
+                    estado: 'pagado'
+                });
+            }
+        }
         setModalForm({ open: false, modo: 'nuevo', recibo: null });
     };
 
@@ -27,6 +40,8 @@ function RecibosPageContent() {
         modificarItem({ ...recibo, estado: recibo.estado === 'emitido' ? 'anulado' : 'emitido' });
         setModalBaja({ open: false, recibo: null });
     };
+
+    const cobrosPendientes = cobros.filter(c => c.estado !== 'pagado');
 
     const recibosFiltrados = filtro ? recibos.filter(r => r.nroRecibo.includes(filtro)) : recibos;
      useEffect(() => {
@@ -53,14 +68,10 @@ function RecibosPageContent() {
                 )}
             </div>
             
-            {/* Asegurate de inyectarle cobrosPendientes si usas el modal */}
-            <ReciboModal open={modalForm.open} modo={modalForm.modo} recibo={modalForm.recibo} cobrosPendientes={[]} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', recibo: null })} />
+            {/* Inyectamos cobrosPendientes desde CobrosContext */}
+            <ReciboModal open={modalForm.open} modo={modalForm.modo} recibo={modalForm.recibo} cobrosPendientes={cobrosPendientes} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', recibo: null })} />
             <ReciboModalDetalle open={modalDetalle.open} recibo={modalDetalle.recibo} onImprimir={() => window.print()} onCerrar={() => setModalDetalle({ open: false, recibo: null })} />
             <ReciboModalBaja open={modalBaja.open} recibo={modalBaja.recibo} onConfirmar={handleToggleEstado} onCerrar={() => setModalBaja({ open: false, recibo: null })} />
         </Can>
     );
-}
-
-export default function RecibosPage() {
-    return <RecibosProvider><RecibosPageContent /></RecibosProvider>;
 }

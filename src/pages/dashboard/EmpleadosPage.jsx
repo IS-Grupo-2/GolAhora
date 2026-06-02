@@ -7,7 +7,7 @@ import EmpleadoModalBaja from '../../components/empleados/EmpleadoModalBaja';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import { EmpleadosProvider, useEmpleados } from '../../context/EmpleadosContext';
+import { useEmpleados } from '../../context/EmpleadosContext';
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -24,7 +24,7 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido de la Página ────────────────────────────────────────────────────
-function EmpleadosPageContent() {
+export default function EmpleadosPageContent() {
     const { empleados, loading, error, crearEmpleado, modificarEmpleado, darDeBaja } = useEmpleados();
     
     const [filtro, setFiltro] = useState('');
@@ -154,10 +154,3 @@ function EmpleadosPageContent() {
     );
 }
 
-export default function EmpleadosPage() {
-    return (
-        <EmpleadosProvider>
-            <EmpleadosPageContent />
-        </EmpleadosProvider>
-    );
-}

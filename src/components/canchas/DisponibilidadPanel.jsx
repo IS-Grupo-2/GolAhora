@@ -1,4 +1,3 @@
-// src/components/canchas/DisponibilidadPanel.jsx
 import Can from '../Can';
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];

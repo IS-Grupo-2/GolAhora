@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { CobrosProvider, useCobros } from '../../context/CobrosContext';
+import { useState, useEffect } from 'react';
+import { useCobros } from '../../context/CobrosContext';
+import { useClientes } from '../../context/ClientesContext';
 import useRole from '../../hooks/useRole';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -10,8 +11,9 @@ import CobroModal from '../../components/cobros/CobroModal';
 import CobroModalDetalle from '../../components/cobros/CobroModalDetalle';
 import CobroModalBaja from '../../components/cobros/CobroModalBaja';
 
-function CobrosPageContent() {
+export default function CobrosPageContent() {
     const { items: cobros, loading, error, crearItem, modificarItem } = useCobros();
+    const { clientes } = useClientes();
     const { isAdmin } = useRole();
     const [filtro, setFiltro] = useState('');
     const [modalForm, setModalForm] = useState({ open: false, modo: 'nuevo', cobro: null });
@@ -76,13 +78,9 @@ function CobrosPageContent() {
             </div>
 
             <CobroModal open={modalForm.open} modo={modalForm.modo} cobro={modalForm.cobro} 
-                clientes={[]} descuentos={[]} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
+                clientes={clientes} descuentos={[]} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
             <CobroModalDetalle open={modalDetalle.open} cobro={modalDetalle.cobro} onImprimir={() => window.print()} onCerrar={() => setModalDetalle({ open: false, cobro: null })} />
             <CobroModalBaja open={modalBaja.open} cobro={modalBaja.cobro} onConfirmar={handleToggleEstado} onCerrar={() => setModalBaja({ open: false, cobro: null })} />
         </Can>
     );
-}
-
-export default function CobrosPage() {
-    return <CobrosProvider><CobrosPageContent /></CobrosProvider>;
 }

@@ -1,7 +1,6 @@
 // src/context/AsistenciasContext.jsx
 import { createContext, useContext, useState, useCallback } from 'react';
 
-// ── Configuración ─────────────────────────────────────────────────────────────
 const USE_MOCK = true;
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,8 +16,6 @@ const MOCK_ALUMNOS = [
     { id: 108, nombre: 'Nicolás',   apellido: 'Romero',    dni: '45555666' },
 ];
 
-// ── Mock: Clases (fuente de verdad para AsistenciasPage) ──────────────────────
-// Deben ser coherentes con ClasesContext. Los id de profesores coinciden.
 export const MOCK_CLASES_ASISTENCIA = [
     {
         idClase: 1,

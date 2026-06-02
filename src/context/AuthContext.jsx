@@ -64,15 +64,17 @@ const MOCK_USERS = [
     },
 ];
 
+// Children es el hijo => AppRouter(osea toda la app tiene el contexto)
 export function AuthProvider({ children }) {
 
+    // Cargo el usuario del localStorage para mantener la sesión activa al recargar la
+    // página.
     const [user, setUser] = useState(() => {
         try {
             const stored = localStorage.getItem('gol_user');
             return stored ? JSON.parse(stored) : null;
-        } catch {
-            return null;
-        }
+        } 
+        catch {return null;}
     });
 
     function persistUser(updatedUser) {
@@ -89,70 +91,40 @@ export function AuthProvider({ children }) {
         }
 
         const { password: _pw, ...safeUser } = found;
-
         persistUser(safeUser);
 
         return { ok: true };
     }
 
-    /**
-     * LOGOUT
-     */
     function logout() {
         setUser(null);
         localStorage.removeItem('gol_user');
     }
 
-    /**
-     * Actualizar datos de perfil
-     */
     function updateProfile(data) {
 
-        const updatedUser = {
-            ...user,
-            ...data,
-        };
+        const updatedUser = {...user, ...data,};
 
         persistUser(updatedUser);
 
-        return {
-            ok: true,
-            message: 'Perfil actualizado correctamente.'
-        };
+        return {ok: true, message: 'Perfil actualizado correctamente.'};
     }
 
-    /**
-     * Cambio de contraseña
-     * Mock simple para TP
-     */
-    function changePassword({
-        currentPassword,
-        newPassword,
-        confirmPassword
-    }) {
+    function changePassword({currentPassword, newPassword, confirmPassword}) 
+    {
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            return {
-                ok: false,
-                error: 'Completá todos los campos.'
-            };
+            return {ok: false, error: 'Completá todos los campos.'};
         }
 
         if (newPassword !== confirmPassword) {
-            return {
-                ok: false,
-                error: 'Las contraseñas no coinciden.'
-            };
+            return {ok: false, error: 'Las contraseñas no coinciden.'};
         }
 
         if (newPassword.length < 6) {
-            return {
-                ok: false,
-                error: 'La contraseña debe tener al menos 6 caracteres.'
-            };
+            return {ok: false,  error: 'La contraseña debe tener al menos 6 caracteres.'};
         }
 
-        // Mock validación
         const mockUser = MOCK_USERS.find(u => u.id === user.id);
 
         if (mockUser.password !== currentPassword) {
@@ -176,16 +148,12 @@ export function AuthProvider({ children }) {
             mensaje: message,
             fecha: new Date(),
         });
-        return {
-            ok: true,
-            message: 'Mensaje enviado correctamente.'
-        };
+        return {ok: true, message: 'Mensaje enviado correctamente.'};
     }
 
     return (
         <AuthContext.Provider
-            value={{user, login, logout, updateProfile, changePassword,
-                deactivateAccount, sendSupportMessage,}}>
+            value={{user, login, logout, updateProfile, changePassword, deactivateAccount, sendSupportMessage,}}>
             {children}
         </AuthContext.Provider>
     );

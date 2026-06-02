@@ -1,4 +1,3 @@
-// src/components/canchas/CanchasTable.jsx
 import Can from '../Can';
 
 export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {

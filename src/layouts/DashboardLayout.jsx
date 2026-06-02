@@ -44,7 +44,6 @@ export default function DashboardLayout() {
         subtitle: 'Bienvenido al panel de administración.',
     };
 
-    // Re-inicializar íconos Lucide en cada cambio de ruta de forma segura
     useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) {
             window.lucide.createIcons();
@@ -83,7 +82,7 @@ export default function DashboardLayout() {
                     </div>
                 </header>
 
-                {/* CONTENIDO — cada sub-ruta renderiza aquí */}
+                {/* CONTENIDO — cada sub-ruta renderiza acá */}
                 <section className="dashboard-content" id="dashboard-content">
                     <Outlet />
                 </section>

@@ -1,4 +1,3 @@
-// src/components/asistencias/AsistenciaTomaModal.jsx
 import { useState, useEffect } from 'react';
 
 export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onGuardar, onCerrar }) {

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useReservas } from '../../context/ReservasContext';
 import { useAuth } from '../../context/AuthContext';
+import { useCobros } from '../../context/CobrosContext';
 import useRole from '../../hooks/useRole';
 import Can from '../Can';
 
@@ -16,16 +17,11 @@ import EmptyState from '../ui/EmptyState';
 
 export default function AdminReservasView() {
   const {
-    reservas = [],
-    loading,
-    error,
-    fetchReservas,
-    crearReserva,
-    modificarReserva,
-    confirmarReserva,
-    cancelarReserva,
+    reservas = [], loading, error, fetchReservas, crearReserva, modificarReserva,
+    confirmarReserva, cancelarReserva,
   } = useReservas();
 
+  const { crearItem: crearCobro, items: cobros, modificarItem: modificarCobro } = useCobros(); // NUEVO: Traemos también modificarCobro e items
   const { user } = useAuth();
   const { isAdmin, isEmpleado, isProfesor, isCliente } = useRole();
   const [filtro, setFiltro] = useState('');
@@ -39,50 +35,46 @@ export default function AdminReservasView() {
   }, [fetchReservas]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.lucide) {
-      window.lucide.createIcons();
-    }
+    if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
   }, [reservas, loading, modalForm.isOpen, modalDetalle.isOpen, modalCancelar.isOpen]);
 
   const reservasVisibles = useMemo(() => {
     if (isAdmin || isEmpleado) return reservas;
-
-    if (isCliente) {
-      return reservas.filter((r) => r.cliente?.idUsuario === user?.idUsuario);
-    }
-
-    if (isProfesor) {
-      return reservas.filter(
-        (r) =>
-          r.profesor?.idUsuario === user?.idUsuario ||
-          r.clase?.profesor?.idUsuario === user?.idUsuario
-      );
-    }
-
+    if (isCliente) return reservas.filter((r) => r.cliente?.idUsuario === user?.idUsuario);
+    if (isProfesor) return reservas.filter((r) => r.profesor?.idUsuario === user?.idUsuario || r.clase?.profesor?.idUsuario === user?.idUsuario);
     return [];
   }, [reservas, isAdmin, isEmpleado, isProfesor, isCliente, user?.idUsuario]);
 
   const reservasFiltradas = useMemo(() => {
     const q = filtro.toLowerCase().trim();
     if (!q) return reservasVisibles;
-
     return reservasVisibles.filter((r) =>
-      [
-        r.cliente?.nombre,
-        r.cliente?.apellido,
-        r.cancha?.nombre,
-        String(r.cancha?.numero ?? ''),
-        r.estado,
-        r.fechaUso,
-      ]
+      [r.cliente?.nombre, r.cliente?.apellido, r.cancha?.nombre, String(r.cancha?.numero ?? ''), r.estado, r.fechaUso]
         .filter(Boolean)
         .some((field) => String(field).toLowerCase().includes(q))
     );
   }, [reservasVisibles, filtro]);
 
+  // NUEVO LOGICA DE GUARDADO ALINEADA
   const handleGuardar = async (reservaData) => {
     if (!reservaData?.idReserva) {
-      await crearReserva(reservaData);
+      // 1. Creamos la Reserva
+      const reservaCreada = await crearReserva(reservaData);
+
+      // 2. Sincronizamos creando el Cobro Pendiente automáticamente
+      if (reservaCreada && reservaCreada.idReserva) {
+          await crearCobro({
+              idReserva: reservaCreada.idReserva,
+              cliente: reservaData.cliente,
+              concepto: `Reserva ${reservaData.cancha.nombre} - ${reservaData.fechaUso}`,
+              tipoCobro: 'Reserva Cancha',
+              monto: reservaData.montoTotal,
+              montoFinal: reservaData.montoTotal,
+              fecha: new Date().toISOString().split("T")[0],
+              estado: 'pendiente',
+              metodo: null
+          });
+      }
     } else {
       await modificarReserva(reservaData.idReserva, reservaData);
     }
@@ -90,18 +82,43 @@ export default function AdminReservasView() {
   };
 
   const handleConfirmar = async (reserva) => {
+    // 1. Confirmar reserva en ReservasContext
     await confirmarReserva(reserva.idReserva);
+    
+    // 2. Sincronizar: Actualizar cobro a "pagado"
+    const cobroAsociado = cobros.find(c => c.idReserva === reserva.idReserva);
+    if (cobroAsociado) {
+      await modificarCobro({
+        ...cobroAsociado,
+        estado: 'pagado',
+        metodo: cobroAsociado.metodo || 'MercadoPago'
+      });
+    }
+    
     setModalDetalle({ isOpen: false, data: null });
   };
 
   const handleCancelar = async (idReserva, fueraDePlazo) => {
+    // 1. Cancelar reserva en ReservasContext
     await cancelarReserva(idReserva, fueraDePlazo);
+    
+    // 2. Sincronizar: Actualizar cobro a "cancelado" o "recargo"
+    const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
+    if (cobroAsociado) {
+      const nuevoEstadoCobro = fueraDePlazo ? 'recargo' : 'cancelado';
+      await modificarCobro({
+        ...cobroAsociado,
+        estado: nuevoEstadoCobro
+      });
+    }
+    
     setModalCancelar({ isOpen: false, data: null });
   };
 
   if (loading && reservas.length === 0) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
 
+  // ... (El resto del render (return) queda exactamente igual que antes) ...
   return (
     <div className="admin-reservas-container" style={{ width: '100%' }}>
       <div className="crud-toolbar" style={{ padding: '0 20px' }}>
@@ -130,7 +147,6 @@ export default function AdminReservasView() {
         </div>
       </div>
 
-      {/* Al envolver esto en "tabla-panel", la tabla se ensancha copiando el CSS de Usuarios */}
       <div className="tabla-panel">
         {reservasFiltradas.length === 0 ? (
           <EmptyState message={filtro ? 'No se encontraron reservas con ese criterio.' : 'No hay reservas registradas.'} />

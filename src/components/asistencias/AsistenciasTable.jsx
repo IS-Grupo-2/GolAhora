@@ -1,7 +1,3 @@
-// src/components/asistencias/AsistenciasTable.jsx
-// Sin cambios de lógica — los permisos se controlan en AsistenciasPage
-// (el filtrado por rol determina qué clases llegan a esta tabla)
-
 function BadgeEstado({ estado }) {
     const isTomada = estado === 'registrada';
     return (
@@ -49,10 +45,10 @@ export default function AsistenciasTable({
                 </thead>
                 <tbody>
                     {clases.map(c => {
-                        const registros      = asistenciasPorClase[c.idClase] || [];
+                        const registros = asistenciasPorClase[c.idClase] || [];
                         const tieneAsistencia = registros.length > 0;
-                        const estado         = tieneAsistencia ? 'registrada' : 'pendiente';
-                        const presentes      = registros.filter(r => r.presente).length;
+                        const estado = tieneAsistencia ? 'registrada' : 'pendiente';
+                        const presentes = registros.filter(r => r.presente).length;
 
                         return (
                             <tr key={c.idClase}>
@@ -93,7 +89,6 @@ export default function AsistenciasTable({
                                 </td>
                                 <td>
                                     <div className="action-btns">
-                                        {/* Ver detalle — deshabilitado si no hay registro */}
                                         <button
                                             className="action-btn view"
                                             title="Ver reporte de asistencia"

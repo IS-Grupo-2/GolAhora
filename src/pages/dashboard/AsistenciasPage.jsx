@@ -1,7 +1,8 @@
 // src/pages/dashboard/AsistenciasPage.jsx
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { AsistenciasProvider, useAsistencias } from '../../context/AsistenciasContext';
+import { useAsistencias } from '../../context/AsistenciasContext';
+import { useClases } from '../../context/ClasesContext';
 import AsistenciasTable      from '../../components/asistencias/AsistenciasTable';
 import AsistenciaTomaModal   from '../../components/asistencias/AsistenciaTomaModal';
 import AsistenciaDetalleModal from '../../components/asistencias/AsistenciaDetalleModal';
@@ -25,18 +26,24 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido interno ─────────────────────────────────────────────────────────
-function AsistenciasPageContent() {
+export default function AsistenciasPageContent() {
     const { user } = useAuth();
     const { isAdmin, isEmpleado, isProfesor } = useRole();
     const {
-        clases,
         asistenciasPorClase,
-        loading,
-        error,
+        loading: loadingAsistencias,
+        error: errorAsistencias,
         fetchAsistencias,
         registrarAsistencia,
         modificarAsistencia,
     } = useAsistencias();
+    
+    // Sincronizar clases desde ClasesContext (fuente de verdad única)
+    const {
+        clases,
+        loading: loadingClases,
+        error: errorClases,
+    } = useClases();
 
     const [filtro,        setFiltro]        = useState('');
     const [toasts,        setToasts]        = useState([]);
@@ -95,6 +102,9 @@ function AsistenciasPageContent() {
     // ── Labels dinámicos por rol ───────────────────────────────────────────────
     const titulo    = (isAdmin || isEmpleado) ? 'Gestión de Asistencias' : 'Mis Clases (Asistencia)';
     const subtitulo = (isAdmin || isEmpleado) ? `${totalClases} clases en total` : `${totalClases} asignadas`;
+
+    const loading = loadingClases || loadingAsistencias;
+    const error = errorClases || errorAsistencias;
 
     if (loading) return <LoadingSpinner />;
     if (error)   return <ErrorMessage message={error} />;
@@ -181,14 +191,5 @@ function AsistenciasPageContent() {
 
             <Toast toasts={toasts} />
         </>
-    );
-}
-
-// ── Página raíz: envuelve con el Provider ─────────────────────────────────────
-export default function AsistenciasPage() {
-    return (
-        <AsistenciasProvider>
-            <AsistenciasPageContent />
-        </AsistenciasProvider>
     );
 }

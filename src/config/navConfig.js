@@ -62,7 +62,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/profesores',
                 label: 'Profesores',
                 icon:  'user-round',
-                roles: ['admin', 'empleado'], // Agregamos empleado según tus reglas
+                roles: ['admin', 'empleado'],
             },
             {
                 path:  '/dashboard/empleados',
@@ -97,7 +97,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/reportes',
                 label: 'Reportes',
                 icon:  'bar-chart-3',
-                roles: ['admin', 'empleado'], // Agregamos empleado según tus reglas
+                roles: ['admin', 'empleado'],
             },
         ],
     },

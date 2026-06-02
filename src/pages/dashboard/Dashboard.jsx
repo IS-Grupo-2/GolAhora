@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth }   from '../../context/AuthContext';
 
@@ -74,11 +73,6 @@ export default function Dashboard() {
 
     const shortcuts = ALL_SHORTCUTS.filter(s => s.roles.includes(rol));
 
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.lucide) {
-            window.lucide.createIcons();
-        }
-    });
 
     return (
         <>

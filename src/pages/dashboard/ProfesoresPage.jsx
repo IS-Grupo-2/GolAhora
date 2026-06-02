@@ -7,7 +7,7 @@ import ProfesorModalBaja from '../../components/profesores/ProfesorModalBaja';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import { ProfesoresProvider, useProfesores } from '../../context/ProfesoresContext';
+import { useProfesores } from '../../context/ProfesoresContext';
 
 // ── Toast interno ─────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -28,7 +28,7 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido de la Página ────────────────────────────────────────────────────
-function ProfesoresPageContent() {
+export default function ProfesoresPageContent() {
     const { profesores, loading, error, crearProfesor, modificarProfesor, darDeBaja } = useProfesores();
     
     const [filtro, setFiltro] = useState('');
@@ -179,14 +179,5 @@ function ProfesoresPageContent() {
             {/* TOASTS */}
             <Toast toasts={toasts} />
         </>
-    );
-}
-
-// ── Export default envolviendo en el Provider ─────────────────────────────────
-export default function ProfesoresPage() {
-    return (
-        <ProfesoresProvider>
-            <ProfesoresPageContent />
-        </ProfesoresProvider>
     );
 }

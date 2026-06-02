@@ -1,6 +1,53 @@
 // src/context/EmpleadosContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { MOCK_EMPLEADOS } from '../mocks/mockData';
+
+const MOCK_EMPLEADOS = [
+    {
+        idUsuario: 30,
+        nombre: 'Valeria',
+        apellido: 'Cardozo',
+        email: 'valeria.cardozo@example.com',
+        telefono: '+54 9 11 5775 8899',
+        userName: 'valeriac',
+        activo: true,
+        fechaRegistro: '2023-09-05',
+        rol: 'empleado',
+        legajo: 'E-201',
+        cargo: 'Recepcionista',
+        turno: 'Mañana',
+        sector: 'Administración',
+    },
+    {
+        idUsuario: 31,
+        nombre: 'Federico',
+        apellido: 'Méndez',
+        email: 'federico.mendez@example.com',
+        telefono: '+54 9 11 5881 3344',
+        userName: 'federicom',
+        activo: true,
+        fechaRegistro: '2023-10-21',
+        rol: 'empleado',
+        legajo: 'E-202',
+        cargo: 'Mantenimiento',
+        turno: 'Tarde',
+        sector: 'Operaciones',
+    },
+    {
+        idUsuario: 32,
+        nombre: 'Natalia',
+        apellido: 'Rosales',
+        email: 'natalia.rosales@example.com',
+        telefono: '+54 9 11 5994 7766',
+        userName: 'nataliar',
+        activo: false,
+        fechaRegistro: '2024-01-08',
+        rol: 'empleado',
+        legajo: 'E-203',
+        cargo: 'Coordinador',
+        turno: 'Noche',
+        sector: 'Eventos',
+    },
+];
 
 const EmpleadosContext = createContext();
 
@@ -18,7 +65,7 @@ export function EmpleadosProvider({ children }) {
         try {
             if (USE_MOCK) {
                 await new Promise(resolve => setTimeout(resolve, 300));
-                setEmpleados(MOCK_EMPLEADOS);
+                setEmpleados(prev => prev.length === 0 ? MOCK_EMPLEADOS : prev);
             } else {
                 const response = await fetch(`${API_URL}/empleados`);
                 if (!response.ok) throw new Error('Error al obtener empleados');

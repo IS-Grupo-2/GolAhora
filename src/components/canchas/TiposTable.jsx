@@ -1,4 +1,3 @@
-// src/components/canchas/TiposTable.jsx
 export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja }) {
     const filtrados = tipos.filter(t => {
         if (!filtro) return true;

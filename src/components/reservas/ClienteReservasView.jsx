@@ -1,6 +1,7 @@
 // src/components/reservas/ClienteReservasView.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { useReservas } from '../../context/ReservasContext';
+import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
 import ReservaCard from './ReservaCard';
 import NuevaReservaClienteModal from './NuevaReservaClienteModal';
@@ -10,6 +11,7 @@ import EmptyState from '../ui/EmptyState';
 
 export default function ClienteReservasView() {
     const { reservas, loading, fetchReservas, cancelarReserva, confirmarReserva } = useReservas();
+    const { items: cobros, modificarItem: modificarCobro } = useCobros();
     const { user } = useAuth();
     
     const [modalNueva, setModalNueva] = useState(false);
@@ -21,18 +23,42 @@ export default function ClienteReservasView() {
 
     // Filtrar solo las reservas del usuario logueado
     const misReservas = useMemo(() => {
-        return reservas.filter(r => r.cliente?.idUsuario === user?.id || r.reservador?.email === user?.email);
+        return reservas.filter(r => r.cliente?.idUsuario === user?.idUsuario || r.reservador?.email === user?.email);
     }, [reservas, user]);
 
     const handleCancelar = async (idReserva, fueraDePlazo) => {
+        // 1. Cancelar reserva
         await cancelarReserva(idReserva, fueraDePlazo);
+        
+        // 2. Sincronizar: Actualizar cobro asociado
+        const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
+        if (cobroAsociado) {
+            const nuevoEstadoCobro = fueraDePlazo ? 'recargo' : 'cancelado';
+            await modificarCobro({
+                ...cobroAsociado,
+                estado: nuevoEstadoCobro
+            });
+        }
+        
         setModalCancelar({ isOpen: false, data: null });
     };
 
     const handlePagar = async (idReserva) => {
         alert("Redirigiendo a MercadoPago...");
         setTimeout(async () => {
+            // 1. Confirmar reserva
             await confirmarReserva(idReserva);
+            
+            // 2. Sincronizar: Actualizar cobro a "pagado"
+            const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
+            if (cobroAsociado) {
+                await modificarCobro({
+                    ...cobroAsociado,
+                    estado: 'pagado',
+                    metodo: cobroAsociado.metodo || 'MercadoPago'
+                });
+            }
+            
             alert("Pago validado. Reserva confirmada exitosamente.");
         }, 1500);
     };

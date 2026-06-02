@@ -1,17 +1,21 @@
 // src/context/ClasesContext.jsx
 import { createContext, useContext, useState, useCallback } from 'react';
+import { MOCK_PROFESORES } from '../context/ProfesoresContext';
 
 // ── Configuración ─────────────────────────────────────────────────────────────
 const USE_MOCK = true;
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ── Mock: Profesores disponibles para asignar ─────────────────────────────────
-export const PROFESORES_DISPONIBLES = [
-    { id: 1, nombre: 'Carlos',  apellido: 'Gómez',     verificacionCertificacion: true  },
-    { id: 2, nombre: 'Lucía',   apellido: 'Fernández',  verificacionCertificacion: true  },
-    { id: 3, nombre: 'Marcos',  apellido: 'Soria',      verificacionCertificacion: false },
-    { id: 4, nombre: 'Natalia', apellido: 'Quiroga',    verificacionCertificacion: true  },
-];
+// ── Mock: Profesores disponibles para asignar (sincronizados desde mockData) ───
+// Mapear los primeros 4 profesores de mockData con estructura simplificada
+export const PROFESORES_DISPONIBLES = MOCK_PROFESORES.slice(0, 4).map((p, idx) => ({
+    id: idx + 1, // id simple para compatibilidad con formularios
+    idUsuario: p.idUsuario, // idUsuario original para referencias
+    nombre: p.nombre,
+    apellido: p.apellido,
+    email: p.email,
+    verificacionCertificacion: p.certificaciones?.some(c => c.verificada) ?? false,
+}));
 
 // ── Mock: Alumnos disponibles para inscribir ───────────────────────────────────
 export const ALUMNOS_DISPONIBLES = [

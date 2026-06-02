@@ -1,19 +1,17 @@
 // src/context/ReservasContext.jsx
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { MOCK_CLIENTES, MOCK_CANCHAS } from '../mocks/mockData';
+import { createContext, useContext, useState, useCallback } from 'react';
 
 const USE_MOCK = true;
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ReservasContext = createContext();
 
-// Generamos 12 reservas coherentes con los datos de mockData.js
 const INITIAL_MOCK_DATA = [
     {
         idReserva: 1,
         cliente: { idUsuario: 1, nombre: 'Laura', apellido: 'García' },
         reservador: { id: 1, nombre: 'Laura García', email: 'laura.garcia@example.com', rol: 'cliente' },
-        cancha: { id: 101, idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
+        cancha: { idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
         fechaCreacion: '2026-05-20T10:00:00',
         fechaUso: '2026-05-25',
         horaInicio: '18:00',
@@ -27,7 +25,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 2,
         cliente: { idUsuario: 2, nombre: 'Martín', apellido: 'Pérez' },
         reservador: { id: 2, nombre: 'Martín Pérez', email: 'martin.perez@example.com', rol: 'cliente' },
-        cancha: { id: 102, idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
+        cancha: { idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
         fechaCreacion: '2026-05-21T14:30:00',
         fechaUso: '2026-05-26',
         horaInicio: '20:00',
@@ -41,7 +39,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 3,
         cliente: { idUsuario: 3, nombre: 'Sofía', apellido: 'López' },
         reservador: { id: 3, nombre: 'Sofía López', email: 'sofia.lopez@example.com', rol: 'cliente' },
-        cancha: { id: 101, idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
+        cancha: { idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
         fechaCreacion: '2026-05-22T09:15:00',
         fechaUso: '2026-05-28',
         horaInicio: '17:00',
@@ -55,7 +53,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 4,
         cliente: { idUsuario: 4, nombre: 'Diego', apellido: 'Vega' },
         reservador: { id: 4, nombre: 'Diego Vega', email: 'diego.vega@example.com', rol: 'cliente' },
-        cancha: { id: 104, idCancha: 104, nombre: 'Cancha Este', numero: 4 },
+        cancha: { idCancha: 104, nombre: 'Cancha Este', numero: 4 },
         fechaCreacion: '2026-05-22T11:20:00',
         fechaUso: '2026-05-29',
         horaInicio: '19:00',
@@ -69,7 +67,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 5,
         cliente: { idUsuario: 6, nombre: 'Facundo', apellido: 'Ortiz' },
         reservador: { id: 6, nombre: 'Facundo Ortiz', email: 'facundo.ortiz@example.com', rol: 'cliente' },
-        cancha: { id: 105, idCancha: 105, nombre: 'Cancha Oeste', numero: 5 },
+        cancha: { idCancha: 105, nombre: 'Cancha Oeste', numero: 5 },
         fechaCreacion: '2026-05-20T16:00:00',
         fechaUso: '2026-05-25',
         horaInicio: '16:00',
@@ -83,7 +81,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 6,
         cliente: { idUsuario: 1, nombre: 'Laura', apellido: 'García' },
         reservador: { id: 1, nombre: 'Laura García', email: 'laura.garcia@example.com', rol: 'cliente' },
-        cancha: { id: 101, idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
+        cancha: { idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
         fechaCreacion: '2026-05-23T08:00:00',
         fechaUso: '2026-05-27',
         horaInicio: '09:00',
@@ -97,7 +95,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 7,
         cliente: { idUsuario: 2, nombre: 'Martín', apellido: 'Pérez' },
         reservador: { id: 2, nombre: 'Martín Pérez', email: 'martin.perez@example.com', rol: 'cliente' },
-        cancha: { id: 102, idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
+        cancha: { idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
         fechaCreacion: '2026-05-24T12:00:00',
         fechaUso: '2026-05-30',
         horaInicio: '21:00',
@@ -111,7 +109,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 8,
         cliente: { idUsuario: 3, nombre: 'Sofía', apellido: 'López' },
         reservador: { id: 3, nombre: 'Sofía López', email: 'sofia.lopez@example.com', rol: 'cliente' },
-        cancha: { id: 104, idCancha: 104, nombre: 'Cancha Este', numero: 4 },
+        cancha: { idCancha: 104, nombre: 'Cancha Este', numero: 4 },
         fechaCreacion: '2026-05-24T15:30:00',
         fechaUso: '2026-06-01',
         horaInicio: '18:00',
@@ -125,7 +123,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 9,
         cliente: { idUsuario: 4, nombre: 'Diego', apellido: 'Vega' },
         reservador: { id: 4, nombre: 'Diego Vega', email: 'diego.vega@example.com', rol: 'cliente' },
-        cancha: { id: 105, idCancha: 105, nombre: 'Cancha Oeste', numero: 5 },
+        cancha: { idCancha: 105, nombre: 'Cancha Oeste', numero: 5 },
         fechaCreacion: '2026-05-24T17:45:00',
         fechaUso: '2026-06-02',
         horaInicio: '15:00',
@@ -139,7 +137,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 10,
         cliente: { idUsuario: 6, nombre: 'Facundo', apellido: 'Ortiz' },
         reservador: { id: 6, nombre: 'Facundo Ortiz', email: 'facundo.ortiz@example.com', rol: 'cliente' },
-        cancha: { id: 103, idCancha: 103, nombre: 'Cancha Central', numero: 3 },
+        cancha: { idCancha: 103, nombre: 'Cancha Central', numero: 3 },
         fechaCreacion: '2026-05-25T11:00:00',
         fechaUso: '2026-06-03',
         horaInicio: '20:00',
@@ -153,7 +151,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 11,
         cliente: { idUsuario: 1, nombre: 'Laura', apellido: 'García' },
         reservador: { id: 1, nombre: 'Laura García', email: 'laura.garcia@example.com', rol: 'cliente' },
-        cancha: { id: 102, idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
+        cancha: { idCancha: 102, nombre: 'Cancha Sur', numero: 2 },
         fechaCreacion: '2026-05-25T13:20:00',
         fechaUso: '2026-06-04',
         horaInicio: '19:00',
@@ -167,7 +165,7 @@ const INITIAL_MOCK_DATA = [
         idReserva: 12,
         cliente: { idUsuario: 2, nombre: 'Martín', apellido: 'Pérez' },
         reservador: { id: 2, nombre: 'Martín Pérez', email: 'martin.perez@example.com', rol: 'cliente' },
-        cancha: { id: 101, idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
+        cancha: { idCancha: 101, nombre: 'Cancha Norte', numero: 1 },
         fechaCreacion: '2026-05-25T14:10:00',
         fechaUso: '2026-06-05',
         horaInicio: '10:00',

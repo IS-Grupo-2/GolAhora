@@ -1,6 +1,124 @@
-// src/context/ProfesoresContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { MOCK_PROFESORES } from '../mocks/mockData';
+
+export const MOCK_PROFESORES = [
+    {
+        idUsuario: 20,
+        nombre: 'Agustín',
+        apellido: 'Ríos',
+        email: 'agustin.rios@example.com',
+        telefono: '+54 9 11 5888 2233',
+        userName: 'agustinrios',
+        activo: true,
+        fechaRegistro: '2023-10-01',
+        rol: 'profesor',
+        legajo: 'P-101',
+        especialidad: 'Fútbol Táctico',
+        certificaciones: [
+            {
+                nombre: 'Entrenador Nacional',
+                entidadEmisora: 'Asociación Argentina De Fútbol',
+                fechaEmision: '2021-05-12',
+                fechaVencimiento: '2026-05-12',
+                verificada: true,
+            },
+            {
+                nombre: 'Preparador Físico',
+                entidadEmisora: 'Escuela Nacional De Deportes',
+                fechaEmision: '2022-08-24',
+                fechaVencimiento: '2027-08-24',
+                verificada: true,
+            },
+        ],
+    },
+    {
+        idUsuario: 21,
+        nombre: 'Juliana',
+        apellido: 'Ferrer',
+        email: 'juliana.ferrer@example.com',
+        telefono: '+54 9 11 5666 7788',
+        userName: 'julianaf',
+        activo: true,
+        fechaRegistro: '2023-11-15',
+        rol: 'profesor',
+        legajo: 'P-102',
+        especialidad: 'Fútbol Juvenil',
+        certificaciones: [
+            {
+                nombre: 'Coordinador De Escuela',
+                entidadEmisora: 'Federación De Fútbol',
+                fechaEmision: '2020-03-10',
+                fechaVencimiento: '2025-03-10',
+                verificada: true,
+            },
+            {
+                nombre: 'Nutrición Deportiva',
+                entidadEmisora: 'Instituto De Salud Y Deporte',
+                fechaEmision: '2022-01-18',
+                fechaVencimiento: '2027-01-18',
+                verificada: false,
+            },
+        ],
+    },
+    {
+        idUsuario: 22,
+        nombre: 'Bruno',
+        apellido: 'Núñez',
+        email: 'bruno.nunez@example.com',
+        telefono: '+54 9 11 5444 9900',
+        userName: 'brunon',
+        activo: true,
+        fechaRegistro: '2023-12-02',
+        rol: 'profesor',
+        legajo: 'P-103',
+        especialidad: 'Condición Física',
+        certificaciones: [
+            {
+                nombre: 'Entrenador De Fuerza',
+                entidadEmisora: 'Centro De Alto Rendimiento',
+                fechaEmision: '2021-09-07',
+                fechaVencimiento: '2026-09-07',
+                verificada: true,
+            },
+            {
+                nombre: 'Rehabilitación Deportiva',
+                entidadEmisora: 'Universidad Del Deporte',
+                fechaEmision: '2022-11-11',
+                fechaVencimiento: '2027-11-11',
+                verificada: true,
+            },
+        ],
+    },
+    {
+        idUsuario: 23,
+        nombre: 'Cecilia',
+        apellido: 'Valdez',
+        email: 'cecilia.valdez@example.com',
+        telefono: '+54 9 11 5111 2233',
+        userName: 'ceciliaV',
+        activo: false,
+        fechaRegistro: '2024-01-20',
+        rol: 'profesor',
+        legajo: 'P-104',
+        especialidad: 'Técnica Individual',
+        certificaciones: [
+            {
+                nombre: 'Coach UEFA C',
+                entidadEmisora: 'UEFA Academy',
+                fechaEmision: '2021-06-30',
+                fechaVencimiento: '2026-06-30',
+                verificada: true,
+            },
+            {
+                nombre: 'Primeros Auxilios Deportivos',
+                entidadEmisora: 'Cruz Roja',
+                fechaEmision: '2023-02-12',
+                fechaVencimiento: '2025-02-12',
+                verificada: false,
+            },
+        ],
+    },
+];
+
 
 const ProfesoresContext = createContext();
 
@@ -19,7 +137,7 @@ export function ProfesoresProvider({ children }) {
             if (USE_MOCK) {
                 // Simulamos la demora de red
                 await new Promise(resolve => setTimeout(resolve, 300));
-                setProfesores(MOCK_PROFESORES);
+                setProfesores(prev => prev.length === 0 ? MOCK_PROFESORES : prev);
             } else {
                 const response = await fetch(`${API_URL}/profesores`);
                 if (!response.ok) throw new Error('Error al obtener profesores');

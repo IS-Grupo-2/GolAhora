@@ -5,7 +5,7 @@ import UsuarioModal from '../../components/usuarios/UsuarioModal';
 import UsuarioModalDetalle from '../../components/usuarios/UsuarioModalDetalle';
 import UsuarioModalBaja from '../../components/usuarios/UsuarioModalBaja';
 import Can from '../../components/Can';
-import { ClientesProvider, useClientes } from '../../context/ClientesContext';
+import { useClientes } from '../../context/ClientesContext';
 import '../../styles/pages/usuarios.css';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
@@ -25,7 +25,7 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido de la Página ────────────────────────────────────────────────────
-function UsuariosPageContent() {
+export default function UsuariosPageContent() {
     // Usamos el contexto en lugar del estado local
     const { clientes, loading, error, crearCliente, modificarCliente, darDeBaja } = useClientes();
     
@@ -184,14 +184,5 @@ function UsuariosPageContent() {
             {/* TOASTS */}
             <Toast toasts={toasts} />
         </>
-    );
-}
-
-// ── Export default envolviendo en el Provider ─────────────────────────────────
-export default function UsuariosPage() {
-    return (
-        <ClientesProvider>
-            <UsuariosPageContent />
-        </ClientesProvider>
     );
 }

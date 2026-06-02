@@ -2,11 +2,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useCanchas } from '../../context/CanchasContext';
 import { useReservas } from '../../context/ReservasContext';
+import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function NuevaReservaClienteModal({ onClose }) {
     const { canchas, tiposCanchas } = useCanchas();
     const { crearReserva } = useReservas();
+    const { crearItem: crearCobro } = useCobros(); // Traemos la función para sincronizar cobros
     const { user } = useAuth();
 
     const [form, setForm] = useState({
@@ -45,9 +47,12 @@ export default function NuevaReservaClienteModal({ onClose }) {
         e.preventDefault();
         if (!detallesCancha) return;
 
+        // Aseguramos capturar el ID correcto del usuario
+        const userId = user.idUsuario || user.id;
+
         const nuevaReserva = {
-            cliente: { idUsuario: user.id, nombre: user.nombre, apellido: user.apellido },
-            reservador: { id: user.id, nombre: `${user.nombre} ${user.apellido}`, email: user.email, rol: user.rol },
+            cliente: { idUsuario: userId, nombre: user.nombre, apellido: user.apellido },
+            reservador: { id: userId, nombre: `${user.nombre} ${user.apellido}`, email: user.email, rol: user.rol },
             cancha: { id: detallesCancha.cancha.id, idCancha: detallesCancha.cancha.id, nombre: detallesCancha.cancha.nombre, numero: detallesCancha.cancha.numero },
             fechaUso: form.fechaUso,
             horaInicio: form.horaInicio,
@@ -58,7 +63,23 @@ export default function NuevaReservaClienteModal({ onClose }) {
             cobro: { estado: 'pendiente', metodo: null }
         };
 
-        await crearReserva(nuevaReserva);
+        // 1. Creamos la Reserva y capturamos el objeto generado (para obtener su ID)
+        const reservaCreada = await crearReserva(nuevaReserva);
+
+        // 2. Sincronizamos con Cobros: Creamos el cobro asociado automáticamente
+        if (reservaCreada && reservaCreada.idReserva) {
+            await crearCobro({
+                idReserva: reservaCreada.idReserva,
+                cliente: { idUsuario: userId, nombre: user.nombre, apellido: user.apellido, dni: user.dni || 'S/N' },
+                concepto: `Reserva ${detallesCancha.cancha.nombre} - ${form.fechaUso}`,
+                tipoCobro: 'Reserva Cancha', // Agregado
+                monto: detallesCancha.precioTotal,
+                montoFinal: detallesCancha.precioTotal, // ESTO EVITA EL NaN
+                fecha: new Date().toISOString().split("T")[0],
+                estado: 'pendiente'
+            });
+        }
+
         onClose();
     };
 

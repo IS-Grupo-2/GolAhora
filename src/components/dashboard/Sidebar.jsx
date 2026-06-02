@@ -8,6 +8,7 @@ function Icon({ name }) {
     return <i data-lucide={name} />;
 }
 
+// Avatar con inicial y boton de Logout
 function SidebarUser({ user, onLogoutClick }) {
     const initial = user?.nombre?.charAt(0)?.toUpperCase() ?? '?';
 

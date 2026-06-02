@@ -1,12 +1,11 @@
-// src/components/cobros/CobrosTable.jsx
-
 function BadgeEstado({ estado }) {
-    const isPagado = estado === 'pagado';
-    return (
-        <span className={`badge ${isPagado ? 'success' : 'danger'}`}>
-            {isPagado ? 'Pagado' : 'Anulado / Pendiente'}
-        </span>
-    );
+    if (estado === 'pagado') {
+        return <span className="badge success">Pagado / Acreditado</span>;
+    }
+    if (estado === 'pendiente') {
+        return <span className="badge warning">Pendiente de Pago</span>;
+    }
+    return <span className="badge danger">Anulado</span>;
 }
 
 function formatMoneda(valor) {

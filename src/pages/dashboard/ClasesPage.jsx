@@ -1,6 +1,6 @@
 // src/pages/dashboard/ClasesPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { ClasesProvider, useClases, PROFESORES_DISPONIBLES, ALUMNOS_DISPONIBLES } from '../../context/ClasesContext';
+import { useClases, PROFESORES_DISPONIBLES, ALUMNOS_DISPONIBLES } from '../../context/ClasesContext';
 import ClasesTable      from '../../components/clases/ClasesTable';
 import ClaseModal       from '../../components/clases/ClaseModal';
 import AsistenciaModal  from '../../components/clases/AsistenciaModal';
@@ -29,7 +29,7 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido interno (consume el contexto) ───────────────────────────────────
-function ClasesPageContent() {
+export default function ClasesPageContent() {
     const {
         clases,
         loading,
@@ -222,14 +222,5 @@ function ClasesPageContent() {
 
             <Toast toasts={toasts} />
         </>
-    );
-}
-
-// ── Página raíz: envuelve con el Provider ─────────────────────────────────────
-export default function ClasesPage() {
-    return (
-        <ClasesProvider>
-            <ClasesPageContent />
-        </ClasesProvider>
     );
 }
