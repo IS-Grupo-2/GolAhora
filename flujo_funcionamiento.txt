@@ -1,0 +1,41 @@
+1. punto de entrada
+- src/main.jsx inicia la aplicación y monta <App /> en el elemento root.
+
+2. estructura general
+- src/App.jsx envuelve la aplicación con AppProviders y AppRouter.
+- AppProviders agrupa todos los contextos: Auth, Clientes, Profesores, Empleados, Canchas, Torneos, Clases, Asistencias, Reservas, Cobros, Recibos y Reportes.
+
+3. rutas y seguridad
+- AppRouter usa BrowserRouter y define rutas públicas: /, /registro, /login.
+- El dashboard está protegido con PrivateRoute, que exige usuario autenticado.
+- RoleRoute autoriza rutas específicas según user.rol y redirige cuando no tiene permiso.
+- Las páginas de dashboard se renderizan dentro de DashboardLayout.
+
+4. páginas principales
+- /dashboard: panel principal.
+- /dashboard/reservas, /dashboard/canchas, /dashboard/torneos, /dashboard/clases: gestión de actividades y espacios.
+- /dashboard/clientes, /dashboard/profesores, /dashboard/empleados: gestión de personas con control de roles.
+- /dashboard/asistencias: control de asistencias para roles autorizados.
+- /dashboard/cobros, /dashboard/recibos, /dashboard/reportes: finanzas e informes.
+- /dashboard/configuracion: ajustes del sistema.
+
+5. organización de la UI
+- components/ contiene tablas, modales, formularios y componentes reutilizables.
+- cada módulo tiene su carpeta con componentes específicos (asistencias, canchas, clases, cobros, etc.).
+- layouts/DashboardLayout.jsx provee la estructura visual del panel.
+
+6. servicios y datos
+- services/*.service.js encapsulan llamadas a la API y lógica de acceso a datos.
+- context/*.jsx gestiona estados compartidos y expone hooks como useAuth.
+- utils/ contiene validadores, storage, formato de fechas y permisos.
+
+7. stack técnico
+- React 19 + React Router DOM 7 + Vite.
+- estilo y comportamiento separados en styles/ y components/.
+
+8. flujo de uso
+- el usuario llega a una ruta pública, se autentica en /login o /registro.
+- AuthContext guarda el usuario y su rol.
+- AppRouter permite acceso al dashboard si está autenticado.
+- dentro del dashboard, cada página accede al estado correspondiente mediante contextos y consume servicios para mostrar, crear o editar datos.
+- la navegación y los permisos se basan en roles declarados en AppRouter y en los contexts.

@@ -92,11 +92,13 @@ export default function EquipoModalDetalle({ open, equipo, competencias, onClose
                 </div>
 
                 <div className="dash-modal-footer">
-                    <button className="btn-modal-cancel" onClick={onClose}>Cerrar</button>
-                    <button className="btn-modal-save" onClick={() => { onClose(); onEditar(equipo); }}>
-                        <Icon name="pencil" />
-                        Editar
-                    </button>
+                    <button type="button" className="btn-modal-cancel" onClick={onClose}>Cerrar</button>
+                    {onEditar && (
+                        <button type="button" className="btn-modal-save" onClick={() => { onClose(); onEditar(equipo); }}>
+                            <Icon name="pencil" />
+                            Editar
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

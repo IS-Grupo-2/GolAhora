@@ -1,10 +1,10 @@
 // src/components/torneos/CompetenciasTable.jsx
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import ModalEliminar from '../common/ModalEliminar';
 import Can from '../Can';
 
 function Icon({ name }) {
-    return <i data-lucide={name} />;
+    return <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${name}"></i>` }} />;
 }
 
 export default function CompetenciasTable({
@@ -34,6 +34,12 @@ export default function CompetenciasTable({
         onEliminar(modalEliminar.competencia.id);
         setModalEliminar({ open: false, competencia: null });
     };
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, []);
 
     return (
         <>

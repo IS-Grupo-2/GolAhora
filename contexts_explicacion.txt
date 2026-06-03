@@ -1,0 +1,44 @@
+1. propósito general
+- Los contextos centralizan el estado de diferentes dominios de la app y permiten compartirlo entre componentes sin pasar props.
+- Se exporta un Provider y un hook personalizado para cada dominio.
+- Todos los providers se combinan en src/context/AppProviders.jsx y envuelven la app completa.
+
+2. patrón común
+- cada archivo crea un contexto con createContext().
+- el Provider define estados como datos, loading y error.
+- los providers usan mock data con un toggle USE_MOCK y tienen espacio para integrar la API real más adelante.
+- se exponen acciones tipo fetch, crear, modificar, eliminar y toggle.
+- cada hook customizado (useAuth, useClientes, useCanchas, etc.) consume el contexto y lanza error si no está dentro del provider adecuado.
+
+3. AuthContext
+- maneja el usuario actual y la sesión.
+- guarda el usuario en localStorage para mantener la sesión al recargar.
+- ofrece login, logout, updateProfile, changePassword, deactivateAccount y sendSupportMessage.
+- es el único contexto usado para proteger rutas y validar roles en AppRouter.
+
+4. ClientesContext
+- carga los clientes y expone fetchClientes, crearCliente, modificarCliente y darDeBaja.
+- mantiene clientes activos/inactivos.
+- usa datos mock como fuente principal hoy.
+
+5. CanchasContext
+- gestiona canchas, tipos de cancha y disponibilidades.
+- ofrece fetchAll, CRUD de canchas, CRUD de tipos y CRUD de disponibilidades.
+- controla el cambio de estado de una cancha y la visibilidad de sus horarios.
+
+6. otros contextos principales
+- ProfesoresContext: datos y operaciones de profesores.
+- EmpleadosContext: datos y operaciones de empleados.
+- TorneosContext: datos y operaciones de torneos.
+- ClasesContext: datos y operaciones de clases.
+- AsistenciasContext: datos y operaciones de asistencias.
+- ReservasContext: datos y operaciones de reservas.
+- CobrosContext: datos y operaciones de cobros.
+- RecibosContext: datos y operaciones de recibos.
+- ReportesContext: datos y operaciones de reportes.
+
+7. comportamiento en la app
+- al iniciar App, AppProviders envuelve AppRouter y provee todos los contextos.
+- las páginas del dashboard usan los hooks para consumir estado y acciones.
+- AuthContext permite identificar el rol y restringir rutas en AppRouter con PrivateRoute y RoleRoute.
+- los demás contextos cargan información, actualizan listas y mantienen el estado de cada módulo.

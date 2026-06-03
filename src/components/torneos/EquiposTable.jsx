@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ModalEliminar from '../common/ModalEliminar';
 import Can from '../Can';
 
@@ -23,6 +23,12 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
         setSelectedEquipo(''); setSelectedTorneo('');
     };
 
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, []);
+
     return (
         <>
             <div className="crud-toolbar">
@@ -41,18 +47,18 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
 
             <Can roles={['admin', 'empleado', 'cliente']}>
                 <div className="panel-card" style={{ marginBottom: '24px', marginTop: '24px', padding: '18px' }}>
-                    <h4 style={{ color: 'var(--text)', marginBottom: '16px', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem' }}>
+                    <h4 className="ronda-header" style={{ borderBottom: 'none', marginBottom: '1rem' }}>
                         <Icon name="user-plus" /> Inscripción Rápida a Competencia
                     </h4>
-                    <form onSubmit={handleInscripcionSubmit} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                        <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <form onSubmit={handleInscripcionSubmit} className="form-row" style={{ alignItems: 'flex-end' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
                             <label>Seleccionar Equipo</label>
                             <select value={selectedEquipo} onChange={e => setSelectedEquipo(e.target.value)} required>
                                 <option value="">-- Seleccionar --</option>
                                 {equipos.map(e => <option key={e.idEquipo} value={e.idEquipo}>{e.nombre}</option>)}
                             </select>
                         </div>
-                        <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
                             <label>Seleccionar Liga / Torneo</label>
                             <select value={selectedTorneo} onChange={e => setSelectedTorneo(e.target.value)} required>
                                 <option value="">-- Seleccionar --</option>
@@ -67,7 +73,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                                 })}
                             </select>
                         </div>
-                        <button type="submit" className="btn-primary-action" style={{ height: '42px', background: '#16a34a' }}>
+                        <button type="submit" className="btn-primary-action" style={{ background: '#16a34a', height: '40px', justifyContent: 'center' }}>
                             Inscribir Equipo
                         </button>
                     </form>
@@ -81,7 +87,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                         <p>No hay equipos registrados en el sistema.</p>
                     </div>
                 ) : (
-                    <div className="table-responsive">
+                    <div className="table-wrapper">
                         <table className="crud-table">
                             <thead>
                                 <tr><th>Nombre del Equipo</th><th>Capitán</th><th>Integrantes</th><th>Fecha Creación</th><th>Acciones</th></tr>
@@ -95,12 +101,12 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                                         <td>{eq.fechaCreacion}</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button className="action-btn eye" title="Ver Detalle" onClick={() => onDetalle?.(eq)}><Icon name="eye" /></button>
+                                                <button type="button" className="action-btn view" title="Ver Detalle" onClick={() => onDetalle?.(eq)}><Icon name="eye" /></button>
                                                 <Can roles={['admin', 'empleado']}>
-                                                    <button className="action-btn edit" title="Editar" onClick={() => onEditar(eq)}><Icon name="pencil" /></button>
+                                                    <button type="button" className="action-btn edit" title="Editar" onClick={() => onEditar(eq)}><Icon name="pencil" /></button>
                                                 </Can>
                                                 <Can roles={['admin', 'empleado']}>
-                                                    <button className="action-btn toggle" style={{ color: '#ef4444' }} title="Eliminar" onClick={() => handleEliminar(eq)}><Icon name="trash-2" /></button>
+                                                    <button type="button" className="action-btn toggle" style={{ color: '#ef4444' }} title="Eliminar" onClick={() => handleEliminar(eq)}><Icon name="trash-2" /></button>
                                                 </Can>
                                             </div>
                                         </td>
