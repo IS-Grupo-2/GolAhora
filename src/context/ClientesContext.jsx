@@ -1,4 +1,3 @@
-// src/context/ClientesContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const MOCK_CLIENTES = [
@@ -103,7 +102,7 @@ export function ClientesProvider({ children }) {
         setError(null);
         try {
             if (USE_MOCK) {
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 4300));
                 setClientes(prev => prev.length === 0 ? MOCK_CLIENTES : prev);
             } else {
                 const response = await fetch(`${API_URL}/clientes`);
@@ -122,30 +121,83 @@ export function ClientesProvider({ children }) {
         fetchClientes();
     }, [fetchClientes]);
 
+// POST - Crear un nuevo cliente
     const crearCliente = async (nuevoCliente) => {
-        if (USE_MOCK) {
-            const clienteConId = { ...nuevoCliente, idUsuario: Date.now(), activo: true };
-            setClientes(prev => [...prev, clienteConId]);
-        } else {
-            // Lógica de fetch real (POST)
+        setLoading(true);
+        setError(null);
+        try {
+            if (USE_MOCK) {
+                const clienteConId = { ...nuevoCliente, idUsuario: Date.now(), activo: true };
+                setClientes(prev => [...prev, clienteConId]);
+                return clienteConId;
+            } else {
+                const response = await fetch(`${API_URL}/clientes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoCliente)
+                });
+                if (!response.ok) throw new Error('Error al registrar el cliente en el servidor');
+                const data = await response.json(); // El backend devuelve el cliente con su ID de BD
+                setClientes(prev => [...prev, data]);
+                return data;
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 
+// PUT - Modificar un cliente existente
     const modificarCliente = async (clienteModificado) => {
-        if (USE_MOCK) {
-            setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? clienteModificado : c));
-        } else {
-            // Lógica de fetch real (PUT)
+        setLoading(true);
+        setError(null);
+        try {
+            if (USE_MOCK) {
+                setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? clienteModificado : c));
+            } else {
+                const response = await fetch(`${API_URL}/clientes/${clienteModificado.idUsuario}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(clienteModificado)
+                });
+                if (!response.ok) throw new Error('Error al modificar el cliente en el servidor');
+                const data = await response.json();
+                setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? data : c));
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 
+// PATCH/PUT o DELETE lógico - Alternar estado activo/inactivo
     const darDeBaja = async (idUsuario) => {
-        if (USE_MOCK) {
-            setClientes(prev => prev.map(c => 
-                c.idUsuario === idUsuario ? { ...c, activo: !c.activo } : c
-            ));
-        } else {
-            // Lógica de fetch real (PATCH/PUT)
+        setLoading(true);
+        setError(null);
+        try {
+            if (USE_MOCK) {
+                setClientes(prev => prev.map(c => 
+                    c.idUsuario === idUsuario ? { ...c, activo: !c.activo } : c
+                ));
+            } else {
+                // Se suele usar PATCH para actualizaciones parciales como dar de baja/activar
+                const response = await fetch(`${API_URL}/clientes/${idUsuario}/toggle-activo`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error('Error al cambiar el estado del cliente');
+                const data = await response.json(); // El backend devuelve el cliente modificado
+                setClientes(prev => prev.map(c => c.idUsuario === idUsuario ? data : c));
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 

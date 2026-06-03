@@ -50,7 +50,7 @@ export function TorneosProvider({ children }) {
                 setLoading(false);
             }, 400);
         } else {
-            // Aquí irá el fetch a la API real
+            // fetch a la API real
         }
     };
 
