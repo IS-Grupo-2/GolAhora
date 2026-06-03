@@ -64,7 +64,6 @@ const MOCK_USERS = [
     },
 ];
 
-// Children es el hijo => AppRouter(osea toda la app tiene el contexto)
 export function AuthProvider({ children }) {
 
     // Cargo el usuario del localStorage para mantener la sesión activa al recargar la
@@ -82,18 +81,51 @@ export function AuthProvider({ children }) {
         localStorage.setItem('gol_user', JSON.stringify(updatedUser));
     }
 
-    function login({ email, password }) {
+// 1. Convertimos login en ASYNC para dejarlo listo para la API
+    async function login({ email, password }) {
+        if (USE_MOCK) {
+            const found = MOCK_USERS.find(u => u.email === email && u.password === password);
 
-        const found = MOCK_USERS.find(u => u.email === email && u.password === password);
+            if (!found) {
+                return { ok: false, error: 'Credenciales incorrectas.' };
+            }
 
-        if (!found) {
-            return {ok: false, error: 'Credenciales incorrectas.'};
+            const { password: _pw, ...safeUser } = found;
+            persistUser(safeUser);
+            return { ok: true };
+        } else {
+            // LOGIN REAL CON BACKEND
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    return { ok: false, error: err.message || 'Credenciales incorrectas.' };
+                }
+                const data = await response.json(); // Tu backend debería retornar el usuario + token
+                persistUser(data.user || data); 
+                return { ok: true };
+            } catch (err) {
+                return { ok: false, error: 'Error de conexión con el servidor.' };
+            }
         }
+    }
 
-        const { password: _pw, ...safeUser } = found;
+    // 2. NUEVA FUNCIÓN: Permite loguear directamente a un usuario (ideal para post-registro)
+    function loginDirect(userData) {
+        const safeUser = {
+            id: userData.idUsuario || userData.id,
+            nombre: userData.nombre,
+            apellido: userData.apellido,
+            email: userData.email,
+            rol: userData.rol || 'cliente',
+            estado: 'activo',
+            ...userData
+        };
         persistUser(safeUser);
-
-        return { ok: true };
     }
 
     function logout() {

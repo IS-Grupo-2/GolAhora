@@ -1,3 +1,4 @@
+// src/context/ProfesoresContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 export const MOCK_PROFESORES = [
@@ -135,7 +136,6 @@ export function ProfesoresProvider({ children }) {
         setError(null);
         try {
             if (USE_MOCK) {
-                // Simulamos la demora de red
                 await new Promise(resolve => setTimeout(resolve, 300));
                 setProfesores(prev => prev.length === 0 ? MOCK_PROFESORES : prev);
             } else {
@@ -157,15 +157,22 @@ export function ProfesoresProvider({ children }) {
 
     const crearProfesor = async (nuevoProfesor) => {
         if (USE_MOCK) {
-            const profesorConId = { 
-                ...nuevoProfesor, 
-                idUsuario: Date.now(), 
+            const profesorConId = {
+                ...nuevoProfesor,
+                idUsuario: Date.now(),
                 activo: true,
                 rol: 'profesor'
             };
             setProfesores(prev => [...prev, profesorConId]);
         } else {
-            // Lógica fetch real POST
+            const response = await fetch(`${API_URL}/profesores`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoProfesor),
+            });
+            if (!response.ok) throw new Error('Error al crear el profesor');
+            const profesorCreado = await response.json();
+            setProfesores(prev => [...prev, profesorCreado]);
         }
     };
 
@@ -173,29 +180,41 @@ export function ProfesoresProvider({ children }) {
         if (USE_MOCK) {
             setProfesores(prev => prev.map(p => p.idUsuario === profesorModificado.idUsuario ? profesorModificado : p));
         } else {
-            // Lógica fetch real PUT
+            const response = await fetch(`${API_URL}/profesores/${profesorModificado.idUsuario}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(profesorModificado),
+            });
+            if (!response.ok) throw new Error('Error al modificar el profesor');
+            const profesorActualizado = await response.json();
+            setProfesores(prev => prev.map(p => p.idUsuario === profesorActualizado.idUsuario ? profesorActualizado : p));
         }
     };
 
     const darDeBaja = async (idUsuario) => {
         if (USE_MOCK) {
-            setProfesores(prev => prev.map(p => 
+            setProfesores(prev => prev.map(p =>
                 p.idUsuario === idUsuario ? { ...p, activo: !p.activo } : p
             ));
         } else {
-            // Lógica fetch real PATCH/PUT
+            const response = await fetch(`${API_URL}/profesores/${idUsuario}/estado`, {
+                method: 'PATCH',
+            });
+            if (!response.ok) throw new Error('Error al cambiar el estado del profesor');
+            const profesorActualizado = await response.json();
+            setProfesores(prev => prev.map(p => p.idUsuario === profesorActualizado.idUsuario ? profesorActualizado : p));
         }
     };
 
     return (
-        <ProfesoresContext.Provider value={{ 
-            profesores, 
-            loading, 
-            error, 
-            fetchProfesores, 
-            crearProfesor, 
-            modificarProfesor, 
-            darDeBaja 
+        <ProfesoresContext.Provider value={{
+            profesores,
+            loading,
+            error,
+            fetchProfesores,
+            crearProfesor,
+            modificarProfesor,
+            darDeBaja
         }}>
             {children}
         </ProfesoresContext.Provider>

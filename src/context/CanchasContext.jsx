@@ -48,7 +48,22 @@ export function CanchasProvider({ children }) {
                 setTiposCanchas(MOCK_TIPOS);
                 setDisponibilidades(MOCK_DISP);
             } else {
-                // Fetch real en paralelo cuando el backend esté listo
+                const [canchasRes, tiposRes, dispRes] = await Promise.all([
+                    fetch(`${API_URL}/canchas`),
+                    fetch(`${API_URL}/tipos-canchas`),
+                    fetch(`${API_URL}/disponibilidades`),
+                ]);
+                if (!canchasRes.ok) throw new Error('Error al obtener canchas');
+                if (!tiposRes.ok) throw new Error('Error al obtener tipos de canchas');
+                if (!dispRes.ok) throw new Error('Error al obtener disponibilidades');
+                const [canchasData, tiposData, dispData] = await Promise.all([
+                    canchasRes.json(),
+                    tiposRes.json(),
+                    dispRes.json(),
+                ]);
+                setCanchas(canchasData);
+                setTiposCanchas(tiposData);
+                setDisponibilidades(dispData);
             }
         } catch (err) {
             setError(err.message);
@@ -61,42 +76,154 @@ export function CanchasProvider({ children }) {
 
     // ── CRUD Canchas ──
     const crearCancha = async (datos) => {
-        if (USE_MOCK) setCanchas(prev => [...prev, { ...datos, id: Date.now(), estado: 'activa' }]);
+        if (USE_MOCK) {
+            setCanchas(prev => [...prev, { ...datos, id: Date.now(), estado: 'activa' }]);
+        } else {
+            const response = await fetch(`${API_URL}/canchas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al crear la cancha');
+            const nuevaCancha = await response.json();
+            setCanchas(prev => [...prev, nuevaCancha]);
+        }
     };
+
     const modificarCancha = async (datos) => {
-        if (USE_MOCK) setCanchas(prev => prev.map(c => c.id === datos.id ? { ...c, ...datos } : c));
+        if (USE_MOCK) {
+            setCanchas(prev => prev.map(c => c.id === datos.id ? { ...c, ...datos } : c));
+        } else {
+            const response = await fetch(`${API_URL}/canchas/${datos.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al modificar la cancha');
+            const canchaActualizada = await response.json();
+            setCanchas(prev => prev.map(c => c.id === canchaActualizada.id ? canchaActualizada : c));
+        }
     };
+
     const toggleEstadoCancha = async (cancha) => {
         if (USE_MOCK) {
             const esActiva = cancha.estado === 'activa';
             setCanchas(prev => prev.map(c => c.id === cancha.id ? { ...c, estado: esActiva ? 'inactiva' : 'activa' } : c));
             if (esActiva) setDisponibilidades(prev => prev.map(d => d.idCancha === cancha.id ? { ...d, disponible: false } : d));
+        } else {
+            const nuevoEstado = cancha.estado === 'activa' ? 'inactiva' : 'activa';
+            const response = await fetch(`${API_URL}/canchas/${cancha.id}/estado`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: nuevoEstado }),
+            });
+            if (!response.ok) throw new Error('Error al cambiar el estado de la cancha');
+            const canchaActualizada = await response.json();
+            setCanchas(prev => prev.map(c => c.id === canchaActualizada.id ? canchaActualizada : c));
+            // Si se desactiva la cancha, reflejamos el cambio en disponibilidades
+            if (nuevoEstado === 'inactiva') {
+                setDisponibilidades(prev => prev.map(d => d.idCancha === cancha.id ? { ...d, disponible: false } : d));
+            }
         }
     };
 
     // ── CRUD Tipos ──
     const crearTipo = async (datos) => {
-        if (USE_MOCK) setTiposCanchas(prev => [...prev, { ...datos, id: Date.now() }]);
+        if (USE_MOCK) {
+            setTiposCanchas(prev => [...prev, { ...datos, id: Date.now() }]);
+        } else {
+            const response = await fetch(`${API_URL}/tipos-canchas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al crear el tipo de cancha');
+            const nuevoTipo = await response.json();
+            setTiposCanchas(prev => [...prev, nuevoTipo]);
+        }
     };
+
     const modificarTipo = async (datos) => {
-        if (USE_MOCK) setTiposCanchas(prev => prev.map(t => t.id === datos.id ? { ...t, ...datos } : t));
+        if (USE_MOCK) {
+            setTiposCanchas(prev => prev.map(t => t.id === datos.id ? { ...t, ...datos } : t));
+        } else {
+            const response = await fetch(`${API_URL}/tipos-canchas/${datos.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al modificar el tipo de cancha');
+            const tipoActualizado = await response.json();
+            setTiposCanchas(prev => prev.map(t => t.id === tipoActualizado.id ? tipoActualizado : t));
+        }
     };
+
     const eliminarTipo = async (id) => {
-        if (USE_MOCK) setTiposCanchas(prev => prev.filter(t => t.id !== id));
+        if (USE_MOCK) {
+            setTiposCanchas(prev => prev.filter(t => t.id !== id));
+        } else {
+            const response = await fetch(`${API_URL}/tipos-canchas/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Error al eliminar el tipo de cancha');
+            setTiposCanchas(prev => prev.filter(t => t.id !== id));
+        }
     };
 
     // ── CRUD Disponibilidad ──
     const crearDisp = async (datos) => {
-        if (USE_MOCK) setDisponibilidades(prev => [...prev, { ...datos, id: Date.now() }]);
+        if (USE_MOCK) {
+            setDisponibilidades(prev => [...prev, { ...datos, id: Date.now() }]);
+        } else {
+            const response = await fetch(`${API_URL}/disponibilidades`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al crear la disponibilidad');
+            const nuevaDisp = await response.json();
+            setDisponibilidades(prev => [...prev, nuevaDisp]);
+        }
     };
+
     const modificarDisp = async (datos) => {
-        if (USE_MOCK) setDisponibilidades(prev => prev.map(d => d.id === datos.id ? { ...d, ...datos } : d));
+        if (USE_MOCK) {
+            setDisponibilidades(prev => prev.map(d => d.id === datos.id ? { ...d, ...datos } : d));
+        } else {
+            const response = await fetch(`${API_URL}/disponibilidades/${datos.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (!response.ok) throw new Error('Error al modificar la disponibilidad');
+            const dispActualizada = await response.json();
+            setDisponibilidades(prev => prev.map(d => d.id === dispActualizada.id ? dispActualizada : d));
+        }
     };
+
     const toggleDisp = async (id) => {
-        if (USE_MOCK) setDisponibilidades(prev => prev.map(d => d.id === id ? { ...d, disponible: !d.disponible } : d));
+        if (USE_MOCK) {
+            setDisponibilidades(prev => prev.map(d => d.id === id ? { ...d, disponible: !d.disponible } : d));
+        } else {
+            const response = await fetch(`${API_URL}/disponibilidades/${id}/toggle`, {
+                method: 'PATCH',
+            });
+            if (!response.ok) throw new Error('Error al cambiar la disponibilidad');
+            const dispActualizada = await response.json();
+            setDisponibilidades(prev => prev.map(d => d.id === dispActualizada.id ? dispActualizada : d));
+        }
     };
+
     const eliminarDisp = async (id) => {
-        if (USE_MOCK) setDisponibilidades(prev => prev.filter(d => d.id !== id));
+        if (USE_MOCK) {
+            setDisponibilidades(prev => prev.filter(d => d.id !== id));
+        } else {
+            const response = await fetch(`${API_URL}/disponibilidades/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Error al eliminar la disponibilidad');
+            setDisponibilidades(prev => prev.filter(d => d.id !== id));
+        }
     };
 
     return (

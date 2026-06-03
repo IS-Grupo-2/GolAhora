@@ -85,15 +85,22 @@ export function EmpleadosProvider({ children }) {
 
     const crearEmpleado = async (nuevoEmpleado) => {
         if (USE_MOCK) {
-            const empleadoConId = { 
-                ...nuevoEmpleado, 
-                idUsuario: Date.now(), 
+            const empleadoConId = {
+                ...nuevoEmpleado,
+                idUsuario: Date.now(),
                 activo: true,
                 rol: 'empleado'
             };
             setEmpleados(prev => [...prev, empleadoConId]);
         } else {
-            // Lógica fetch POST
+            const response = await fetch(`${API_URL}/empleados`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoEmpleado),
+            });
+            if (!response.ok) throw new Error('Error al crear el empleado');
+            const empleadoCreado = await response.json();
+            setEmpleados(prev => [...prev, empleadoCreado]);
         }
     };
 
@@ -101,29 +108,41 @@ export function EmpleadosProvider({ children }) {
         if (USE_MOCK) {
             setEmpleados(prev => prev.map(e => e.idUsuario === empleadoModificado.idUsuario ? empleadoModificado : e));
         } else {
-            // Lógica fetch PUT
+            const response = await fetch(`${API_URL}/empleados/${empleadoModificado.idUsuario}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(empleadoModificado),
+            });
+            if (!response.ok) throw new Error('Error al modificar el empleado');
+            const empleadoActualizado = await response.json();
+            setEmpleados(prev => prev.map(e => e.idUsuario === empleadoActualizado.idUsuario ? empleadoActualizado : e));
         }
     };
 
     const darDeBaja = async (idUsuario) => {
         if (USE_MOCK) {
-            setEmpleados(prev => prev.map(e => 
+            setEmpleados(prev => prev.map(e =>
                 e.idUsuario === idUsuario ? { ...e, activo: !e.activo } : e
             ));
         } else {
-            // Lógica fetch PATCH
+            const response = await fetch(`${API_URL}/empleados/${idUsuario}/estado`, {
+                method: 'PATCH',
+            });
+            if (!response.ok) throw new Error('Error al cambiar el estado del empleado');
+            const empleadoActualizado = await response.json();
+            setEmpleados(prev => prev.map(e => e.idUsuario === empleadoActualizado.idUsuario ? empleadoActualizado : e));
         }
     };
 
     return (
-        <EmpleadosContext.Provider value={{ 
-            empleados, 
-            loading, 
-            error, 
-            fetchEmpleados, 
-            crearEmpleado, 
-            modificarEmpleado, 
-            darDeBaja 
+        <EmpleadosContext.Provider value={{
+            empleados,
+            loading,
+            error,
+            fetchEmpleados,
+            crearEmpleado,
+            modificarEmpleado,
+            darDeBaja
         }}>
             {children}
         </EmpleadosContext.Provider>
