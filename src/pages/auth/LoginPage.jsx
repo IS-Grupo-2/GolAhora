@@ -38,12 +38,12 @@ function LoginPage() {
                 });
 
                 if (result.ok) {
-                    console.log('Login válido 🚀');
+                    console.log('Login válido');
                     navigate('/dashboard');
                 } else {
                     setErrors({ general: result.error });
                 }
-            } catch (err) {
+            } catch {
                 setErrors({ general: 'Error al intentar conectar con el servidor.' });
             } finally {
                 setLoading(false);

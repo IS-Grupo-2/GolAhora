@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const API_URL = import.meta.env.VITE_API_URL;
 const USE_MOCK = true;
+const CobrosContext = createContext();
 
 const MOCK_COBROS = [
     // Reserva 1 - Laura - Pagado
@@ -253,8 +254,6 @@ const MOCK_COBROS = [
     },
 ];
 
-const CobrosContext = createContext();
-
 export function CobrosProvider({ children }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -288,7 +287,15 @@ export function CobrosProvider({ children }) {
             setItems(prev => [nuevoConId, ...prev]);
             return nuevoConId;
         }
-        // Lógica de fetch POST aquí
+        const res = await fetch(`${API_URL}/cobros`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevo),
+        });
+        if (!res.ok) throw new Error('Error al registrar el cobro');
+        const data = await res.json();
+        setItems(prev => [data, ...prev]);
+        return data;
     };
 
     const modificarItem = async (modificado) => {
@@ -296,18 +303,27 @@ export function CobrosProvider({ children }) {
             setItems(prev => prev.map(item =>
                 item.idCobro === modificado.idCobro ? { ...item, ...modificado } : item
             ));
-            return;
+            return modificado;
         }
-        // Lógica de fetch PUT aquí
+        const res = await fetch(`${API_URL}/cobros/${modificado.idCobro}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modificado),
+        });
+        if (!res.ok) throw new Error('Error al modificar el cobro');
+        const data = await res.json();
+        setItems(prev => prev.map(item => item.idCobro === data.idCobro ? data : item));
+        return data;
     };
 
     const eliminarItem = async (id) => {
         if (USE_MOCK) {
-            // En negocio se suele anular en vez de eliminar físicamente
             setItems(prev => prev.filter(item => item.idCobro !== id));
             return;
         }
-        // Lógica de fetch DELETE aquí
+        const res = await fetch(`${API_URL}/cobros/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar (o anular) el cobro');
+        setItems(prev => prev.filter(item => item.idCobro !== id));
     };
 
     return (
