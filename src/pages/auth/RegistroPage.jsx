@@ -14,7 +14,7 @@ function RegistroPage() {
     const [generalError, setGeneralError] = useState('');
 
     const [formData, setFormData] = useState({
-        name: '', lastname: '', dni: '', userName: '', email: '', phoneNumber: '', password: ''
+        name: '', lastname: '', dni: '', userName: '', email: '', phoneNumber: '', password: '', role: 'Client'
     })
     const [errors, setErrors] = useState({})
 
@@ -25,12 +25,12 @@ function RegistroPage() {
 
     const validateForm = () => {
         const newErrors = {}
-        if (formData.nombre.trim().length < 2) { newErrors.nombre = 'Nombre muy corto' }
-        if (formData.apellido.trim().length < 2) { newErrors.apellido = 'Apellido muy corto' }
+        if (formData.name.trim().length < 2) { newErrors.name = 'Nombre muy corto' }
+        if (formData.lastname.trim().length < 2) { newErrors.lastname = 'Apellido muy corto' }
         if (formData.dni.length < 7 || formData.dni.length > 8 || isNaN(formData.dni)) { newErrors.dni = 'DNI inválido' }
-        if (formData.telefono.length < 8 || formData.telefono.length > 15) { newErrors.telefono = 'Teléfono inválido' }
-        if (formData.user.trim().length < 4 || formData.user.trim().length > 20) {
-            newErrors.user = 'El usuario debe tener entre 4 y 20 caracteres'
+        if (formData.phoneNumber.length < 8 || formData.phoneNumber.length > 15) { newErrors.phoneNumber = 'Teléfono inválido' }
+        if (formData.userName.trim().length < 4 || formData.userName.trim().length > 20) {
+            newErrors.userName = 'El usuario debe tener entre 4 y 20 caracteres'
         }
         if (!formData.email.includes('@') || !formData.email.includes('.')) { newErrors.email = 'Email inválido' }
         if (formData.password.length < 6) { newErrors.password = 'Mínimo 6 caracteres' }
@@ -48,15 +48,14 @@ function RegistroPage() {
             setLoading(true);
             try {
                 const nuevoCliente = {
-                    nombre: formData.nombre,
-                    apellido: formData.apellido,
+                    name: formData.name,
+                    lastname: formData.lastname,
                     dni: formData.dni,
-                    fechaNacimiento: formData.fechaNacimiento,
-                    telefono: formData.telefono,
-                    userName: formData.user,
+                    phoneNumber: formData.phoneNumber,
+                    userName: formData.userName,
                     email: formData.email,
                     password: formData.password,
-                    rol: 'cliente',
+                    role: 'Client',
                     fechaRegistro: new Date().toISOString().split('T')[0]
                 };
 
@@ -65,7 +64,7 @@ function RegistroPage() {
                 console.log('Cliente creado con éxito:', clienteCreado);
 
                 // 2. Inyectamos los datos del nuevo cliente en el AuthContext
-                loginDirect(clienteCreado);
+                // loginDirect(clienteCreado);
 
                 // 3. Redirección al dashboard
                 navigate('/dashboard');
@@ -75,7 +74,7 @@ function RegistroPage() {
                 setGeneralError('Hubo un error al procesar el registro. Intente nuevamente.');
             } finally {
                 setLoading(false);
-            }
+                }
         }
     };
 
@@ -94,15 +93,15 @@ function RegistroPage() {
 
                         {/* NOMBRES Y APELLIDO */}
                         <div className="grupos-elem nom-ape">
-                            <label htmlFor="nombre">Nombres:</label>
-                            <input type="text" id="nombre" name="nombre" className={errors.nombre ? 'input-error' : ''}
-                                value={formData.nombre} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.nombre}</small>
+                            <label htmlFor="name">Nombres:</label>
+                            <input type="text" id="name" name="name" className={errors.name ? 'input-error' : ''}
+                                value={formData.name} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.name}</small>
 
-                            <label htmlFor="apellido">Apellido:</label>
-                            <input type="text" id="apellido" name="apellido" className={errors.apellido ? 'input-error' : ''}
-                                value={formData.apellido} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.apellido}</small>
+                            <label htmlFor="lastname">Apellido:</label>
+                            <input type="text" id="lastname" name="lastname" className={errors.lastname ? 'input-error' : ''}
+                                value={formData.lastname} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.lastname}</small>
                         </div>
 
                         {/* DNI */}
@@ -113,28 +112,20 @@ function RegistroPage() {
                             <small className="error-message">{errors.dni}</small>
                         </div>
 
-                        {/* FECHA NACIMIENTO */}
-                        <div className="grupos-elem">
-                            <label htmlFor="fechaNacimiento">Fecha de nacimiento:</label>
-                            <input type="date" id="fechaNacimiento" name="fechaNacimiento" className={errors.fechaNacimiento ? 'input-error' : ''}
-                                value={formData.fechaNacimiento} onChange={handleChange} disabled={loading}/>
-                            <small className="error-message">{errors.fechaNacimiento}</small>
-                        </div>
-
                         {/* TELEFONO */}
                         <div className="grupos-elem">
-                            <label htmlFor="telefono">Teléfono:</label>
-                            <input type="text" id="telefono" name="telefono" className={errors.telefono ? 'input-error' : ''}
-                                placeholder="+54 11..." value={formData.telefono} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.telefono}</small>
+                            <label htmlFor="phoneNumber">Teléfono:</label>
+                            <input type="text" id="phoneNumber" name="phoneNumber" className={errors.phoneNumber ? 'input-error' : ''}
+                                placeholder="+54 11..." value={formData.phoneNumber} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.phoneNumber}</small>
                         </div>
 
                         {/* USER */}
                         <div className="grupos-elem">
-                            <label htmlFor="user">Nombre de Usuario:</label>
-                            <input type="text" id="user" name="user" className={errors.user ? 'input-error' : ''}
-                                value={formData.user} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.user}</small>
+                            <label htmlFor="userName">Nombre de Usuario:</label>
+                            <input type="text" id="userName" name="userName" className={errors.userName ? 'input-error' : ''}
+                                value={formData.userName} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.userName}</small>
                         </div>
 
                         {/* EMAIL */}
