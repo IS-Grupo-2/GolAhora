@@ -5,19 +5,19 @@ import ClienteTorneosView from '../../components/torneos/ClienteTorneosView';
 export default function TorneosPage() {
     const { user } = useAuth(); 
 
-    // Por seguridad, si no hay usuario cargado aún, no renderizamos nada o mostramos un loader
+    // Por seguridad, si no hay usuario cargado aún, no renderizamos nada 
     if (!user) return null; 
 
 
-    if (user.rol === 'Admin' || user.rol === 'Employee') {
+    if (user.role === 'Admin' || user.role === 'Employee') {
         return <TorneosPageContent />;
     }
 
-    if (user.rol === 'Client' || user.rol === 'Professor') {
+    if (user.role === 'Client' || user.role === 'Professor') {
         return <ClienteTorneosView />;
     }
 
-    // Fallback por si hay algún otro rol raro (opcional)
+    // Fallback por si hay algún otro rol raro 
     return (
         <div className="dashboard-page-container">
             <h2>No tenés permisos para ver esta sección.</h2>
