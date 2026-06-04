@@ -28,7 +28,7 @@ function Toast({ toasts }) {
 // ── Contenido interno ─────────────────────────────────────────────────────────
 export default function AsistenciasPageContent() {
     const { user } = useAuth();
-    const { isAdmin, isEmpleado, isProfesor } = useRole();
+    const { isAdmin, isEmployee, isProfessor } = useRole();
     const {
         asistenciasPorClase,
         loading: loadingAsistencias,
@@ -68,8 +68,8 @@ export default function AsistenciasPageContent() {
     // admin y empleado ven TODAS las clases
     // profesor ve solo las que le pertenecen
     const clasesPorRol = (() => {
-        if (isAdmin || isEmpleado) return clases;
-        if (isProfesor && user) return clases.filter(c => c.profesor?.id === user.id);
+        if (isAdmin || isEmployee) return clases;
+        if (isProfessor && user) return clases.filter(c => c.profesor?.id === user.id);
         return []; // cliente: no debería llegar aquí (bloqueado en router)
     })();
 
@@ -100,8 +100,8 @@ export default function AsistenciasPageContent() {
     }
 
     // ── Labels dinámicos por rol ───────────────────────────────────────────────
-    const titulo    = (isAdmin || isEmpleado) ? 'Gestión de Asistencias' : 'Mis Clases (Asistencia)';
-    const subtitulo = (isAdmin || isEmpleado) ? `${totalClases} clases en total` : `${totalClases} asignadas`;
+    const titulo    = (isAdmin || isEmployee) ? 'Gestión de Asistencias' : 'Mis Clases (Asistencia)';
+    const subtitulo = (isAdmin || isEmployee) ? `${totalClases} clases en total` : `${totalClases} asignadas`;
 
     const loading = loadingClases || loadingAsistencias;
     const error = errorClases || errorAsistencias;
@@ -135,7 +135,7 @@ export default function AsistenciasPageContent() {
                 <div className="mini-stat blue">
                     <span className="mini-stat-num">{totalClases}</span>
                     <span className="mini-stat-label">
-                        {(isAdmin || isEmpleado) ? 'Total Clases' : 'Mis Clases'}
+                        {(isAdmin || isEmployee) ? 'Total Clases' : 'Mis Clases'}
                     </span>
                 </div>
                 <div className="mini-stat green">
@@ -161,7 +161,7 @@ export default function AsistenciasPageContent() {
             </div>
 
             {/* MODAL TOMAR / MODIFICAR ASISTENCIA — admin, empleado y profesor */}
-            <Can roles={['admin', 'empleado', 'profesor']}>
+            <Can roles={['Admin', 'Employee', 'Professor']}>
                 <AsistenciaTomaModal
                     open={modalToma.open}
                     clase={modalToma.clase}
@@ -172,7 +172,7 @@ export default function AsistenciasPageContent() {
             </Can>
 
             {/* MODAL DETALLE — admin, empleado y profesor */}
-            <Can roles={['admin', 'empleado', 'profesor']}>
+            <Can roles={['Admin', 'Employee', 'Professor']}>
                 <AsistenciaDetalleModal
                     open={modalDetalle.open}
                     clase={modalDetalle.clase}
@@ -182,7 +182,7 @@ export default function AsistenciasPageContent() {
             </Can>
 
             {/* Bloqueo explícito para cliente (refuerzo del router) */}
-            <Can roles={['cliente']}>
+            <Can roles={['Client']}>
                 <div className="tabla-empty" style={{ marginTop: '2rem' }}>
                     <i data-lucide="lock" />
                     <p>No tenés permisos para ver esta sección.</p>

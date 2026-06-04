@@ -89,7 +89,7 @@ export default function EmpleadosPageContent() {
 
     return (
         <Can 
-            roles={['admin']} 
+            roles={['Admin']} 
             fallback={<ErrorMessage message="Acceso denegado. Solo administradores pueden ver esta sección." />}
         >
             {/* TOOLBAR */}

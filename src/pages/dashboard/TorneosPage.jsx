@@ -9,11 +9,11 @@ export default function TorneosPage() {
     if (!user) return null; 
 
 
-    if (user.rol === 'admin' || user.rol === 'empleado') {
+    if (user.rol === 'Admin' || user.rol === 'Employee') {
         return <TorneosPageContent />;
     }
 
-    if (user.rol === 'cliente' || user.rol === 'profesor') {
+    if (user.rol === 'Client' || user.rol === 'Professor') {
         return <ClienteTorneosView />;
     }
 

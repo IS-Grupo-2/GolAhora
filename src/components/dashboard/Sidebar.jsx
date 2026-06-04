@@ -17,7 +17,7 @@ function SidebarUser({ user, onLogoutClick }) {
             <div className="user-avatar">{initial}</div>
             <div className="user-info">
                 <strong>{user?.nombre ?? 'Usuario'}</strong>
-                <span style={{ textTransform: 'capitalize' }}>{user?.rol ?? ''}</span>
+                <span style={{ textTransform: 'capitalize' }}>{user?.role ?? ''}</span>
             </div>
             <button className="logout-btn" aria-label="Cerrar sesión" onClick={onLogoutClick}>
                 <Icon name="log-out" />
@@ -49,7 +49,7 @@ function NavSection({ section, items, onNavClick }) {
 export default function Sidebar({ isOpen, onClose }) {
     const { user, logout } = useAuth();
     const navigate         = useNavigate();
-    const navSections      = getNavForRole(user?.rol ?? 'cliente');
+    const navSections      = getNavForRole(user?.role ?? 'Client');
     
     // Estado para controlar el modal de cierre de sesión
     const [showLogoutModal, setShowLogoutModal] = useState(false);

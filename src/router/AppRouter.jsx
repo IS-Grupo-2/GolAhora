@@ -26,7 +26,7 @@ function PrivateRoute({ children }) {
 function RoleRoute({ children, roles }) {
     const { user } = useAuth();
     if (!user) return <Navigate to="/login" replace />;
-    if (!roles.includes(user.rol)) return <Navigate to="/dashboard" replace />;
+    if (!roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
     return children;
 }
 
@@ -55,44 +55,44 @@ function AppRouter() {
     
                     {/* Personas — Protegidas por rol */}
                     <Route path="clientes" element={
-                        <RoleRoute roles={['admin', 'empleado']}>
+                        <RoleRoute roles={['Admin', 'Employee']}>
                             <UsuariosPage />
                         </RoleRoute>
                     } />
 
                     <Route path="profesores" element={
-                        <RoleRoute roles={['admin', 'empleado']}>
+                        <RoleRoute roles={['Admin', 'Employee', 'Professor']}>
                             <ProfesoresPage />
                         </RoleRoute>
                     } />
 
                     <Route path="empleados" element={
-                        <RoleRoute roles={['admin']}>
+                        <RoleRoute roles={['Admin', 'Employee']}>
                             <EmpleadosPage />
                         </RoleRoute>
                     } />
                     
                     <Route path="asistencias" element={
-                        <RoleRoute roles={['admin', 'empleado', 'profesor']}>
+                        <RoleRoute roles={['Admin', 'Employee', 'Professor']}>
                             <AsistenciasPage />
                         </RoleRoute>
                     } />
     
                     {/* Finanzas — Protegidas por rol */}
                     <Route path="cobros" element={
-                        <RoleRoute roles={['admin', 'empleado']}>
+                        <RoleRoute roles={['Admin', 'Employee']}>
                             <CobrosPage />
                         </RoleRoute>
                     } />
                     
                     <Route path="recibos" element={
-                        <RoleRoute roles={['admin', 'empleado']}>
+                        <RoleRoute roles={['Admin', 'Employee']}>
                             <RecibosPage />
                         </RoleRoute>
                     } />
                     
                     <Route path="reportes" element={
-                        <RoleRoute roles={['admin', 'empleado']}>
+                        <RoleRoute roles={['Admin', 'Employee']}>
                             <ReportesPage />
                         </RoleRoute>
                     } />

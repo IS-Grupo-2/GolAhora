@@ -3,12 +3,12 @@ import { useAuth } from '../context/AuthContext';
 
 export default function useRole() {
     const { user } = useAuth();
-    const rol = user?.rol ?? 'cliente';
+    const rol = user?.role ?? 'Client';
 
-    const isAdmin = rol === 'admin';
-    const isEmpleado = rol === 'empleado';
-    const isProfesor = rol === 'profesor';
-    const isCliente = rol === 'cliente';
+    const isAdmin = rol === 'Admin';
+    const isEmployee = rol === 'Employee';
+    const isProfessor = rol === 'Professor';
+    const isClient = rol === 'Client';
 
     const can = (...roles) => {
         if (!roles || roles.length === 0) return false;
@@ -18,9 +18,9 @@ export default function useRole() {
     return {
         rol,
         isAdmin,
-        isEmpleado,
-        isProfesor,
-        isCliente,
+        isEmployee,
+        isProfessor,
+        isClient,
         can,
     };
 }

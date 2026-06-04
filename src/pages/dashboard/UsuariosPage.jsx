@@ -121,7 +121,7 @@ export default function UsuariosPageContent() {
                         />
                     </div>
                     {/* Componente Can protegiendo el botón de crear */}
-                    <Can roles={['admin', 'empleado']}>
+                    <Can roles={['Admin', 'Employee']}>
                         <button className="btn-primary-action" onClick={abrirNuevo}>
                             <i data-lucide="user-plus" />
                             Nuevo cliente

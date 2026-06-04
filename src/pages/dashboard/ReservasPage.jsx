@@ -4,9 +4,9 @@ import ClienteReservasView from '../../components/reservas/ClienteReservasView';
 
 // Este componente funciona como un Switch: Admin/Empleado ven la tabla, Clientes ven las Cards.
 export default function EnrutadorDeReservas() {
-  const { isAdmin, isEmpleado } = useRole();
+  const { isAdmin, isEmployee } = useRole();
 
-  if (isAdmin || isEmpleado) {
+  if (isAdmin || isEmployee) {
     return <AdminReservasView />; 
   }
 

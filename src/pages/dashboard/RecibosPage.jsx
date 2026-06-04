@@ -52,7 +52,7 @@ export default function RecibosPageContent() {
     if (error) return <ErrorMessage message={error} />;
 
     return (
-        <Can roles={['admin', 'empleado']}>
+        <Can roles={['Admin', 'Employee']}>
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left"><h2 className="crud-title">Recibos de Pago</h2></div>
                 <div className="crud-toolbar-right">

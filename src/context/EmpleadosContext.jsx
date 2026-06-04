@@ -51,8 +51,8 @@ const MOCK_EMPLEADOS = [
 
 const EmpleadosContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-const USE_MOCK = true;
+const API_URL = 'http://localhost:5063/api';
+const USE_MOCK = false;
 
 export function EmpleadosProvider({ children }) {
     const [empleados, setEmpleados] = useState([]);

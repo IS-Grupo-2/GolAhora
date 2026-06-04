@@ -141,7 +141,7 @@ export default function CanchasPageContent() {
                 <button className={`module-tab ${tabActivo === 'canchas' ? 'active' : ''}`} onClick={() => setTabActivo('canchas')}>
                     <i data-lucide="goal" /> Canchas
                 </button>
-                <Can roles={['admin']}>
+                <Can roles={['Admin']}>
                     <button className={`module-tab ${tabActivo === 'tipos' ? 'active' : ''}`} onClick={() => setTabActivo('tipos')}>
                         <i data-lucide="layers" /> Tipos de Cancha
                     </button>

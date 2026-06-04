@@ -21,7 +21,7 @@ export default function ReportesPageContent() {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <Can roles={['admin', 'empleado']}>
+        <Can roles={['Admin', 'Employee']}>
             <div className="reportes-container">
                 <div className="reportes-header">
                     <div className="reportes-tabs">

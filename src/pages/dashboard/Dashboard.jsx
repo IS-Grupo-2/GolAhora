@@ -69,7 +69,7 @@ function ShortcutCard({ icon, color, label, path, navigate }) {
 export default function Dashboard() {
     const { user }   = useAuth();
     const navigate   = useNavigate();
-    const rol        = user?.rol ?? 'cliente';
+    const rol        = user?.role ?? 'Client';
 
     const shortcuts = ALL_SHORTCUTS.filter(s => s.roles.includes(rol));
 

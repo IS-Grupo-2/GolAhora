@@ -140,7 +140,7 @@ export default function ClasesPageContent() {
                     </div>
 
                     {/* Solo admin y empleado pueden programar clases */}
-                    <Can roles={['admin', 'empleado']}>
+                    <Can roles={['Admin', 'Employee']}>
                         <button
                             className="btn-primary-action"
                             onClick={() => setModalForm({ open: true, modo: 'nuevo', clase: null })}
@@ -181,7 +181,7 @@ export default function ClasesPageContent() {
             </div>
 
             {/* MODAL CREAR / EDITAR — admin y empleado */}
-            <Can roles={['admin', 'empleado']}>
+            <Can roles={['Admin', 'Employee']}>
                 <ClaseModal
                     open={modalForm.open}
                     modo={modalForm.modo}
@@ -194,7 +194,7 @@ export default function ClasesPageContent() {
             </Can>
 
             {/* MODAL ASISTENCIA — admin, empleado y profesor */}
-            <Can roles={['admin', 'empleado', 'profesor']}>
+            <Can roles={['Admin', 'Employee', 'Professor']}>
                 <AsistenciaModal
                     open={modalAsistencia.open}
                     clase={modalAsistencia.clase}
@@ -211,7 +211,7 @@ export default function ClasesPageContent() {
             />
 
             {/* MODAL CANCELAR — admin y empleado */}
-            <Can roles={['admin', 'empleado']}>
+            <Can roles={['Admin', 'Employee']}>
                 <ClaseModalBaja
                     open={modalBaja.open}
                     clase={modalBaja.clase}

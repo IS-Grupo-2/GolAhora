@@ -107,7 +107,39 @@ export function AuthProvider({ children }) {
                     return { ok: false, error: err.message || 'Credenciales incorrectas.' };
                 }
                 const data = await response.json(); // Tu backend debería retornar el usuario + token
-                persistUser(data.user || data); 
+
+                const apiUser = data.user;
+                const roles = apiUser.roles || [];
+
+                let role = 'Client';
+                let rol = 'cliente';
+
+                if (roles.includes('Admin')) {
+                    role = 'Admin';
+                    rol = 'admin';
+                } else if (roles.includes('Employee')) {
+                    role = 'Employee';
+                    rol = 'empleado';
+                } else if (roles.includes('Professor')) {
+                    role = 'Professor';
+                    rol = 'profesor';
+                }
+
+
+                const normalizedUser = {
+                    id: apiUser.idUser,
+                    nombre: apiUser.name,
+                    apellido: apiUser.lastName,
+                    email: apiUser.email,
+                    telefono: apiUser.phoneNumber,
+                    userName: apiUser.userName,
+                    token: data.token,
+                    roles,
+                    role,
+                    rol,
+                };
+
+                persistUser(normalizedUser);
                 return { ok: true };
             } catch (err) {
                 return { ok: false, error: 'Error de conexión con el servidor.' };

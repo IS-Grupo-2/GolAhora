@@ -47,7 +47,7 @@ export default function CobrosPageContent() {
     if (error) return <ErrorMessage message={error} />;
 
     return (
-        <Can roles={['admin', 'empleado']}>
+        <Can roles={['Admin', 'Employee']}>
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Gestión de Cobros</h2>

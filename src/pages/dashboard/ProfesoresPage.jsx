@@ -117,7 +117,7 @@ export default function ProfesoresPageContent() {
                         />
                     </div>
                     {/* Componente Can protegiendo el botón de crear */}
-                    <Can roles={['admin']}>
+                    <Can roles={['Admin']}>
                         <button className="btn-primary-action" onClick={abrirNuevo}>
                             <i data-lucide="user-plus" />
                             Nuevo profesor

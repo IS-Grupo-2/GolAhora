@@ -56,7 +56,7 @@ function RegistroPage() {
                     email: formData.email,
                     password: formData.password,
                     role: 'Client',
-                    fechaRegistro: new Date().toISOString().split('T')[0]
+                    //fechaRegistro: new Date().toISOString().split('T')[0]
                 };
 
                 // 1. Envía los datos al servidor / mock
