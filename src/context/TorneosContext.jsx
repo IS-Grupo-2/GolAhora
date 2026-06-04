@@ -40,92 +40,179 @@ export function TorneosProvider({ children }) {
         fetchDatos();
     }, []);
 
-    const fetchDatos = () => {
+    const fetchDatos = async () => {
         setLoading(true);
-        if (USE_MOCK) {
-            setTimeout(() => {
-                setCompetencias(MOCK_COMPETENCIAS);
-                setEquipos(MOCK_EQUIPOS);
-                setFixtures(MOCK_FIXTURES);
-                setLoading(false);
-            }, 400);
-        } else {
-            // fetch a la API real
+        setError(null);
+        try {
+            if (USE_MOCK) {
+                setTimeout(() => {
+                    setCompetencias(MOCK_COMPETENCIAS);
+                    setEquipos(MOCK_EQUIPOS);
+                    setFixtures(MOCK_FIXTURES);
+                    setLoading(false);
+                }, 400);
+            } else {
+                const [resComp, resEq, resFix] = await Promise.all([
+                    fetch(`${API_URL}/competencias`),
+                    fetch(`${API_URL}/equipos`),
+                    fetch(`${API_URL}/fixtures`)
+                ]);
+                
+                if (!resComp.ok || !resEq.ok || !resFix.ok) {
+                    throw new Error('Error al cargar datos iniciales de Torneos');
+                }
+
+                setCompetencias(await resComp.json());
+                setEquipos(await resEq.json());
+                setFixtures(await resFix.json());
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     // --- CRUD COMPETENCIAS ---
-    const guardarCompetencia = (comp) => {
-        if (comp.id) {
-            setCompetencias(prev => prev.map(c => c.id === comp.id ? { ...c, ...comp } : c));
-        } else {
-            setCompetencias(prev => [...prev, { ...comp, id: Date.now(), equipos: [], fechaInicio: new Date().toISOString().split('T')[0] }]);
+    const guardarCompetencia = async (comp) => {
+        if (USE_MOCK) {
+            if (comp.id) setCompetencias(prev => prev.map(c => c.id === comp.id ? { ...c, ...comp } : c));
+            else setCompetencias(prev => [...prev, { ...comp, id: Date.now(), equipos: [], fechaInicio: new Date().toISOString().split('T')[0] }]);
+            return;
         }
+        
+        const isEdit = !!comp.id;
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `${API_URL}/competencias/${comp.id}` : `${API_URL}/competencias`;
+        
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(comp)
+        });
+        if (!res.ok) throw new Error('Error al guardar competencia');
+        const data = await res.json();
+        
+        if (isEdit) setCompetencias(prev => prev.map(c => c.id === data.id ? data : c));
+        else setCompetencias(prev => [...prev, data]);
     };
 
-    const eliminarCompetencia = (id) => {
+    const eliminarCompetencia = async (id) => {
+        if (USE_MOCK) {
+            setCompetencias(prev => prev.filter(c => c.id !== id));
+            return;
+        }
+        const res = await fetch(`${API_URL}/competencias/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar competencia');
         setCompetencias(prev => prev.filter(c => c.id !== id));
     };
 
     // --- CRUD EQUIPOS ---
-    const guardarEquipo = (equipo) => {
-        if (equipo.idEquipo) {
-            setEquipos(prev => prev.map(e => e.idEquipo === equipo.idEquipo ? { ...e, ...equipo } : e));
-        } else {
-            setEquipos(prev => [...prev, { ...equipo, idEquipo: Date.now(), fechaCreacion: new Date().toISOString().split('T')[0] }]);
+    const guardarEquipo = async (equipo) => {
+        if (USE_MOCK) {
+            if (equipo.idEquipo) setEquipos(prev => prev.map(e => e.idEquipo === equipo.idEquipo ? { ...e, ...equipo } : e));
+            else setEquipos(prev => [...prev, { ...equipo, idEquipo: Date.now(), fechaCreacion: new Date().toISOString().split('T')[0] }]);
+            return;
         }
+
+        const isEdit = !!equipo.idEquipo;
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `${API_URL}/equipos/${equipo.idEquipo}` : `${API_URL}/equipos`;
+        
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(equipo)
+        });
+        if (!res.ok) throw new Error('Error al guardar equipo');
+        const data = await res.json();
+        
+        if (isEdit) setEquipos(prev => prev.map(e => e.idEquipo === data.idEquipo ? data : e));
+        else setEquipos(prev => [...prev, data]);
     };
 
-    const eliminarEquipo = (id) => {
+    const eliminarEquipo = async (id) => {
+        if (USE_MOCK) {
+            setEquipos(prev => prev.filter(e => e.idEquipo !== id));
+            return;
+        }
+        const res = await fetch(`${API_URL}/equipos/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar equipo');
         setEquipos(prev => prev.filter(e => e.idEquipo !== id));
     };
 
     // --- LÓGICA DE NEGOCIO ---
-    const inscribirEquipo = (competenciaId, equipoId) => {
-        setCompetencias(prev => prev.map(c => {
-            if (c.id === competenciaId && !c.equipos.includes(equipoId)) {
-                return { ...c, equipos: [...c.equipos, equipoId] };
-            }
-            return c;
-        }));
-    };
-
-    const generarFixture = (competenciaId) => {
-        const comp = competencias.find(c => c.id === competenciaId);
-        if (!comp || comp.equipos.length < 2) return;
-
-        let nuevasRondas = [];
-        if (comp.tipo === 'liga') {
-            nuevasRondas = algoritmoBergerTodosContraTodos(competenciaId, comp.equipos);
-        } else {
-            nuevasRondas = algoritmoEliminacionDirecta(competenciaId, comp.equipos);
+    const inscribirEquipo = async (competenciaId, equipoId) => {
+        if (USE_MOCK) {
+            setCompetencias(prev => prev.map(c => {
+                if (c.id === competenciaId && !c.equipos.includes(equipoId)) return { ...c, equipos: [...c.equipos, equipoId] };
+                return c;
+            }));
+            return;
         }
 
+        const res = await fetch(`${API_URL}/competencias/${competenciaId}/inscribir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ equipoId })
+        });
+        if (!res.ok) throw new Error('Error al inscribir equipo');
+        const data = await res.json(); // Se asume que retorna la competencia actualizada
+        setCompetencias(prev => prev.map(c => c.id === data.id ? data : c));
+    };
+
+    const generarFixture = async (competenciaId) => {
+        if (USE_MOCK) {
+            const comp = competencias.find(c => c.id === competenciaId);
+            if (!comp || comp.equipos.length < 2) return;
+
+            let nuevasRondas = comp.tipo === 'liga' 
+                ? algoritmoBergerTodosContraTodos(competenciaId, comp.equipos) 
+                : algoritmoEliminacionDirecta(competenciaId, comp.equipos);
+
+            setFixtures(prev => [...prev.filter(f => f.competenciaID !== competenciaId), { competenciaID: competenciaId, rondas: nuevasRondas }]);
+            setCompetencias(prev => prev.map(c => c.id === competenciaId ? { ...c, estado: 'en_curso' } : c));
+            return;
+        }
+
+        const res = await fetch(`${API_URL}/competencias/${competenciaId}/fixture`, { method: 'POST' });
+        if (!res.ok) throw new Error('Error al generar fixture');
+        
+        // Se asume que retorna el nuevo fixture generado
+        const data = await res.json(); 
         setFixtures(prev => {
             const filtrado = prev.filter(f => f.competenciaID !== competenciaId);
-            return [...filtrado, { competenciaID: competenciaId, rondas: nuevasRondas }];
+            return [...filtrado, data];
         });
         
-        // Pasamos la competencia a "en_curso" automáticamente
+        // Actualizamos estado local de la competencia
         setCompetencias(prev => prev.map(c => c.id === competenciaId ? { ...c, estado: 'en_curso' } : c));
     };
 
-    const registrarResultado = (competenciaId, partidoId, resultado) => {
-        setFixtures(prev => prev.map(fix => {
-            if (fix.competenciaID === competenciaId) {
-                const rondasMod = fix.rondas.map(r => {
-                    const partidosMod = r.partidos.map(p => {
-                        if (p.idPartido === partidoId) {
-                            return { ...p, resultado, estado: 'finalizado' };
-                        }
-                        return p;
-                    });
-                    return { ...r, partidos: partidosMod };
-                });
-                return { ...fix, rondas: rondasMod };
-            }
-            return fix;
-        }));
+    const registrarResultado = async (competenciaId, partidoId, resultado) => {
+        if (USE_MOCK) {
+            setFixtures(prev => prev.map(fix => {
+                if (fix.competenciaID === competenciaId) {
+                    const rondasMod = fix.rondas.map(r => ({
+                        ...r, partidos: r.partidos.map(p => p.idPartido === partidoId ? { ...p, resultado, estado: 'finalizado' } : p)
+                    }));
+                    return { ...fix, rondas: rondasMod };
+                }
+                return fix;
+            }));
+            return;
+        }
+
+        const res = await fetch(`${API_URL}/fixtures/${competenciaId}/partido/${partidoId}/resultado`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resultado })
+        });
+        if (!res.ok) throw new Error('Error al registrar resultado');
+        
+        // Se asume que devuelve el fixture entero actualizado o el partido
+        // Para simplificar, refrescamos todos los datos (o podrías actualizar localmente como en el mock)
+        await fetchDatos();
     };
 
     return (

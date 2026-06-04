@@ -21,7 +21,7 @@ const FORM_VACIO = {
 const ERRORES_VACIOS = {
     nombre: '', apellido: '', fechaNacimiento: '', dni: '',
     telefono: '', email: '', username: '', legajo: '',
-    especialidad: '', turno: '', password: '',
+    especialidad: '', turno: '', password: '', certificaciones: ''
 };
 
 // ── Sub-componente Field ──────────────────────────────────────────────────────
@@ -52,6 +52,12 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
         if (esNuevo) {
             setForm(FORM_VACIO);
         } else if (profesor) {
+            // Formateamos las certificaciones acá, al cargar los datos en el estado
+            const certs = profesor.certificaciones;
+            const certsFormateadas = Array.isArray(certs) 
+                ? certs.map(c => c.nombre).join(', ') 
+                : (certs ?? '');
+
             setForm({
                 nombre:          profesor.nombre          ?? '',
                 apellido:        profesor.apellido        ?? '',
@@ -63,7 +69,7 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
                 legajo:          profesor.legajo          ?? '',
                 especialidad:    profesor.especialidad    ?? '',
                 turno:           profesor.turno           ?? '',
-                certificaciones: profesor.certificaciones ?? '',
+                certificaciones: certsFormateadas,
                 password:        '',
                 estado:          profesor.estado          ?? 'activo',
             });
@@ -121,7 +127,7 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
 
         const datos = {
             // Solo incluir id cuando estamos editando
-            ...(profesor ? { id: profesor.id } : {}),
+            ...(profesor ? { idUsuario: profesor.idUsuario } : {}),
             nombre:          form.nombre.trim(),
             apellido:        form.apellido.trim(),
             fechaNacimiento: form.fechaNacimiento,
@@ -280,11 +286,11 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
                         </Field>
                     </div>
 
-                    {/* Certificaciones (ancho completo) */}
+                    {/* Certificaciones (ancho completo) - CORREGIDO */}
                     <Field label="Certificaciones" error={errores.certificaciones}>
                         <input
                             type="text"
-                            placeholder="Ej: AFA Nivel 1"
+                            placeholder="Ej: AFA Nivel 1, Preparador Físico"
                             value={form.certificaciones}
                             onChange={e => set('certificaciones', e.target.value)}
                         />

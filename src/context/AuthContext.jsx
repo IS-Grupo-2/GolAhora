@@ -105,7 +105,7 @@ export function AuthProvider({ children }) {
                     const err = await response.json().catch(() => ({}));
                     return { ok: false, error: err.message || 'Credenciales incorrectas.' };
                 }
-                const data = await response.json(); // Tu backend debería retornar el usuario + token
+                const data = await response.json(); // El backend debería retornar el usuario + token
                 persistUser(data.user || data); 
                 return { ok: true };
             } catch (err) {

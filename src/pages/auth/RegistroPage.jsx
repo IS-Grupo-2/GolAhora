@@ -14,7 +14,7 @@ function RegistroPage() {
     const [generalError, setGeneralError] = useState('');
 
     const [formData, setFormData] = useState({
-        nombre: '', apellido: '', dni: '', fechaNacimiento: '', telefono: '', user: '', email: '', password: ''
+        name: '', lastname: '', dni: '', userName: '', email: '', phoneNumber: '', password: ''
     })
     const [errors, setErrors] = useState({})
 
@@ -67,7 +67,7 @@ function RegistroPage() {
                 // 2. Inyectamos los datos del nuevo cliente en el AuthContext
                 loginDirect(clienteCreado);
 
-                // 3. Redirección mágica al dashboard 🚀
+                // 3. Redirección al dashboard
                 navigate('/dashboard');
 
             } catch (error) {
