@@ -1,8 +1,9 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState } from 'react';
 
-const AuthContext = createContext(null);
-
+const AuthContext = createContext();
+const API_URL = 'http://localhost:5063/api';
+const USE_MOCK = false;
 const MOCK_USERS = [
     {
         id: 1,
@@ -82,7 +83,7 @@ export function AuthProvider({ children }) {
     }
 
 // 1. Convertimos login en ASYNC para dejarlo listo para la API
-    async function login({ email, password }) {
+    async function login({ userName, password }) {
         if (USE_MOCK) {
             const found = MOCK_USERS.find(u => u.email === email && u.password === password);
 
@@ -96,10 +97,10 @@ export function AuthProvider({ children }) {
         } else {
             // LOGIN REAL CON BACKEND
             try {
-                const response = await fetch(`${API_URL}/auth/login`, {
+                const response = await fetch(`${API_URL}/Auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ userName, password })
                 });
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));

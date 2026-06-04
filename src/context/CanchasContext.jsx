@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const CanchasContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL ;
 const USE_MOCK = true;
 
 const MOCK_TIPOS = [

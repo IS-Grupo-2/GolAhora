@@ -89,8 +89,8 @@ const MOCK_CLIENTES = [
 
 const ClientesContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-const USE_MOCK = true;
+const API_URL = 'http://localhost:5063/api';
+const USE_MOCK = false;
 
 export function ClientesProvider({ children }) {
     const [clientes, setClientes] = useState([]);
@@ -105,7 +105,7 @@ export function ClientesProvider({ children }) {
                 await new Promise(resolve => setTimeout(resolve, 4300));
                 setClientes(prev => prev.length === 0 ? MOCK_CLIENTES : prev);
             } else {
-                const response = await fetch(`${API_URL}/clientes`);
+                const response = await fetch(`${API_URL}/User`);
                 if (!response.ok) throw new Error('Error al obtener clientes');
                 const data = await response.json();
                 setClientes(data);
@@ -131,7 +131,7 @@ export function ClientesProvider({ children }) {
                 setClientes(prev => [...prev, clienteConId]);
                 return clienteConId;
             } else {
-                const response = await fetch(`${API_URL}/clientes`, {
+                const response = await fetch(`${API_URL}/Auth/register/client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoCliente)
@@ -157,7 +157,7 @@ export function ClientesProvider({ children }) {
             if (USE_MOCK) {
                 setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? clienteModificado : c));
             } else {
-                const response = await fetch(`${API_URL}/clientes/${clienteModificado.idUsuario}`, {
+                const response = await fetch(`${API_URL}/User/${clienteModificado.idUsuario}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(clienteModificado)
@@ -185,7 +185,7 @@ export function ClientesProvider({ children }) {
                 ));
             } else {
                 // Se suele usar PATCH para actualizaciones parciales como dar de baja/activar
-                const response = await fetch(`${API_URL}/clientes/${idUsuario}/toggle-activo`, {
+                const response = await fetch(`${API_URL}/User/${idUsuario}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' }
                 });
