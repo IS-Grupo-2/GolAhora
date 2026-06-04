@@ -196,7 +196,15 @@ export function RecibosProvider({ children }) {
             setItems(prev => [nuevoConId, ...prev]);
             return nuevoConId;
         }
-        // Lógica de fetch POST aquí
+        const res = await fetch(`${API_URL}/recibos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevo),
+        });
+        if (!res.ok) throw new Error('Error al emitir el recibo');
+        const data = await res.json();
+        setItems(prev => [data, ...prev]);
+        return data;
     };
 
     const modificarItem = async (modificado) => {
@@ -204,9 +212,17 @@ export function RecibosProvider({ children }) {
             setItems(prev => prev.map(item =>
                 item.idRecibo === modificado.idRecibo ? { ...item, ...modificado } : item
             ));
-            return;
+            return modificado;
         }
-        // Lógica de fetch PUT acá
+        const res = await fetch(`${API_URL}/recibos/${modificado.idRecibo}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modificado),
+        });
+        if (!res.ok) throw new Error('Error al modificar el recibo');
+        const data = await res.json();
+        setItems(prev => prev.map(item => item.idRecibo === data.idRecibo ? data : item));
+        return data;
     };
 
     const eliminarItem = async (id) => {
@@ -214,7 +230,9 @@ export function RecibosProvider({ children }) {
             setItems(prev => prev.filter(item => item.idRecibo !== id));
             return;
         }
-        // Lógica de fetch DELETE acá
+        const res = await fetch(`${API_URL}/recibos/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al anular el recibo');
+        setItems(prev => prev.filter(item => item.idRecibo !== id));
     };
 
     return (

@@ -2,7 +2,8 @@
 import { useEffect } from 'react';
 
 export default function ProfesorModalBaja({ open, profesor, onConfirmar, onCerrar }) {
-    const deBaja = profesor?.estado === 'activo';
+    const isActivo = profesor?.activo ?? (profesor?.estado === 'activo');
+    const deBaja   = isActivo;
 
     // Escape para cerrar
     useEffect(() => {

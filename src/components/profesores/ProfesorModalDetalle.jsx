@@ -12,6 +12,13 @@ function formatFecha(fecha) {
     return `${d}/${m}/${y}`;
 }
 
+// ✅ FIX: convierte el array de objetos {nombre, ...} a string legible
+function formatCerts(certs) {
+    if (!certs) return '—';
+    if (Array.isArray(certs)) return certs.map(c => c.nombre).join(', ') || '—';
+    return certs;
+}
+
 function Campo({ label, valor, full }) {
     return (
         <div className={`detalle-campo${full ? ' detalle-full' : ''}`}>
@@ -86,8 +93,8 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
                         <Campo label="DNI"          valor={profesor.dni} />
                         <Campo label="Teléfono"     valor={profesor.telefono} />
                         <Campo label="Ingreso"      valor={formatFecha(profesor.fechaIngreso)} />
-                        <Campo label="Email"        valor={profesor.email}           full />
-                        <Campo label="Certificaciones" valor={profesor.certificaciones} full />
+                        <Campo label="Email"        valor={profesor.email}                        full />
+                        <Campo label="Certificaciones" valor={formatCerts(profesor.certificaciones)} full />
                         <Campo
                             label="Cert. verificada"
                             valor={profesor.verificacionCertificacion ? '✓ Verificada' : '✗ Sin verificar'}
