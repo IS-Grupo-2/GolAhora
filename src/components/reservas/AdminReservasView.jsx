@@ -45,14 +45,35 @@ export default function AdminReservasView() {
     return [];
   }, [reservas, isAdmin, isEmpleado, isProfesor, isCliente, user?.idUsuario]);
 
+  const normalizarTexto = (texto) => {
+      return texto
+          .toString()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+  };
+
   const reservasFiltradas = useMemo(() => {
-    const q = filtro.toLowerCase().trim();
+    const q = normalizarTexto(filtro);
     if (!q) return reservasVisibles;
-    return reservasVisibles.filter((r) =>
-      [r.cliente?.nombre, r.cliente?.apellido, r.cancha?.nombre, String(r.cancha?.numero ?? ''), r.estado, r.fechaUso]
-        .filter(Boolean)
-        .some((field) => String(field).toLowerCase().includes(q))
-    );
+
+    return reservasVisibles.filter((r) => {
+      const nombre = normalizarTexto(r.cliente?.nombre || '');
+      const apellido = normalizarTexto(r.cliente?.apellido || '');
+      const cancha = normalizarTexto(r.cancha?.nombre || '');
+      const estado = normalizarTexto(r.estado || '');
+      const fecha = normalizarTexto(r.fechaUso || '');
+      const numeroCancha = String(r.cancha?.numero || '');
+
+      return (
+        nombre.includes(q) ||
+        apellido.includes(q) ||
+        cancha.includes(q) ||
+        estado.includes(q) ||
+        fecha.includes(q) ||
+        numeroCancha.includes(q)
+      );
+    });
   }, [reservasVisibles, filtro]);
 
   // NUEVO LOGICA DE GUARDADO ALINEADA
