@@ -24,7 +24,7 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left"><h2 className="crud-title">Disponibilidad de Canchas</h2></div>
                 <div className="crud-toolbar-right">
-                    <Can roles={['admin', 'empleado']}>
+                    <Can roles={['admin', 'empleado', 'Employee']}>
                         <button className="btn-primary-action" onClick={onNuevaDisp} disabled={!cancha} style={{ opacity: !cancha ? 0.5 : 1 }}>
                             <i data-lucide="plus" /> Agregar franja
                         </button>
@@ -32,22 +32,28 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                 </div>
             </div>
 
-            <div className="disp-layout">
-                <aside className="cancha-selector">
-                    <p className="cancha-selector-title">Seleccionar cancha (Activas)</p>
-                    {canchasActivas.length === 0 && <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', textAlign: 'center' }}>No hay canchas operativas.</p>}
+            {/* NUEVO LAYOUT: Contenedor vertical */}
+            <div className="disp-layout-vertical">
+                
+                {/* SELECTOR HORIZONTAL ARRIBA */}
+                <div className="cancha-selector-horizontal">
+                    {canchasActivas.length === 0 && <p style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>No hay canchas operativas.</p>}
                     {canchasActivas.map(c => {
                         const t = tipos.find(x => x.id === c.idTipo);
                         return (
                             <button key={c.id} className={`cancha-selector-item ${c.id === cancha?.id ? 'selected' : ''}`} onClick={() => setCanchaActivaId(c.id)}>
                                 <span className="cancha-num-badge sm">{c.numero}</span>
-                                <div><strong>{c.nombre}</strong><span>{t?.nombre || ''}</span></div>
+                                <div className="cancha-selector-text">
+                                    <strong>{c.nombre}</strong>
+                                    <span>{t?.nombre || ''}</span>
+                                </div>
                             </button>
                         );
                     })}
-                </aside>
+                </div>
 
-                <div className="disp-main">
+                {/* TABLA PRINCIPAL DEBAJO OCUPANDO 100% */}
+                <div className="disp-main-full">
                     {!cancha ? (
                         <div className="tabla-empty"><p>Seleccione una cancha activa para configurar su disponibilidad.</p></div>
                     ) : (
@@ -65,8 +71,10 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                     <span className="mini-stat-inline red">{hsBloq} hs bloqueadas</span>
                                 </div>
                             </div>
+                            
                             <div className="panel-card tabla-panel" style={{ marginTop: '16px' }}>
-                                <div className="table-wrapper">
+                                {/* El table-wrapper ahora maneja el scroll */}
+                                <div className="table-wrapper scroll-x-fix">
                                     <table>
                                         <thead>
                                             <tr>
@@ -74,7 +82,7 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                                 <th>Inicio</th>
                                                 <th>Fin</th>
                                                 <th>Estado</th>
-                                                <Can roles={['admin', 'empleado']}>
+                                                <Can roles={['admin', 'empleado', 'Employee']}>
                                                     <th>Acciones</th>
                                                 </Can>
                                             </tr>
@@ -93,7 +101,7 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                                                 {f.disponible ? 'Habilitada' : 'Bloqueada'}
                                                             </span>
                                                         </td>
-                                                        <Can roles={['admin', 'empleado']}>
+                                                        <Can roles={['admin', 'empleado', 'Employee']}>
                                                             <td>
                                                                 <div className="action-btns">
                                                                     <button className="action-btn view" onClick={() => onToggleDisp(f)}><i data-lucide={f.disponible ? 'eye-off' : 'eye'} /></button>
