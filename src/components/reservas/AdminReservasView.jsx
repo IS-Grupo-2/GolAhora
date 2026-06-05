@@ -49,7 +49,7 @@ export default function AdminReservasView() {
     const q = filtro.toLowerCase().trim();
     if (!q) return reservasVisibles;
     return reservasVisibles.filter((r) =>
-      [r.cliente?.nombre, r.cliente?.apellido, r.cancha?.nombre, String(r.cancha?.numero ?? ''), r.estado, r.fechaUso]
+      [r.cliente?.name, r.cliente?.lastName, r.cancha?.nombre, String(r.cancha?.numero ?? ''), r.estado, r.fechaUso]
         .filter(Boolean)
         .some((field) => String(field).toLowerCase().includes(q))
     );
