@@ -3,21 +3,20 @@ import { useState, useEffect } from 'react';
 
 // ── Estado inicial del formulario ─────────────────────────────────────────────
 const FORM_VACIO = {
-    nombre:          '',
-    apellido:        '',
-    fechaNacimiento: '',
-    nroSocio:        '',
+    name:            '',
+    lastName:        '',
     dni:             '',
-    telefono:        '',
+    userName:        '',
     email:           '',
-    username:        '',
+    phoneNumber:     '',
     password:        '',
+    role:            '',
+    startDate: new Date().toISOString(),
     estado:          'activo',
 };
 
 const ERRORES_VACIOS = {
-    nombre: '', apellido: '', fechaNacimiento: '', nroSocio: '',
-    dni: '', telefono: '', email: '', username: '', password: '',
+    name: '', lastName: '', dni: '', userName: '', email: '', phoneNumber: '', password: '', role: '', startDate: '',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,14 +46,12 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
             setForm(FORM_VACIO);
         } else if (usuario) {
             setForm({
-                nombre:          usuario.nombre          ?? '',
-                apellido:        usuario.apellido        ?? '',
-                fechaNacimiento: usuario.fechaNacimiento ?? '',
-                nroSocio:        usuario.nroSocio        ?? '',
+                name:            usuario.name            ?? '',
+                lastName:        usuario.lastName        ?? '',
                 dni:             usuario.dni             ?? '',
-                telefono:        usuario.telefono        ?? '',
+                phoneNumber:     usuario.phoneNumber     ?? '',
                 email:           usuario.email           ?? '',
-                username:        usuario.username        ?? '',
+                userName:        usuario.userName        ?? '',
                 password:        '',
                 estado:          usuario.estado          ?? 'activo',
             });
@@ -92,15 +89,13 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
         const errs = { ...ERRORES_VACIOS };
         let ok = true;
 
-        if (form.nombre.trim().length < 2)                                { errs.nombre = 'Nombre muy corto';                  ok = false; }
-        if (form.apellido.trim().length < 2)                              { errs.apellido = 'Apellido muy corto';              ok = false; }
+        if (form.name.trim().length < 2)                                  { errs.name = 'Nombre muy corto';                    ok = false; }
+        if (form.lastName.trim().length < 2)                              { errs.lastName = 'Apellido muy corto';              ok = false; }
         if (!/^\d{7,8}$/.test(form.dni.trim()))                           { errs.dni = 'DNI inválido (7 u 8 dígitos)';         ok = false; }
-        if (form.telefono.trim().length < 8)                              { errs.telefono = 'Teléfono inválido';               ok = false; }
+        if (form.phoneNumber.trim().length < 8)                           { errs.phoneNumber = 'Teléfono inválido';            ok = false; }
         if (!form.email.includes('@') || !form.email.includes('.'))       { errs.email = 'Email inválido';                     ok = false; }
-        if (form.username.trim().length < 4 || form.username.trim().length > 20) { errs.username = 'Entre 4 y 20 caracteres'; ok = false; }
+        if (form.userName.trim().length < 4 || form.userName.trim().length > 20) { errs.userName = 'Entre 4 y 20 caracteres';  ok = false; }
         if (esNuevo && form.password.length < 6)                          { errs.password = 'Mínimo 6 caracteres';             ok = false; }
-        if (!form.fechaNacimiento)                                        { errs.fechaNacimiento = 'Ingrese fecha';            ok = false; }
-        if (form.nroSocio.trim().length < 4)                              { errs.nroSocio = 'Número inválido';                 ok = false; }
 
         setErrores(errs);
         return ok;
@@ -110,16 +105,14 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
         if (!validar()) return;
         const datos = {
             ...(usuario ? { id: usuario.id } : {}),
-            nombre:          form.nombre.trim(),
-            apellido:        form.apellido.trim(),
-            fechaNacimiento: form.fechaNacimiento,
-            nroSocio:        form.nroSocio.trim(),
+            name:            form.name.trim(),
+            lastName:        form.lastName.trim(),
             dni:             form.dni.trim(),
-            telefono:        form.telefono.trim(),
+            phoneNumber:     form.phoneNumber.trim(),
             email:           form.email.trim(),
-            username:        form.username.trim(),
+            userName:        form.userName.trim(),
             estado:          form.estado,
-            ...(esNuevo ? {} : {}),
+            ...(esNuevo ? { password: form.password.trim() } : {}),
         };
         onGuardar(datos);
     }
@@ -148,44 +141,24 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
                 {/* BODY */}
                 <div className="dash-modal-body">
                     <div className="form-row">
-                        <Field label="Nombre(s)" required error={errores.nombre}>
+                        <Field label="Nombre(s)" required error={errores.name}>
                             <input
                                 type="text"
                                 placeholder="Ej: Juan Pablo"
                                 autoComplete="given-name"
-                                value={form.nombre}
-                                onChange={e => set('nombre', e.target.value)}
-                                className={errores.nombre ? 'input-error-field' : ''}
+                                value={form.name}
+                                onChange={e => set('name', e.target.value)}
+                                className={errores.name ? 'input-error-field' : ''}
                             />
                         </Field>
-                        <Field label="Apellido" required error={errores.apellido}>
+                        <Field label="Apellido" required error={errores.lastName}>
                             <input
                                 type="text"
                                 placeholder="Ej: Pérez"
                                 autoComplete="family-name"
-                                value={form.apellido}
-                                onChange={e => set('apellido', e.target.value)}
-                                className={errores.apellido ? 'input-error-field' : ''}
-                            />
-                        </Field>
-                    </div>
-
-                    <div className="form-row">
-                        <Field label="Fecha de nacimiento" required error={errores.fechaNacimiento}>
-                            <input
-                                type="date"
-                                value={form.fechaNacimiento}
-                                onChange={e => set('fechaNacimiento', e.target.value)}
-                                className={errores.fechaNacimiento ? 'input-error-field' : ''}
-                            />
-                        </Field>
-                        <Field label="N° Socio" required error={errores.nroSocio}>
-                            <input
-                                type="text"
-                                placeholder="SOC-1001"
-                                value={form.nroSocio}
-                                onChange={e => set('nroSocio', e.target.value)}
-                                className={errores.nroSocio ? 'input-error-field' : ''}
+                                value={form.lastName}
+                                onChange={e => set('lastName', e.target.value)}
+                                className={errores.lastName ? 'input-error-field' : ''}
                             />
                         </Field>
                     </div>
@@ -202,14 +175,14 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
                                 className={errores.dni ? 'input-error-field' : ''}
                             />
                         </Field>
-                        <Field label="Teléfono" required error={errores.telefono}>
+                        <Field label="Teléfono" required error={errores.phoneNumber}>
                             <input
                                 type="text"
                                 placeholder="+54 11..."
                                 autoComplete="tel"
-                                value={form.telefono}
-                                onChange={e => set('telefono', e.target.value)}
-                                className={errores.telefono ? 'input-error-field' : ''}
+                                value={form.phoneNumber}
+                                onChange={e => set('phoneNumber', e.target.value)}
+                                className={errores.phoneNumber ? 'input-error-field' : ''}
                             />
                         </Field>
                     </div>
@@ -226,14 +199,14 @@ export default function UsuarioModal({ open, modo, usuario, onGuardar, onCerrar 
                     </Field>
 
                     <div className="form-row">
-                        <Field label="Nombre de usuario" required error={errores.username}>
+                        <Field label="Nombre de usuario" required error={errores.userName}>
                             <input
                                 type="text"
                                 placeholder="usuario123"
                                 autoComplete="username"
-                                value={form.username}
-                                onChange={e => set('username', e.target.value)}
-                                className={errores.username ? 'input-error-field' : ''}
+                                value={form.userName}
+                                onChange={e => set('userName', e.target.value)}
+                                className={errores.userName ? 'input-error-field' : ''}
                             />
                         </Field>
                         {/* Estado visible sólo en edición */}
