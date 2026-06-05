@@ -123,8 +123,10 @@ export const MOCK_PROFESORES = [
 
 const ProfesoresContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-const USE_MOCK = true;
+const API_URL = 'http://localhost:5063/api'
+
+
+const USE_MOCK = false;
 
 export function ProfesoresProvider({ children }) {
     const [profesores, setProfesores] = useState([]);
@@ -139,7 +141,7 @@ export function ProfesoresProvider({ children }) {
                 await new Promise(resolve => setTimeout(resolve, 300));
                 setProfesores(prev => prev.length === 0 ? MOCK_PROFESORES : prev);
             } else {
-                const response = await fetch(`${API_URL}/profesores`);
+                const response = await fetch(`${API_URL}/User`);
                 if (!response.ok) throw new Error('Error al obtener profesores');
                 const data = await response.json();
                 setProfesores(data);
@@ -165,7 +167,7 @@ export function ProfesoresProvider({ children }) {
             };
             setProfesores(prev => [...prev, profesorConId]);
         } else {
-            const response = await fetch(`${API_URL}/profesores`, {
+            const response = await fetch(`${API_URL}/Auth/register/professor`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoProfesor),
