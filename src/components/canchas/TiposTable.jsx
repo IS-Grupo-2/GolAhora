@@ -1,8 +1,21 @@
 export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja }) {
+    const normalizarTexto = (texto) => {
+        return texto
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+    
+    
     const filtrados = tipos.filter(t => {
         if (!filtro) return true;
-        const q = filtro.toLowerCase();
-        return t.nombre.toLowerCase().includes(q) || t.superficie.toLowerCase().includes(q);
+        
+        const q = normalizarTexto(filtro);
+        const nombre = normalizarTexto(t.nombre || '');
+        const superficie = normalizarTexto(t.superficie || '');
+        
+        return nombre.includes(q) || superficie.includes(q);
     });
 
     return (

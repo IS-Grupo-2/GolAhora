@@ -67,10 +67,26 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
-    const cobrosFiltrados = filtro ? cobros.filter(c => 
-        c.cliente.nombre.toLowerCase().includes(filtro.toLowerCase()) || 
-        c.concepto.toLowerCase().includes(filtro.toLowerCase())
-    ) : cobros;
+
+    const normalizarTexto = (texto) => {
+        return texto
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+
+    const cobrosFiltrados = cobros.filter(c => {
+        const busqueda = normalizarTexto(filtro);
+
+        const nombreCompleto = normalizarTexto(`${c.cliente?.nombre || ''} ${c.cliente?.apellido || ''}`);
+        const concepto = normalizarTexto(c.concepto || '');
+        const idCobro = String(c.idCobro || '');
+
+        return  nombreCompleto.includes(busqueda) || 
+                concepto.includes(busqueda) ||
+                idCobro.includes(busqueda);
+    });
 
      useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
@@ -98,7 +114,7 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
             </div>
 
             <div className="panel-card tabla-panel">
-                {cobros.length === 0 ? <EmptyState message="No hay cobros registrados." /> : (
+                {cobrosFiltrados.length === 0 ? <EmptyState message="No hay cobros registrados." /> : (
                     <CobrosTable
                         cobros={cobrosFiltrados}
                         isAdmin={isAdmin} // Pasamos isAdmin para ocultar botones de edición

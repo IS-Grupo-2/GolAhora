@@ -4,11 +4,23 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
     const activas = canchas.filter(c => c.estado === 'activa').length;
     const inactivas = canchas.filter(c => c.estado === 'inactiva').length;
 
+    const normalizarTexto = (texto) => {
+        return texto
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+
     const filtradas = canchas.filter(c => {
         if (!filtro) return true;
-        const q = filtro.toLowerCase();
+        
+        const q = normalizarTexto(filtro);
+        const nombreCancha = normalizarTexto(c.nombre || '');
         const tipo = tipos.find(t => t.id === c.idTipo);
-        return c.nombre.toLowerCase().includes(q) || (tipo?.nombre || '').toLowerCase().includes(q);
+        const nombreTipo = normalizarTexto(tipo?.nombre || '');
+        
+        return nombreCancha.includes(q) || nombreTipo.includes(q);
     });
 
     return (
