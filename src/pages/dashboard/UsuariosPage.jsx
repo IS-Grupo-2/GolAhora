@@ -26,7 +26,6 @@ function Toast({ toasts }) {
 
 // ── Contenido de la Página ────────────────────────────────────────────────────
 export default function UsuariosPageContent() {
-    // Usamos el contexto en lugar del estado local
     const { clientes, loading, error, crearCliente, modificarCliente, darDeBaja } = useClientes();
     
     const [filtro, setFiltro] = useState('');
@@ -60,7 +59,7 @@ export default function UsuariosPageContent() {
     }
 
     async function handleToggleEstado(usuario) {
-        await darDeBaja(usuario.idUsuario); // Usamos idUsuario que viene del mock
+        await darDeBaja(usuario.idUsuario);
         const deBaja = usuario.activo;
         mostrarToast(
             deBaja
@@ -90,7 +89,7 @@ export default function UsuariosPageContent() {
         ? clientes.filter(u => {
               const q = filtro.toLowerCase();
               return (
-                  `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
+                  `${u.name} ${u.lastName}`.toLowerCase().includes(q) ||
                   u.dni.includes(q) ||
                   u.email.toLowerCase().includes(q) ||
                   u.userName.toLowerCase().includes(q)

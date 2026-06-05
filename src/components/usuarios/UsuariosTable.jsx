@@ -3,8 +3,8 @@ import Can from '../Can';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(u) {
-    if (!u.nombre || !u.apellido) return '??';
-    return (u.nombre[0] + u.apellido[0]).toUpperCase();
+    if (!u.name || !u.lastName) return '??';
+    return (u.name[0] + u.lastName[0]).toUpperCase();
 }
 
 function BadgeEstado({ activo }) {
@@ -47,8 +47,7 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                 </thead>
                 <tbody>
                     {usuarios.map(u => {
-                        // Adaptación para soportar tanto el mock nuevo (activo: bool) 
-                        // como el estado viejo (estado: 'activo')
+
                         const isActivo = u.activo ?? (u.estado === 'activo');
 
                         return (
@@ -59,14 +58,14 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                                             {iniciales(u)}
                                         </div>
                                         <div className="user-cell-info">
-                                            <strong>{u.nombre} {u.apellido}</strong>
+                                            <strong>{u.name} {u.lastName}</strong>
                                             <span>@{u.userName || u.username}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td>{u.dni}</td>
                                 <td className="td-email">{u.email}</td>
-                                <td>{u.telefono}</td>
+                                <td>{u.phoneNumber}</td>
                                 <td><BadgeEstado activo={isActivo} /></td>
                                 <td>
                                     <div className="action-btns">
@@ -80,7 +79,7 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                                         </button>
                                         
                                         {/* Editar: Solo admin y empleado */}
-                                        <Can roles={['admin', 'empleado']}>
+                                        <Can roles={['Admin', 'Employee']}>
                                             <button
                                                 className="action-btn edit"
                                                 title="Editar"
@@ -91,7 +90,7 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                                         </Can>
 
                                         {/* Dar de baja / Reactivar: Solo admin */}
-                                        <Can roles={['admin']}>
+                                        <Can roles={['Admin']}>
                                             <button
                                                 className="action-btn toggle"
                                                 title={isActivo ? 'Dar de baja' : 'Reactivar'}

@@ -1,4 +1,3 @@
-// src/components/usuarios/UsuarioModalBaja.jsx
 import { useEffect } from 'react';
 
 export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar }) {
@@ -44,14 +43,14 @@ export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar 
                         {deBaja ? (
                             <>
                                 ¿Estás seguro que querés dar de baja a{' '}
-                                <strong>{usuario.nombre} {usuario.apellido}</strong>?
+                                <strong>{usuario.name} {usuario.lastName}</strong>?
                                 <br />
                                 El cliente no podrá acceder al sistema.
                             </>
                         ) : (
                             <>
                                 ¿Querés reactivar a{' '}
-                                <strong>{usuario.nombre} {usuario.apellido}</strong>?
+                                <strong>{usuario.name} {usuario.lastName}</strong>?
                             </>
                         )}
                     </p>

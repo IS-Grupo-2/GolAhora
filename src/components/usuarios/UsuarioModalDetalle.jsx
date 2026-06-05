@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(u) {
-    return (u.nombre[0] + u.apellido[0]).toUpperCase();
+    return (u.name[0] + u.lastName[0]).toUpperCase();
 }
 
 function formatFecha(fecha) {
@@ -12,15 +12,17 @@ function formatFecha(fecha) {
     return `${d}/${m}/${y}`;
 }
 
-function calcularEdad(fechaNacimiento) {
-    if (!fechaNacimiento) return '—';
-    const hoy       = new Date();
-    const nac       = new Date(fechaNacimiento);
-    let edad        = hoy.getFullYear() - nac.getFullYear();
-    const mes       = hoy.getMonth() - nac.getMonth();
-    if (mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
-    return edad;
-}
+// Ojo esta función no usamos más fecha de nacimiento
+
+// function calcularEdad(fechaNacimiento) {
+//     if (!fechaNacimiento) return '—';
+//     const hoy       = new Date();
+//     const nac       = new Date(fechaNacimiento);
+//     let edad        = hoy.getFullYear() - nac.getFullYear();
+//     const mes       = hoy.getMonth() - nac.getMonth();
+//     if (mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
+//     return edad;
+// }
 
 function Campo({ label, valor, full }) {
     return (
@@ -74,10 +76,10 @@ export default function UsuarioModalDetalle({ open, usuario, onCerrar, onEditar 
                         {iniciales(usuario)}
                     </div>
                     <div className="detalle-nombre">
-                        {usuario.nombre} {usuario.apellido}
+                        {usuario.name} {usuario.lastName}
                     </div>
                     <div className="detalle-username">
-                        @{usuario.username}
+                        @{usuario.userName}
                         &nbsp;·&nbsp;
                         <span className={`badge ${usuario.estado === 'activo' ? 'success' : 'danger'}`}>
                             {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
@@ -86,13 +88,10 @@ export default function UsuarioModalDetalle({ open, usuario, onCerrar, onEditar 
 
                     <div className="detalle-grid">
                         <Campo label="DNI"                valor={usuario.dni} />
-                        <Campo label="Teléfono"           valor={usuario.telefono} />
-                        <Campo label="Edad"               valor={`${calcularEdad(usuario.fechaNacimiento)} años`} />
-                        <Campo label="Fecha de nacimiento" valor={formatFecha(usuario.fechaNacimiento)} />
-                        <Campo label="N° Socio"           valor={usuario.nroSocio} />
-                        <Campo label="Alta"               valor={formatFecha(usuario.fechaAlta)} />
+                        <Campo label="Teléfono"           valor={usuario.phoneNumber} />
+                        <Campo label="Alta"               valor={formatFecha(usuario.startDate)} />
                         <Campo label="Email"              valor={usuario.email} full />
-                        <Campo label="ID"                 valor={`#${String(usuario.id).padStart(4, '0')}`} />
+                        <Campo label="ID"                 valor={`#${String(usuario.idUsuario).padStart(4, '0')}`} />
                     </div>
                 </div>
 
