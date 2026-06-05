@@ -34,6 +34,39 @@ export default function CobrosPageContent() {
         setModalBaja({ open: false, cobro: null });
     };
 
+// RF49: Imprimir el Cobro 
+    const handleImprimirCobro = (cobro) => {
+        const contenidoTxt = `
+============================================================
+                        GOL AHORA                           
+            Comprobante de Cobro Interno                 
+============================================================
+ID de Cobro:      #${String(cobro.idCobro || cobro.id).padStart(5, '0')}
+Fecha de Emisión: ${cobro.fecha}
+Estado:           ${cobro.estado.toUpperCase()}
+------------------------------------------------------------
+DATOS DEL CLIENTE:
+Nombre y Apellido: ${cobro.cliente?.nombre} ${cobro.cliente?.apellido}
+DNI:               ${cobro.cliente?.dni}
+------------------------------------------------------------
+DETALLE DE LA OPERACIÓN:
+Concepto:         ${cobro.concepto}
+Tipo de Cobro:    ${cobro.tipoCobro || 'Servicio'}
+------------------------------------------------------------
+TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+============================================================
+        `.trim();
+
+        const blob = new Blob([contenidoTxt], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Cobro_${String(cobro.idCobro || cobro.id).padStart(5, '0')}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
     const cobrosFiltrados = filtro ? cobros.filter(c => 
         c.cliente.nombre.toLowerCase().includes(filtro.toLowerCase()) || 
         c.concepto.toLowerCase().includes(filtro.toLowerCase())
@@ -72,7 +105,8 @@ export default function CobrosPageContent() {
                         onVer={(c) => setModalDetalle({ open: true, cobro: c })}
                         onEditar={(c) => setModalForm({ open: true, modo: 'editar', cobro: c })}
                         onBaja={(c) => setModalBaja({ open: true, cobro: c })}
-                        onImprimir={() => window.print()}
+                        onImprimir={handleImprimirCobro}
+                        onCerrar={() => setModalDetalle({open: false, cobro: null})}
                     />
                 )}
             </div>
