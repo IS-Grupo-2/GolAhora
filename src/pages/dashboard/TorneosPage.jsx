@@ -13,14 +13,13 @@ export default function TorneosPage() {
         return <TorneosPageContent />;
     }
 
-    if (user.role === 'Client' || user.role === 'Professor') {
-        return <ClienteTorneosView />;
-    }
+    return <ClienteTorneosView />;
+    
 
     // Fallback por si hay algún otro rol raro 
-    return (
-        <div className="dashboard-page-container">
-            <h2>No tenés permisos para ver esta sección.</h2>
-        </div>
-    );
+    // return (
+    //     <div className="dashboard-page-container">
+    //         <h2>No tenés permisos para ver esta sección.</h2>
+    //     </div>
+    // );
 }

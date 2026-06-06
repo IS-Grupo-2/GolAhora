@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+const ClientesContext = createContext();
+
 const MOCK_CLIENTES = [
     {
         idUsuario: 1,
@@ -33,64 +35,17 @@ const MOCK_CLIENTES = [
         idUsuario: 3,
         nombre: 'Sofía',
         apellido: 'López',
-        fechaNacimiento: '1995-11-30',
-        dni: '40122345',
+        fechaNacimiento: '1995-11-05',
+        dni: '38999111',
         email: 'sofia.lopez@example.com',
-        telefono: '+54 9 11 5987 1122',
+        telefono: '+54 9 11 6123 4567',
         userName: 'sofial',
         activo: true,
-        fechaRegistro: '2024-03-18',
+        fechaRegistro: '2024-03-15',
         rol: 'cliente',
         nroSocio: 'C-003',
-    },
-    {
-        idUsuario: 4,
-        nombre: 'Diego',
-        apellido: 'Vega',
-        fechaNacimiento: '1990-12-06',
-        dni: '29500782',
-        email: 'diego.vega@example.com',
-        telefono: '+54 9 11 5338 4477',
-        userName: 'dvega',
-        activo: true,
-        fechaRegistro: '2024-04-05',
-        rol: 'cliente',
-        nroSocio: 'C-004',
-    },
-    {
-        idUsuario: 5,
-        nombre: 'Mariana',
-        apellido: 'Santos',
-        fechaNacimiento: '2001-09-20',
-        dni: '42211856',
-        email: 'mariana.santos@example.com',
-        telefono: '+54 9 11 5999 0011',
-        userName: 'marianas',
-        activo: false,
-        fechaRegistro: '2024-04-30',
-        rol: 'cliente',
-        nroSocio: 'C-005',
-    },
-    {
-        idUsuario: 6,
-        nombre: 'Facundo',
-        apellido: 'Ortiz',
-        fechaNacimiento: '1998-06-12',
-        dni: '37890012',
-        email: 'facundo.ortiz@example.com',
-        telefono: '+54 9 11 5777 3344',
-        userName: 'facundoo',
-        activo: true,
-        fechaRegistro: '2024-05-12',
-        rol: 'cliente',
-        nroSocio: 'C-006',
-    },
+    }
 ];
-
-const ClientesContext = createContext();
-
-const API_URL = 'http://localhost:5063/api';
-const USE_MOCK = false;
 
 export function ClientesProvider({ children }) {
     const [clientes, setClientes] = useState([]);
@@ -99,19 +54,16 @@ export function ClientesProvider({ children }) {
 
     const fetchClientes = useCallback(async () => {
         setLoading(true);
-        setError(null);
         try {
-            if (USE_MOCK) {
-                await new Promise(resolve => setTimeout(resolve, 4300));
-                setClientes(prev => prev.length === 0 ? MOCK_CLIENTES : prev);
+            const localData = localStorage.getItem('clientes_db');
+            if (localData) {
+                setClientes(JSON.parse(localData));
             } else {
-                const response = await fetch(`${API_URL}/User`);
-                if (!response.ok) throw new Error('Error al obtener clientes');
-                const data = await response.json();
-                setClientes(data);
+                localStorage.setItem('clientes_db', JSON.stringify(MOCK_CLIENTES));
+                setClientes(MOCK_CLIENTES);
             }
         } catch (err) {
-            setError(err.message);
+            setError('Error al leer base local de clientes');
         } finally {
             setLoading(false);
         }
@@ -121,96 +73,40 @@ export function ClientesProvider({ children }) {
         fetchClientes();
     }, [fetchClientes]);
 
-// POST - Crear un nuevo cliente
-    const crearCliente = async (nuevoCliente) => {
+    const crearCliente = async (nuevo) => {
         setLoading(true);
-        setError(null);
-        try {
-            if (USE_MOCK) {
-                const clienteConId = { ...nuevoCliente, idUsuario: Date.now(), activo: true };
-                setClientes(prev => [...prev, clienteConId]);
-                return clienteConId;
-            } else {
-                const response = await fetch(`${API_URL}/Auth/register/client`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevoCliente)
-                });
-                if (!response.ok) throw new Error('Error al registrar el cliente en el servidor');
-                const data = await response.json(); // El backend devuelve el cliente con su ID de BD
-                setClientes(prev => [...prev, data]);
-                return data;
-            }
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        const itemNuevo = { ...nuevo, idUsuario: Date.now(), activo: true, fechaRegistro: new Date().toISOString().split('T')[0] };
+        setClientes(prev => {
+            const next = [...prev, itemNuevo];
+            localStorage.setItem('clientes_db', JSON.stringify(next));
+            return next;
+        });
+        setLoading(false);
+        return itemNuevo;
     };
 
-// PUT - Modificar un cliente existente
-    const modificarCliente = async (clienteModificado) => {
+    const modificarCliente = async (idUsuario, modificado) => {
         setLoading(true);
-        setError(null);
-        try {
-            if (USE_MOCK) {
-                setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? clienteModificado : c));
-            } else {
-                const response = await fetch(`${API_URL}/User/${clienteModificado.idUsuario}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(clienteModificado)
-                });
-                if (!response.ok) throw new Error('Error al modificar el cliente en el servidor');
-                const data = await response.json();
-                setClientes(prev => prev.map(c => c.idUsuario === clienteModificado.idUsuario ? data : c));
-            }
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        setClientes(prev => {
+            const next = prev.map(c => c.idUsuario === idUsuario ? { ...c, ...modificado } : c);
+            localStorage.setItem('clientes_db', JSON.stringify(next));
+            return next;
+        });
+        setLoading(false);
     };
 
-// PATCH/PUT o DELETE lógico - Alternar estado activo/inactivo
     const darDeBaja = async (idUsuario) => {
         setLoading(true);
-        setError(null);
-        try {
-            if (USE_MOCK) {
-                setClientes(prev => prev.map(c => 
-                    c.idUsuario === idUsuario ? { ...c, activo: !c.activo } : c
-                ));
-            } else {
-                // Se suele usar PATCH para actualizaciones parciales como dar de baja/activar
-                const response = await fetch(`${API_URL}/User/${idUsuario}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (!response.ok) throw new Error('Error al cambiar el estado del cliente');
-                const data = await response.json(); // El backend devuelve el cliente modificado
-                setClientes(prev => prev.map(c => c.idUsuario === idUsuario ? data : c));
-            }
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        setClientes(prev => {
+            const next = prev.map(c => c.idUsuario === idUsuario ? { ...c, activo: !c.activo } : c);
+            localStorage.setItem('clientes_db', JSON.stringify(next));
+            return next;
+        });
+        setLoading(false);
     };
 
     return (
-        <ClientesContext.Provider value={{ 
-            clientes, 
-            loading, 
-            error, 
-            fetchClientes, 
-            crearCliente, 
-            modificarCliente, 
-            darDeBaja 
-        }}>
+        <ClientesContext.Provider value={{ clientes, loading, error, fetchClientes, crearCliente, modificarCliente, darDeBaja }}>
             {children}
         </ClientesContext.Provider>
     );
@@ -218,8 +114,6 @@ export function ClientesProvider({ children }) {
 
 export function useClientes() {
     const ctx = useContext(ClientesContext);
-    if (!ctx) {
-        throw new Error('useClientes debe usarse dentro de ClientesProvider');
-    }
+    if (!ctx) throw new Error('useClientes debe usarse dentro de ClientesProvider');
     return ctx;
 }

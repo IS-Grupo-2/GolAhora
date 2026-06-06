@@ -3,7 +3,7 @@ import Can from '../Can';
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActivaId, setCanchaActivaId, onNuevaDisp, onToggleDisp, onEditarDisp, onEliminarDisp }) {
-    const canchasActivas = canchas.filter(c => c.estado === 'activa');
+    const canchasActivas = canchas.filter(c => c.estado === 'activa' || c.activa === true);
     const cancha = canchasActivas.find(c => c.id === canchaActivaId) || canchasActivas[0];
     const tipo = cancha ? tipos.find(t => t.id === cancha.idTipo) : null;
     

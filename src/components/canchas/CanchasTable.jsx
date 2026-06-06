@@ -1,7 +1,7 @@
 import Can from '../Can';
 
 export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {
-    const activas = canchas.filter(c => c.estado === 'activa').length;
+    const activas = canchas.filter(c => c.estado === 'activa' || c.activa === true).length;
     const inactivas = canchas.filter(c => c.estado === 'inactiva').length;
 
     const normalizarTexto = (texto) => {

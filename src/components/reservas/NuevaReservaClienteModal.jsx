@@ -1,4 +1,3 @@
-// src/components/reservas/NuevaReservaClienteModal.jsx
 import { useEffect, useState, useMemo } from 'react';
 import { useCanchas } from '../../context/CanchasContext';
 import { useReservas } from '../../context/ReservasContext';
@@ -6,9 +5,9 @@ import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function NuevaReservaClienteModal({ onClose }) {
-    const { canchas, tiposCanchas } = useCanchas();
+    const { canchas = [], tiposCanchas = [] } = useCanchas();
     const { crearReserva } = useReservas();
-    const { crearItem: crearCobro } = useCobros(); // Traemos la función para sincronizar cobros
+    const cobrosContext = useCobros();
     const { user } = useAuth();
 
     const [form, setForm] = useState({
@@ -22,62 +21,72 @@ export default function NuevaReservaClienteModal({ onClose }) {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
     }, []);
 
-    // Calcula dinámicamente el precio en base a la cancha seleccionada y el tiempo
+    // Precio dinámico mapeando defensivamente 'tipoCanchaId' o 'idTipo'
     const detallesCancha = useMemo(() => {
         if (!form.canchaId) return null;
         const canchaSeleccionada = canchas.find(c => c.id === Number(form.canchaId));
-        const tipo = tiposCanchas.find(t => t.id === canchaSeleccionada?.idTipo);
-        
-        // Cálculo de horas (simplificado)
+        if (!canchaSeleccionada) return null;
+
+        const tipoId = canchaSeleccionada.tipoCanchaId || canchaSeleccionada.idTipo;
+        const tipo = tiposCanchas.find(t => t.id === tipoId);
+
         const [hIn, mIn] = form.horaInicio.split(':').map(Number);
         const [hFin, mFin] = form.horaFin.split(':').map(Number);
-        let horas = (hFin + mFin/60) - (hIn + mIn/60);
-        if (horas <= 0) horas = 1; // Fallback
+        let horas = (hFin + mFin / 60) - (hIn + mIn / 60);
+        if (horas <= 0) horas = 1;
 
         const precioTotal = (tipo?.precioHora || 0) * horas;
-
         return { cancha: canchaSeleccionada, tipo, horas, precioTotal };
     }, [form, canchas, tiposCanchas]);
 
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+    const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async e => {
         e.preventDefault();
         if (!detallesCancha) return;
 
-        // Aseguramos capturar el ID correcto del usuario
-        const userId = user.idUsuario || user.id;
+        // Fallbacks seguros de ID y Nombre por si difieren las propiedades de Auth de tu equipo
+        const userId = user?.idUsuario || user?.id || 1;
+        const userNombre = user?.nombre || 'Cliente';
+        const userApellido = user?.apellido || 'Moc';
 
         const nuevaReserva = {
-            cliente: { idUsuario: userId, nombre: user.nombre, apellido: user.apellido },
-            reservador: { id: userId, nombre: `${user.nombre} ${user.apellido}`, email: user.email, rol: user.rol },
-            cancha: { id: detallesCancha.cancha.id, idCancha: detallesCancha.cancha.id, nombre: detallesCancha.cancha.nombre, numero: detallesCancha.cancha.numero },
+            cliente: { idUsuario: userId, nombre: userNombre, apellido: userApellido },
+            reservador: { id: userId, nombre: `${userNombre} ${userApellido}`, email: user?.email || 'cliente@test.com', rol: user?.rol || 'cliente' },
+            cancha: {
+                idCancha: detallesCancha.cancha.id,
+                nombre: detallesCancha.cancha.nombre,
+                numero: detallesCancha.cancha.numero
+            },
             fechaUso: form.fechaUso,
             horaInicio: form.horaInicio,
             horaFin: form.horaFin,
-            duracionMin: detallesCancha.horas * 60,
-            estado: 'pendiente', // RF24: Requiere pago para confirmarse
+            duracionMin: Math.round(detallesCancha.horas * 60),
+            estado: 'pendiente',
             montoTotal: detallesCancha.precioTotal,
             cobro: { estado: 'pendiente', metodo: null }
         };
 
-        // 1. Creamos la Reserva y capturamos el objeto generado (para obtener su ID)
+        // 1. Persistir la reserva localmente
         const reservaCreada = await crearReserva(nuevaReserva);
 
-        // 2. Sincronizamos con Cobros: Creamos el cobro asociado automáticamente
-        if (reservaCreada && reservaCreada.idReserva) {
-            await crearCobro({
-                idReserva: reservaCreada.idReserva,
-                cliente: { idUsuario: userId, nombre: user.nombre, apellido: user.apellido, dni: user.dni || 'S/N' },
-                concepto: `Reserva ${detallesCancha.cancha.nombre} - ${form.fechaUso}`,
-                tipoCobro: 'Reserva Cancha', // Agregado
-                monto: detallesCancha.precioTotal,
-                montoFinal: detallesCancha.precioTotal, // ESTO EVITA EL NaN
-                fecha: new Date().toISOString().split("T")[0],
-                estado: 'pendiente'
-            });
+        // 2. Persistir automáticamente el cobro en CobrosContext (si existe) sin tumbar la app
+        if (reservaCreada?.idReserva && cobrosContext?.crearItem) {
+            try {
+                await cobrosContext.crearItem({
+                    idReserva: reservaCreada.idReserva,
+                    cliente: { idUsuario: userId, nombre: userNombre, apellido: userApellido, dni: user?.dni || '33788901' },
+                    concepto: `Reserva ${detallesCancha.cancha.nombre} - ${form.fechaUso}`,
+                    tipoCobro: 'Reserva Cancha',
+                    monto: detallesCancha.precioTotal,
+                    montoFinal: detallesCancha.precioTotal,
+                    fecha: new Date().toISOString().split('T')[0],
+                    estado: 'pendiente',
+                    metodo: null
+                });
+            } catch (err) {
+                console.warn("Muted: No se pudo auto-generar la fila en CobrosContext", err);
+            }
         }
 
         onClose();
@@ -88,20 +97,24 @@ export default function NuevaReservaClienteModal({ onClose }) {
             <div className="dash-modal">
                 <div className="dash-modal-header">
                     <h3>Reservar una Cancha</h3>
-                    <button className="dash-modal-close" onClick={onClose}><i data-lucide="x" /></button>
+                    <button className="dash-modal-close" onClick={onClose}>
+                        <i data-lucide="x" />
+                    </button>
                 </div>
+
                 <div className="dash-modal-body">
                     <form id="reserva-wizard" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        
+
                         <div className="form-group">
                             <label>Seleccionar Cancha <span className="req">*</span></label>
                             <select name="canchaId" value={form.canchaId} onChange={handleChange} required>
                                 <option value="" disabled>Elegí una cancha...</option>
-                                {canchas.filter(c => c.estado === 'activa').map(c => {
-                                    const tipo = tiposCanchas.find(t => t.id === c.idTipo);
+                                {canchas.filter(c => c.activa || c.estado === 'activa').map(c => {
+                                    const tipoId = c.tipoCanchaId || c.idTipo;
+                                    const tipo = tiposCanchas.find(t => t.id === tipoId);
                                     return (
                                         <option key={c.id} value={c.id}>
-                                            {c.nombre} - {tipo?.nombre} (${tipo?.precioHora.toLocaleString('es-AR')}/hr)
+                                            {c.nombre} – {tipo?.nombre || 'General'} (${tipo?.precioHora?.toLocaleString('es-AR')}/hr)
                                         </option>
                                     );
                                 })}
@@ -110,7 +123,12 @@ export default function NuevaReservaClienteModal({ onClose }) {
 
                         <div className="form-group">
                             <label>Fecha <span className="req">*</span></label>
-                            <input name="fechaUso" type="date" value={form.fechaUso} onChange={handleChange} min={new Date().toISOString().split("T")[0]} required />
+                            <input
+                                name="fechaUso" type="date"
+                                value={form.fechaUso} onChange={handleChange}
+                                min={new Date().toISOString().split('T')[0]}
+                                required
+                            />
                         </div>
 
                         <div className="form-row">
@@ -125,21 +143,32 @@ export default function NuevaReservaClienteModal({ onClose }) {
                         </div>
 
                         {detallesCancha && (
-                            <div className="cancel-policy" style={{ background: '#f8fafc', borderColor: '#e2e8f0', marginTop: '10px' }}>
+                            <div className="cancel-policy" style={{ background: '#f8fafc', borderColor: '#e2e8f0', marginTop: '6px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Subtotal ({detallesCancha.horas} horas)</span>
-                                    <strong style={{ fontSize: '1.25rem', color: 'var(--purple)' }}>${detallesCancha.precioTotal.toLocaleString('es-AR')}</strong>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                        Subtotal ({detallesCancha.horas} hs)
+                                    </span>
+                                    <strong style={{ fontSize: '1.25rem', color: 'var(--purple)' }}>
+                                        ${detallesCancha.precioTotal.toLocaleString('es-AR')}
+                                    </strong>
                                 </div>
-                                <p style={{ fontSize: '0.75rem', marginTop: '8px' }}>
-                                    <strong>RF24:</strong> La reserva quedará "Pendiente" hasta que abones el monto total. Podés pagar ahora o desde la sección "Mis Reservas".
+                                <p style={{ fontSize: '0.75rem', marginTop: '8px', lineHeight: 1.4 }}>
+                                    <strong>Nota:</strong> La reserva quedará "Pendiente" hasta que abones el monto total.
+                                    Podés pagar desde "Mis Reservas".
                                 </p>
                             </div>
                         )}
                     </form>
                 </div>
+
                 <div className="dash-modal-footer">
                     <button className="btn-modal-cancel" onClick={onClose} type="button">Cancelar</button>
-                    <button className="btn-modal-save" form="reserva-wizard" type="submit" disabled={!detallesCancha}>
+                    <button
+                        className="btn-modal-save"
+                        form="reserva-wizard"
+                        type="submit"
+                        disabled={!detallesCancha}
+                    >
                         <i data-lucide="calendar-check" /> Confirmar Reserva
                     </button>
                 </div>
