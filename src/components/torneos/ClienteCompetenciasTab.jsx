@@ -17,8 +17,10 @@ export default function ClienteCompetenciasTab({ competencias, onDetalle }) {
         <div className="panel-card tabla-panel">
             <div className="crud-toolbar toolbar-bordered">
                 <div className="crud-toolbar-left">
-                    <h2 className="crud-title">
-                        <Icon name="trophy" /> Torneos con Inscripción Abierta
+                    <h2 className="crud-title" style={{padding: '1rem'}}>
+                        <span>
+                            <Icon name="trophy" /> Torneos con Inscripción Abierta
+                        </span>
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
                         Crea tu equipo en la pestaña "Equipos" para que el administrador pueda inscribirte.

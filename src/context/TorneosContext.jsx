@@ -36,9 +36,19 @@ export function TorneosProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // 1. Carga inicial de datos
     useEffect(() => {
         fetchDatos();
     }, []);
+
+    // 2. NUEVO: Guardado automático en LocalStorage ante cualquier cambio de estado
+    useEffect(() => {
+        if (!loading && USE_MOCK) {
+            localStorage.setItem('competencias', JSON.stringify(competencias));
+            localStorage.setItem('equipos', JSON.stringify(equipos));
+            localStorage.setItem('fixtures', JSON.stringify(fixtures));
+        }
+    }, [competencias, equipos, fixtures, loading]);
 
     const fetchDatos = async () => {
         setLoading(true);
@@ -46,9 +56,21 @@ export function TorneosProvider({ children }) {
         try {
             if (USE_MOCK) {
                 setTimeout(() => {
-                    setCompetencias(MOCK_COMPETENCIAS);
-                    setEquipos(MOCK_EQUIPOS);
-                    setFixtures(MOCK_FIXTURES);
+                    // Intentamos leer lo que ya esté guardado en el navegador
+                    const localComp = localStorage.getItem('competencias');
+                    const localEq = localStorage.getItem('equipos');
+                    const localFix = localStorage.getItem('fixtures');
+
+                    // Si es la primera vez que abre la app, sembramos el LocalStorage con tus MOCKs
+                    if (!localComp) localStorage.setItem('competencias', JSON.stringify(MOCK_COMPETENCIAS));
+                    if (!localEq) localStorage.setItem('equipos', JSON.stringify(MOCK_EQUIPOS));
+                    if (!localFix) localStorage.setItem('fixtures', JSON.stringify(MOCK_FIXTURES));
+
+                    // Seteamos los estados usando lo que hay en LocalStorage o el fallback inicial
+                    setCompetencias(localComp ? JSON.parse(localComp) : MOCK_COMPETENCIAS);
+                    setEquipos(localEq ? JSON.parse(localEq) : MOCK_EQUIPOS);
+                    setFixtures(localFix ? JSON.parse(localFix) : MOCK_FIXTURES);
+                    
                     setLoading(false);
                 }, 400);
             } else {
@@ -157,7 +179,7 @@ export function TorneosProvider({ children }) {
             body: JSON.stringify({ equipoId })
         });
         if (!res.ok) throw new Error('Error al inscribir equipo');
-        const data = await res.json(); // Se asume que retorna la competencia actualizada
+        const data = await res.json();
         setCompetencias(prev => prev.map(c => c.id === data.id ? data : c));
     };
 
@@ -178,14 +200,12 @@ export function TorneosProvider({ children }) {
         const res = await fetch(`${API_URL}/competencias/${competenciaId}/fixture`, { method: 'POST' });
         if (!res.ok) throw new Error('Error al generar fixture');
         
-        // Se asume que retorna el nuevo fixture generado
         const data = await res.json(); 
         setFixtures(prev => {
             const filtrado = prev.filter(f => f.competenciaID !== competenciaId);
             return [...filtrado, data];
         });
         
-        // Actualizamos estado local de la competencia
         setCompetencias(prev => prev.map(c => c.id === competenciaId ? { ...c, estado: 'en_curso' } : c));
     };
 
@@ -210,8 +230,6 @@ export function TorneosProvider({ children }) {
         });
         if (!res.ok) throw new Error('Error al registrar resultado');
         
-        // Se asume que devuelve el fixture entero actualizado o el partido
-        // Para simplificar, refrescamos todos los datos (o podrías actualizar localmente como en el mock)
         await fetchDatos();
     };
 
