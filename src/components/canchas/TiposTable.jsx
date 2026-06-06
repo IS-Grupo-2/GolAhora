@@ -44,7 +44,7 @@ export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo,
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Nombre</th><th>Superficie</th><th>Jugadores</th><th>Duración máx.</th><th>Precio/hora</th><th>En uso</th><th>Acciones</th>
+                                    <th>Nombre</th><th>Superficie</th><th>Jugadores</th><th>Precio/hora</th><th>En uso</th><th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,11 +52,11 @@ export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo,
                                     const uso = canchas.filter(c => c.idTipo === t.id).length;
                                     return (
                                         <tr key={t.id}>
-                                            <td><strong>{t.nombre}</strong></td>
+                                            <td><strong>{t.name}</strong></td>
                                             <td>{t.superficie}</td>
-                                            <td>{t.capacidadJugadores}</td>
-                                            <td>{t.duracionMaxReservaMin} min</td>
-                                            <td>${t.precioHora.toLocaleString('es-AR')}</td>
+                                            <td>{t.capacity}</td>
+                                            <td>${t.pricePerHour.toLocaleString('es-AR')}</td>
+                                            <td>{t.description}</td>
                                             <td><span className={`badge ${uso > 0 ? 'info' : 'neutral'}`}>{uso} cancha{uso !== 1 ? 's' : ''}</span></td>
                                             <td>
                                                 <div className="action-btns">

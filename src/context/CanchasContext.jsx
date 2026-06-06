@@ -3,8 +3,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const CanchasContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL ;
-const USE_MOCK = true;
+const API_URL = 'http://localhost:5063/api';
+const USE_MOCK = false;
 
 const MOCK_TIPOS = [
     { id: 1, nombre: 'Fútbol 5', superficie: 'Césped sintético', capacidadJugadores: 10, duracionMaxReservaMin: 60, precioHora: 15000, descripcion: 'Cancha pequeña ideal para grupos reducidos.' },
@@ -49,9 +49,9 @@ export function CanchasProvider({ children }) {
                 setDisponibilidades(MOCK_DISP);
             } else {
                 const [canchasRes, tiposRes, dispRes] = await Promise.all([
-                    fetch(`${API_URL}/canchas`),
-                    fetch(`${API_URL}/tipos-canchas`),
-                    fetch(`${API_URL}/disponibilidades`),
+                    fetch(`${API_URL}/Courts`),
+                    fetch(`${API_URL}/CourtTypes`),
+                    fetch(`${API_URL}/Disponibilities`),
                 ]);
                 if (!canchasRes.ok) throw new Error('Error al obtener canchas');
                 if (!tiposRes.ok) throw new Error('Error al obtener tipos de canchas');
@@ -132,7 +132,7 @@ export function CanchasProvider({ children }) {
         if (USE_MOCK) {
             setTiposCanchas(prev => [...prev, { ...datos, id: Date.now() }]);
         } else {
-            const response = await fetch(`${API_URL}/tipos-canchas`, {
+            const response = await fetch(`${API_URL}/CourtTypes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos),
