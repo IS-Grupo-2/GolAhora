@@ -21,7 +21,7 @@ export default function AdminReservasView() {
     confirmarReserva, cancelarReserva,
   } = useReservas();
 
-  const { crearItem: crearCobro, items: cobros, modificarItem: modificarCobro } = useCobros(); // NUEVO: Traemos también modificarCobro e items
+  const { crearItem: crearCobro, items: cobros, modificarItem: modificarCobro } = useCobros();
   const { user } = useAuth();
   const { isAdmin, isEmpleado, isProfesor, isCliente } = useRole();
   const [filtro, setFiltro] = useState('');
@@ -58,8 +58,8 @@ export default function AdminReservasView() {
     if (!q) return reservasVisibles;
 
     return reservasVisibles.filter((r) => {
-      const nombre = normalizarTexto(r.cliente?.nombre || '');
-      const apellido = normalizarTexto(r.cliente?.apellido || '');
+      const nombre = normalizarTexto(r.cliente?.name || '');
+      const apellido = normalizarTexto(r.cliente?.lastName || '');
       const cancha = normalizarTexto(r.cancha?.nombre || '');
       const estado = normalizarTexto(r.estado || '');
       const fecha = normalizarTexto(r.fechaUso || '');
