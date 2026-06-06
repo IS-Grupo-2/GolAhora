@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { useClientes } from '../../context/ClientesContext';
-import { useAuth } from '../../context/AuthContext'; // <-- Importamos Auth para impactar la sesión
 import { Link, useNavigate } from 'react-router-dom' // <-- Importamos useNavigate
 import '../../styles/pages/registro.css'
 
 function RegistroPage() {
     const { crearCliente } = useClientes();
-    const { loginDirect } = useAuth(); // <-- Traemos la acción de login directo
     const navigate = useNavigate(); // <-- Instanciamos el router
     
     const [showPassword, setShowPassword] = useState(false)
@@ -14,7 +12,8 @@ function RegistroPage() {
     const [generalError, setGeneralError] = useState('');
 
     const [formData, setFormData] = useState({
-        name: '', lastname: '', dni: '', userName: '', email: '', phoneNumber: '', password: '', role: 'Client'
+        nombre: '', apellido: '', dni: '', username: '', email: '',
+        telefono: '', password: '', rol: 'cliente'
     })
     const [errors, setErrors] = useState({})
 
@@ -25,12 +24,12 @@ function RegistroPage() {
 
     const validateForm = () => {
         const newErrors = {}
-        if (formData.name.trim().length < 2) { newErrors.name = 'Nombre muy corto' }
-        if (formData.lastname.trim().length < 2) { newErrors.lastname = 'Apellido muy corto' }
+        if (formData.nombre.trim().length < 2) { newErrors.nombre = 'Nombre muy corto' }
+        if (formData.apellido.trim().length < 2) { newErrors.apellido = 'Apellido muy corto' }
         if (formData.dni.length < 7 || formData.dni.length > 8 || isNaN(formData.dni)) { newErrors.dni = 'DNI inválido' }
-        if (formData.phoneNumber.length < 8 || formData.phoneNumber.length > 15) { newErrors.phoneNumber = 'Teléfono inválido' }
-        if (formData.userName.trim().length < 4 || formData.userName.trim().length > 20) {
-            newErrors.userName = 'El usuario debe tener entre 4 y 20 caracteres'
+        if (formData.telefono.length < 8 || formData.telefono.length > 15) { newErrors.telefono = 'Teléfono inválido' }
+        if (formData.username.trim().length < 4 || formData.username.trim().length > 20) {
+            newErrors.username = 'El usuario debe tener entre 4 y 20 caracteres'
         }
         if (!formData.email.includes('@') || !formData.email.includes('.')) { newErrors.email = 'Email inválido' }
         if (formData.password.length < 6) { newErrors.password = 'Mínimo 6 caracteres' }
@@ -48,14 +47,14 @@ function RegistroPage() {
             setLoading(true);
             try {
                 const nuevoCliente = {
-                    name: formData.name,
-                    lastname: formData.lastname,
+                    nombre: formData.nombre,
+                    apellido: formData.apellido,
                     dni: formData.dni,
-                    phoneNumber: formData.phoneNumber,
-                    userName: formData.userName,
+                    telefono: formData.telefono,
+                    username: formData.username,
                     email: formData.email,
                     password: formData.password,
-                    role: 'Client',
+                    rol: 'cliente',
                     //fechaRegistro: new Date().toISOString().split('T')[0]
                 };
 
@@ -63,11 +62,8 @@ function RegistroPage() {
                 const clienteCreado = await crearCliente(nuevoCliente);
                 console.log('Cliente creado con éxito:', clienteCreado);
 
-                // 2. Inyectamos los datos del nuevo cliente en el AuthContext
-                // loginDirect(clienteCreado);
-
-                // 3. Redirección al dashboard
-                navigate('/dashboard');
+                // El cliente inicia sesión después de completar el registro.
+                navigate('/login');
 
             } catch (error) {
                 console.error('Error al registrar cliente:', error);
@@ -93,15 +89,15 @@ function RegistroPage() {
 
                         {/* NOMBRES Y APELLIDO */}
                         <div className="grupos-elem nom-ape">
-                            <label htmlFor="name">Nombres:</label>
-                            <input type="text" id="name" name="name" className={errors.name ? 'input-error' : ''}
-                                value={formData.name} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.name}</small>
+                            <label htmlFor="nombre">Nombres:</label>
+                            <input type="text" id="nombre" name="nombre" className={errors.nombre ? 'input-error' : ''}
+                                value={formData.nombre} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.nombre}</small>
 
-                            <label htmlFor="lastname">Apellido:</label>
-                            <input type="text" id="lastname" name="lastname" className={errors.lastname ? 'input-error' : ''}
-                                value={formData.lastname} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.lastname}</small>
+                            <label htmlFor="apellido">Apellido:</label>
+                            <input type="text" id="apellido" name="apellido" className={errors.apellido ? 'input-error' : ''}
+                                value={formData.apellido} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.apellido}</small>
                         </div>
 
                         {/* DNI */}
@@ -114,18 +110,18 @@ function RegistroPage() {
 
                         {/* TELEFONO */}
                         <div className="grupos-elem">
-                            <label htmlFor="phoneNumber">Teléfono:</label>
-                            <input type="text" id="phoneNumber" name="phoneNumber" className={errors.phoneNumber ? 'input-error' : ''}
-                                placeholder="+54 11..." value={formData.phoneNumber} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.phoneNumber}</small>
+                            <label htmlFor="telefono">Teléfono:</label>
+                            <input type="text" id="telefono" name="telefono" className={errors.telefono ? 'input-error' : ''}
+                                placeholder="+54 11..." value={formData.telefono} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.telefono}</small>
                         </div>
 
                         {/* USER */}
                         <div className="grupos-elem">
-                            <label htmlFor="userName">Nombre de Usuario:</label>
-                            <input type="text" id="userName" name="userName" className={errors.userName ? 'input-error' : ''}
-                                value={formData.userName} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.userName}</small>
+                            <label htmlFor="username">Nombre de Usuario:</label>
+                            <input type="text" id="username" name="username" className={errors.username ? 'input-error' : ''}
+                                value={formData.username} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.username}</small>
                         </div>
 
                         {/* EMAIL */}

@@ -8,7 +8,7 @@ function LoginPage() {
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false) // <-- Estado de carga para el backend
-    const [formData, setFormData] = useState({ userName: '', password: '' })
+    const [formData, setFormData] = useState({ email: '', password: '' })
     const [errors, setErrors] = useState({})
 
     const handleChange = (e) => {
@@ -18,7 +18,9 @@ function LoginPage() {
 
     const validateForm = () => {
         const newErrors = {}
-        if (formData.userName.trim().length < 4) { newErrors.userName = 'Usuario o email inválido' }
+        if (!formData.email.includes('@') || !formData.email.includes('.')) {
+            newErrors.email = 'Email inválido'
+        }
         if (formData.password.length < 6) { newErrors.password = 'Contraseña inválida' }
         return newErrors
     }
@@ -32,10 +34,7 @@ function LoginPage() {
             setLoading(true);
             try {
                 // Consumimos el login asíncrono
-                const result = await login({
-                    userName: formData.userName,
-                    password: formData.password
-                });
+                const result = await login(formData);
 
                 if (result.ok) {
                     console.log('Login válido');
@@ -65,11 +64,11 @@ function LoginPage() {
                         {errors.general && <small className="error-message">{errors.general}</small>}
 
                         <div className="grupos-elem">
-                            <label htmlFor="userName">Usuario/Email:</label>
-                            <input type="text" id="username" name="userName"
-                                className={`input-username ${errors.userName ? 'input-error' : ''}`}
-                                autoComplete="email" value={formData.userName} onChange={handleChange} required disabled={loading}/>
-                            <small className="error-message">{errors.userName}</small>
+                            <label htmlFor="email">Email:</label>
+                            <input type="email" id="email" name="email"
+                                className={`input-username ${errors.email ? 'input-error' : ''}`}
+                                autoComplete="email" value={formData.email} onChange={handleChange} required disabled={loading}/>
+                            <small className="error-message">{errors.email}</small>
                         </div>
 
                         <div className="grupos-elem password-group">

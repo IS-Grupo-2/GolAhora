@@ -11,7 +11,7 @@ const MOCK_CLIENTES = [
         dni: '33788901',
         email: 'laura.garcia@example.com',
         telefono: '+54 9 11 5678 1234',
-        userName: 'lauragarcia',
+        username: 'lauragarcia',
         activo: true,
         fechaRegistro: '2024-01-10',
         rol: 'cliente',
@@ -25,7 +25,7 @@ const MOCK_CLIENTES = [
         dni: '28455903',
         email: 'martin.perez@example.com',
         telefono: '+54 9 11 5522 3344',
-        userName: 'martinp',
+        username: 'martinp',
         activo: true,
         fechaRegistro: '2024-02-02',
         rol: 'cliente',
@@ -39,12 +39,54 @@ const MOCK_CLIENTES = [
         dni: '38999111',
         email: 'sofia.lopez@example.com',
         telefono: '+54 9 11 6123 4567',
-        userName: 'sofial',
+        username: 'sofial',
         activo: true,
         fechaRegistro: '2024-03-15',
         rol: 'cliente',
         nroSocio: 'C-003',
-    }
+    },
+    {
+        idUsuario: 4,
+        nombre: 'Diego',
+        apellido: 'Vega',
+        fechaNacimiento: '1990-12-06',
+        dni: '29500782',
+        email: 'diego.vega@example.com',
+        telefono: '+54 9 11 5338 4477',
+        username: 'dvega',
+        activo: true,
+        fechaRegistro: '2024-04-05',
+        rol: 'cliente',
+        nroSocio: 'C-004',
+    },
+    {
+        idUsuario: 5,
+        nombre: 'Mariana',
+        apellido: 'Santos',
+        fechaNacimiento: '2001-09-20',
+        dni: '42211856',
+        email: 'mariana.santos@example.com',
+        telefono: '+54 9 11 5999 0011',
+        username: 'marianas',
+        activo: false,
+        fechaRegistro: '2024-04-30',
+        rol: 'cliente',
+        nroSocio: 'C-005',
+    },
+    {
+        idUsuario: 6,
+        nombre: 'Facundo',
+        apellido: 'Ortiz',
+        fechaNacimiento: '1998-06-12',
+        dni: '37890012',
+        email: 'facundo.ortiz@example.com',
+        telefono: '+54 9 11 5777 3344',
+        username: 'facundoo',
+        activo: true,
+        fechaRegistro: '2024-05-12',
+        rol: 'cliente',
+        nroSocio: 'C-006',
+    },
 ];
 
 export function ClientesProvider({ children }) {
@@ -62,7 +104,7 @@ export function ClientesProvider({ children }) {
                 localStorage.setItem('clientes_db', JSON.stringify(MOCK_CLIENTES));
                 setClientes(MOCK_CLIENTES);
             }
-        } catch (err) {
+        } catch {
             setError('Error al leer base local de clientes');
         } finally {
             setLoading(false);
@@ -75,7 +117,14 @@ export function ClientesProvider({ children }) {
 
     const crearCliente = async (nuevo) => {
         setLoading(true);
-        const itemNuevo = { ...nuevo, idUsuario: Date.now(), activo: true, fechaRegistro: new Date().toISOString().split('T')[0] };
+        const itemNuevo = {
+            ...nuevo,
+            idUsuario: Date.now(),
+            rol: nuevo.rol || 'cliente',
+            estado: 'activo',
+            activo: true,
+            fechaRegistro: new Date().toISOString().split('T')[0],
+        };
         setClientes(prev => {
             const next = [...prev, itemNuevo];
             localStorage.setItem('clientes_db', JSON.stringify(next));
@@ -85,10 +134,14 @@ export function ClientesProvider({ children }) {
         return itemNuevo;
     };
 
-    const modificarCliente = async (idUsuario, modificado) => {
+    const modificarCliente = async (clienteModificado) => {
         setLoading(true);
         setClientes(prev => {
-            const next = prev.map(c => c.idUsuario === idUsuario ? { ...c, ...modificado } : c);
+            const next = prev.map(c =>
+                c.idUsuario === clienteModificado.idUsuario
+                    ? { ...c, ...clienteModificado }
+                    : c
+            );
             localStorage.setItem('clientes_db', JSON.stringify(next));
             return next;
         });

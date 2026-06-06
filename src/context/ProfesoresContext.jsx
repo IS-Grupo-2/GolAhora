@@ -8,7 +8,10 @@ export const MOCK_PROFESORES = [
         apellido: 'Ríos',
         email: 'agustin.rios@example.com',
         telefono: '+54 9 11 5888 2233',
-        userName: 'agustinrios',
+        username: 'agustinrios',
+        fechaNacimiento: '1985-04-12',
+        dni: '28123456',
+        turno: 'Mañana',
         activo: true,
         fechaRegistro: '2023-10-01',
         rol: 'profesor',
@@ -37,7 +40,10 @@ export const MOCK_PROFESORES = [
         apellido: 'Ferrer',
         email: 'juliana.ferrer@example.com',
         telefono: '+54 9 11 5666 7788',
-        userName: 'julianaf',
+        username: 'julianaf',
+        fechaNacimiento: '1990-09-23',
+        dni: '32987654',
+        turno: 'Tarde',
         activo: true,
         fechaRegistro: '2023-11-15',
         rol: 'profesor',
@@ -66,7 +72,10 @@ export const MOCK_PROFESORES = [
         apellido: 'Núñez',
         email: 'bruno.nunez@example.com',
         telefono: '+54 9 11 5444 9900',
-        userName: 'brunon',
+        username: 'brunon',
+        fechaNacimiento: '1988-01-17',
+        dni: '30555111',
+        turno: 'Noche',
         activo: true,
         fechaRegistro: '2023-12-02',
         rol: 'profesor',
@@ -95,7 +104,10 @@ export const MOCK_PROFESORES = [
         apellido: 'Valdez',
         email: 'cecilia.valdez@example.com',
         telefono: '+54 9 11 5111 2233',
-        userName: 'ceciliaV',
+        username: 'ceciliaV',
+        fechaNacimiento: '1993-07-08',
+        dni: '35111222',
+        turno: 'Tarde',
         activo: false,
         fechaRegistro: '2024-01-20',
         rol: 'profesor',
@@ -126,7 +138,7 @@ const ProfesoresContext = createContext();
 const API_URL = 'http://localhost:5063/api'
 
 
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 export function ProfesoresProvider({ children }) {
     const [profesores, setProfesores] = useState([]);
@@ -141,7 +153,7 @@ export function ProfesoresProvider({ children }) {
                 await new Promise(resolve => setTimeout(resolve, 300));
                 setProfesores(prev => prev.length === 0 ? MOCK_PROFESORES : prev);
             } else {
-                const response = await fetch(`${API_URL}/User`);
+                const response = await fetch(`${API_URL}/User/Users/Professors`);
                 if (!response.ok) throw new Error('Error al obtener profesores');
                 const data = await response.json();
                 setProfesores(data);
@@ -180,16 +192,45 @@ export function ProfesoresProvider({ children }) {
 
     const modificarProfesor = async (profesorModificado) => {
         if (USE_MOCK) {
-            setProfesores(prev => prev.map(p => p.idUsuario === profesorModificado.idUsuario ? profesorModificado : p));
+            setProfesores(prev => prev.map(p =>
+                p.idUsuario === profesorModificado.idUsuario ? profesorModificado : p
+            ));
         } else {
-            const response = await fetch(`${API_URL}/profesores/${profesorModificado.idUsuario}`, {
+            const idUser = profesorModificado.idUser
+            const idProfessor = profesorModificado.idProfessor
+
+            const datosUser = {
+                name: profesorModificado.name,
+                lastName: profesorModificado.lastName,
+                dni: profesorModificado.dni,
+                userName: profesorModificado.userName,
+                email: profesorModificado.email,
+                phoneNumber: profesorModificado.phoneNumber,
+            }
+
+            const datosProfessor = {
+                speciality: profesorModificado.speciality,
+                certification: profesorModificado.certification,
+            }
+
+            const responseUser = await fetch(`${API_URL}/User/${idUser}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profesorModificado),
+                body: JSON.stringify(datosUser),
             });
-            if (!response.ok) throw new Error('Error al modificar el profesor');
-            const profesorActualizado = await response.json();
-            setProfesores(prev => prev.map(p => p.idUsuario === profesorActualizado.idUsuario ? profesorActualizado : p));
+            if (!responseUser.ok) throw new Error('Error al modificar el profesor');
+
+            const responseProfessor = await fetch(`${API_URL}/Professor/${idProfessor}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosProfessor),
+            });
+            if (!responseProfessor.ok) throw new Error('Error al modificar el profesor');
+
+            await fetchProfesores();
+
+            //const profesorActualizado = await responseProfessor.json();
+            //setProfesores(prev => prev.map(p => p.idUser === profesorActualizado.idUser ? profesorActualizado : p));
         }
     };
 
@@ -199,8 +240,8 @@ export function ProfesoresProvider({ children }) {
                 p.idUsuario === idUsuario ? { ...p, activo: !p.activo } : p
             ));
         } else {
-            const response = await fetch(`${API_URL}/profesores/${idUsuario}/estado`, {
-                method: 'PATCH',
+            const response = await fetch(`${API_URL}/User/${idUsuario}`, {
+                method: 'DELETE',
             });
             if (!response.ok) throw new Error('Error al cambiar el estado del profesor');
             const profesorActualizado = await response.json();

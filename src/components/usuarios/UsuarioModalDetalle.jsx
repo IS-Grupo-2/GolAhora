@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(u) {
-    return (u.name[0] + u.lastName[0]).toUpperCase();
+    return (u.nombre[0] + u.apellido[0]).toUpperCase();
 }
 
 function formatFecha(fecha) {
@@ -53,6 +53,7 @@ export default function UsuarioModalDetalle({ open, usuario, onCerrar, onEditar 
     }, [open]);
 
     if (!open || !usuario) return null;
+    const estaActivo = usuario.activo ?? usuario.estado === 'activo';
 
     return (
         <div
@@ -76,20 +77,22 @@ export default function UsuarioModalDetalle({ open, usuario, onCerrar, onEditar 
                         {iniciales(usuario)}
                     </div>
                     <div className="detalle-nombre">
-                        {usuario.name} {usuario.lastName}
+                        {usuario.nombre} {usuario.apellido}
                     </div>
                     <div className="detalle-username">
-                        @{usuario.userName}
+                        @{usuario.username}
                         &nbsp;·&nbsp;
-                        <span className={`badge ${usuario.estado === 'activo' ? 'success' : 'danger'}`}>
-                            {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                        <span className={`badge ${estaActivo ? 'success' : 'danger'}`}>
+                            {estaActivo ? 'Activo' : 'Inactivo'}
                         </span>
                     </div>
 
                     <div className="detalle-grid">
                         <Campo label="DNI"                valor={usuario.dni} />
-                        <Campo label="Teléfono"           valor={usuario.phoneNumber} />
-                        <Campo label="Alta"               valor={formatFecha(usuario.startDate)} />
+                        <Campo label="Teléfono"           valor={usuario.telefono} />
+                        <Campo label="Fecha de nacimiento" valor={formatFecha(usuario.fechaNacimiento)} />
+                        <Campo label="N° Socio"           valor={usuario.nroSocio} />
+                        <Campo label="Alta"               valor={formatFecha(usuario.fechaRegistro || usuario.startDate)} />
                         <Campo label="Email"              valor={usuario.email} full />
                         <Campo label="ID"                 valor={`#${String(usuario.idUsuario).padStart(4, '0')}`} />
                     </div>

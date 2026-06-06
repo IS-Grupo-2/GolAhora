@@ -3,8 +3,8 @@ import Can from '../Can';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(u) {
-    if (!u.name || !u.lastName) return '??';
-    return (u.name[0] + u.lastName[0]).toUpperCase();
+    if (!u.nombre || !u.apellido) return '??';
+    return (u.nombre[0] + u.apellido[0]).toUpperCase();
 }
 
 function BadgeEstado({ activo }) {
@@ -58,14 +58,14 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                                             {iniciales(u)}
                                         </div>
                                         <div className="user-cell-info">
-                                            <strong>{u.name} {u.lastName}</strong>
-                                            <span>@{u.userName || u.username}</span>
+                                            <strong>{u.nombre} {u.apellido}</strong>
+                                            <span>@{u.username}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td>{u.dni}</td>
                                 <td className="td-email">{u.email}</td>
-                                <td>{u.phoneNumber}</td>
+                                <td>{u.telefono}</td>
                                 <td><BadgeEstado activo={isActivo} /></td>
                                 <td>
                                     <div className="action-btns">

@@ -3,25 +3,27 @@ import { useState, useEffect } from 'react';
 
 // ── Estado vacío del formulario ───────────────────────────────────────────────
 const FORM_VACIO = {
-    name:          '',
-    lastName:        '',
-    dni: '',
-    usarName:             '',
-    email:        '',
-    phoneNumber:           '',
+    nombre:          '',
+    apellido:        '',
+    fechaNacimiento: '',
+    dni:             '',
+    telefono:        '',
+    email:           '',
+    username:        '',
+    legajo:          '',
+    especialidad:    '',
+    turno:           '',
+    certificaciones: '',
     password:        '',
-    role:          '',
-    legajo:    '',
-    startDate: new Date().toISOString(),
-    turno: '',
-    specialty:        '',
-    certification:          '',
+    rol:             '',
+    estado:          'activo',
 };
 
 const ERRORES_VACIOS = {
-    name: '', lastName: '', dni: '', userName: '',
-    email: '', phoneNumber: '', password: '', role: '',
-    legajo: '', startDate: '', turno: '', specialty: '', certification: ''
+    nombre: '', apellido: '', fechaNacimiento: '', dni: '',
+    telefono: '', email: '', username: '', legajo: '',
+    especialidad: '', turno: '', certificaciones: '',
+    password: '', rol: '', estado: '',
 };
 
 // ── Sub-componente Field ──────────────────────────────────────────────────────
@@ -58,21 +60,22 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
                 ? certs.map(c => c.nombre).join(', ') 
                 : (certs ?? '');
 
-           setForm({
-    name:          profesor.name          ?? '',
-    lastName:      profesor.lastName      ?? '',
-    dni:           profesor.dni           ?? '',
-    userName:      profesor.userName      ?? '',
-    email:         profesor.email         ?? '',
-    phoneNumber:   profesor.phoneNumber   ?? '',
-    password:      '',
-    role:          profesor.role          ?? 'activo',
-    legajo:        profesor.legajo        ?? '',
-    startDate:     profesor.startDate     ?? '2026-06-05T02:26:29.972Z',
-    turno:         profesor.turno         ?? '',
-    specialty:     profesor.specialty     ?? '',
-    certification: certsFormateadas
-});
+            setForm({
+                nombre:          profesor.nombre          ?? '',
+                apellido:        profesor.apellido        ?? '',
+                fechaNacimiento: profesor.fechaNacimiento ?? '',
+                dni:             profesor.dni             ?? '',
+                telefono:        profesor.telefono        ?? '',
+                email:           profesor.email           ?? '',
+                username:        profesor.username        ?? '',
+                legajo:          profesor.legajo          ?? '',
+                especialidad:    profesor.especialidad    ?? '',
+                turno:           profesor.turno           ?? '',
+                certificaciones: certsFormateadas,
+                password:        '',
+                rol:             profesor.rol             ?? 'profesor',
+                estado:          profesor.estado          ?? (profesor.activo ? 'activo' : 'inactivo'),
+            });
 
         }
         setErrores(ERRORES_VACIOS);
@@ -105,42 +108,46 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
     }
 
     // ── Validación ────────────────────────────────────────────────────────────
-   function validar() {
-    const errs = { ...ERRORES_VACIOS };
-    let ok = true;
+    function validar() {
+        const errs = { ...ERRORES_VACIOS };
+        let ok = true;
 
-    if (form.name.trim().length < 2)           { errs.name          = 'Nombre inválido';                   ok = false; }
-    if (form.lastName.trim().length < 2)       { errs.lastName      = 'Apellido inválido';                 ok = false; }
-    if (!/^\d{7,8}$/.test(form.dni.trim()))    { errs.dni           = 'DNI inválido (7 u 8 dígitos)';      ok = false; }
-    if (!form.email.includes('@'))             { errs.email         = 'Email inválido';                    ok = false; }
-    if (form.userName.trim().length < 4)       { errs.userName      = 'Username inválido (mín. 4 car.)';   ok = false; }
-    if (form.legajo.trim().length < 4)         { errs.legajo        = 'Legajo inválido';                   ok = false; }
-    if (form.specialty.trim().length < 2)      { errs.specialty     = 'Especialidad inválida';             ok = false; }
-    if (!form.turno)                           { errs.turno         = 'Seleccione un turno';               ok = false; }
-    if (esNuevo && form.password.length < 6)   { errs.password      = 'Mínimo 6 caracteres';               ok = false; }
+        if (form.nombre.trim().length < 2)         { errs.nombre        = 'Nombre inválido';                   ok = false; }
+        if (form.apellido.trim().length < 2)       { errs.apellido      = 'Apellido inválido';                 ok = false; }
+        if (!form.fechaNacimiento)                 { errs.fechaNacimiento = 'Ingrese fecha';                  ok = false; }
+        if (!/^\d{7,8}$/.test(form.dni.trim()))    { errs.dni           = 'DNI inválido (7 u 8 dígitos)';      ok = false; }
+        if (!form.email.includes('@'))             { errs.email         = 'Email inválido';                    ok = false; }
+        if (form.username.trim().length < 4)       { errs.username      = 'Username inválido (mín. 4 car.)';   ok = false; }
+        if (form.legajo.trim().length < 4)         { errs.legajo        = 'Legajo inválido';                   ok = false; }
+        if (form.especialidad.trim().length < 2)   { errs.especialidad  = 'Especialidad inválida';             ok = false; }
+        if (!form.turno)                           { errs.turno         = 'Seleccione un turno';               ok = false; }
+        if (esNuevo && form.password.length < 6)   { errs.password      = 'Mínimo 6 caracteres';               ok = false; }
 
-    setErrores(errs);
-    return ok;
-}
+        setErrores(errs);
+        return ok;
+    }
+
 function handleGuardar() {
     if (!validar()) return;
 
     const datos = {
         // Solo incluir id cuando estamos editando
         ...(profesor ? { idUsuario: profesor.idUsuario } : {}),
-        name:          form.name.trim(),
-        lastName:      form.lastName.trim(),
+        nombre:          form.nombre.trim(),
+        apellido:        form.apellido.trim(),
+        fechaNacimiento: form.fechaNacimiento,
         dni:           form.dni.trim(),
-        userName:      form.userName.trim(),
+        username:      form.username.trim(),
         email:         form.email.trim(),
-        phoneNumber:   form.phoneNumber.trim(),
+        telefono:      form.telefono.trim(),
         password:      form.password, // Asegúrate de incluir el campo si es necesario
-        role:          form.role,
+        rol:           form.rol || 'profesor',
         legajo:        form.legajo.trim(),
-        startDate:     form.startDate,
         turno:         form.turno,
-        specialty:     form.specialty.trim(),
-        certification: form.certification.trim(),
+        especialidad:  form.especialidad.trim(),
+        certificaciones: form.certificaciones.trim(),
+        estado:        form.estado,
+        activo:        form.estado === 'activo',
     };
 
     onGuardar(datos);
@@ -149,13 +156,13 @@ function handleGuardar() {
     if (!open) return null;
 
     return (
-      <div
-    className="dash-modal-overlay activo"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modal-profesor-titulo"
-    onClick={e => { if (e.target === e.currentTarget) onCerrar(); }}
->
+    <div
+        className="dash-modal-overlay activo"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-profesor-titulo"
+        onClick={e => { if (e.target === e.currentTarget) onCerrar(); }}
+    >
     <div className="dash-modal">
         {/* HEADER */}
         <div className="dash-modal-header">
@@ -172,28 +179,36 @@ function handleGuardar() {
 
             {/* Fila 1: Name / LastName */}
             <div className="form-row">
-                <Field label="Nombre" required error={errores.name}>
+                <Field label="Nombre" required error={errores.nombre}>
                     <input
                         type="text"
                         placeholder="Ej: Carlos"
-                        value={form.name}
-                        onChange={e => set('name', e.target.value)}
-                        className={errores.name ? 'input-error-field' : ''}
+                        value={form.nombre}
+                        onChange={e => set('nombre', e.target.value)}
+                        className={errores.nombre ? 'input-error-field' : ''}
                     />
                 </Field>
-                <Field label="Apellido" required error={errores.lastName}>
+                <Field label="Apellido" required error={errores.apellido}>
                     <input
                         type="text"
                         placeholder="Ej: Gómez"
-                        value={form.lastName}
-                        onChange={e => set('lastName', e.target.value)}
-                        className={errores.lastName ? 'input-error-field' : ''}
+                        value={form.apellido}
+                        onChange={e => set('apellido', e.target.value)}
+                        className={errores.apellido ? 'input-error-field' : ''}
                     />
                 </Field>
             </div>
 
             {/* Fila 2: DNI (Fecha de nacimiento eliminada por no estar en el esquema) */}
             <div className="form-row">
+                <Field label="Fecha de nacimiento" required error={errores.fechaNacimiento}>
+                    <input
+                        type="date"
+                        value={form.fechaNacimiento}
+                        onChange={e => set('fechaNacimiento', e.target.value)}
+                        className={errores.fechaNacimiento ? 'input-error-field' : ''}
+                    />
+                </Field>
                 <Field label="DNI" required error={errores.dni}>
                     <input
                         type="text"
@@ -205,38 +220,39 @@ function handleGuardar() {
                         className={errores.dni ? 'input-error-field' : ''}
                     />
                 </Field>
-                <Field label="Email" required error={errores.email}>
-                    <input
-                        type="email"
-                        placeholder="correo@ejemplo.com"
-                        autoComplete="email"
-                        value={form.email}
-                        onChange={e => set('email', e.target.value)}
-                        className={errores.email ? 'input-error-field' : ''}
-                    />
-                </Field>
             </div>
+
+            <Field label="Email" required error={errores.email}>
+                <input
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={e => set('email', e.target.value)}
+                    className={errores.email ? 'input-error-field' : ''}
+                />
+            </Field>
 
             {/* Fila 3: PhoneNumber / Username */}
             <div className="form-row">
-                <Field label="Teléfono" error={errores.phoneNumber}>
+                <Field label="Teléfono" error={errores.telefono}>
                     <input
                         type="text"
                         placeholder="+54 11..."
                         autoComplete="tel"
-                        value={form.phoneNumber}
-                        onChange={e => set('phoneNumber', e.target.value)}
-                        className={errores.phoneNumber ? 'input-error-field' : ''}
+                        value={form.telefono}
+                        onChange={e => set('telefono', e.target.value)}
+                        className={errores.telefono ? 'input-error-field' : ''}
                     />
                 </Field>
-                <Field label="Username" required error={errores.userName}>
+                <Field label="Username" required error={errores.username}>
                     <input
                         type="text"
                         placeholder="Ej: cgomez"
                         autoComplete="username"
-                        value={form.userName}
-                        onChange={e => set('userName', e.target.value)}
-                        className={errores.userName ? 'input-error-field' : ''}
+                        value={form.username}
+                        onChange={e => set('username', e.target.value)}
+                        className={errores.username ? 'input-error-field' : ''}
                     />
                 </Field>
             </div>
@@ -252,13 +268,13 @@ function handleGuardar() {
                         className={errores.legajo ? 'input-error-field' : ''}
                     />
                 </Field>
-                <Field label="Especialidad" required error={errores.specialty}>
+                <Field label="Especialidad" required error={errores.especialidad}>
                     <input
                         type="text"
                         placeholder="Ej: Fútbol Infantil"
-                        value={form.specialty}
-                        onChange={e => set('specialty', e.target.value)}
-                        className={errores.specialty ? 'input-error-field' : ''}
+                        value={form.especialidad}
+                        onChange={e => set('especialidad', e.target.value)}
+                        className={errores.especialidad ? 'input-error-field' : ''}
                     />
                 </Field>
             </div>
@@ -277,12 +293,12 @@ function handleGuardar() {
                         <option value="Noche">Noche</option>
                     </select>
                 </Field>
-                <Field label="Certificaciones" error={errores.certification}>
+                <Field label="Certificaciones" error={errores.certificaciones}>
                     <input
                         type="text"
                         placeholder="Ej: AFA Nivel 1"
-                        value={form.certification}
-                        onChange={e => set('certification', e.target.value)}
+                        value={form.certificaciones}
+                        onChange={e => set('certificaciones', e.target.value)}
                     />
                 </Field>
             </div>
@@ -307,8 +323,8 @@ function handleGuardar() {
             {!esNuevo && (
                 <Field label="Estado">
                     <select
-                        value={form.role}
-                        onChange={e => set('role', e.target.value)}
+                        value={form.estado}
+                        onChange={e => set('estado', e.target.value)}
                     >
                         <option value="activo">Activo</option>
                         <option value="inactivo">Inactivo</option>

@@ -43,14 +43,14 @@ export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar 
                         {deBaja ? (
                             <>
                                 ¿Estás seguro que querés dar de baja a{' '}
-                                <strong>{usuario.name} {usuario.lastName}</strong>?
+                                <strong>{usuario.nombre} {usuario.apellido}</strong>?
                                 <br />
                                 El cliente no podrá acceder al sistema.
                             </>
                         ) : (
                             <>
                                 ¿Querés reactivar a{' '}
-                                <strong>{usuario.name} {usuario.lastName}</strong>?
+                                <strong>{usuario.nombre} {usuario.apellido}</strong>?
                             </>
                         )}
                     </p>

@@ -63,7 +63,7 @@ export default function ProfesoresPageContent() {
 
     async function handleToggleEstado(profesor) {
         await darDeBaja(profesor.idUsuario);
-        const deBaja = profesor.activo;
+        const deBaja = profesor.activo ?? (profesor.estado === 'activo');
         mostrarToast(
             deBaja
                 ? `${profesor.nombre} ${profesor.apellido} fue dado de baja.`

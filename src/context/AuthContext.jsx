@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
 const API_URL = 'http://localhost:5063/api';
-const USE_MOCK = false;
+const USE_MOCK = true;
 const MOCK_USERS = [
     {
         id: 1,
@@ -83,15 +83,49 @@ export function AuthProvider({ children }) {
     }
 
 // 1. Convertimos login en ASYNC para dejarlo listo para la API
-    async function login({ userName, password }) {
+    async function login({ email, password }) {
         if (USE_MOCK) {
-            const found = MOCK_USERS.find(u => u.email === email && u.password === password);
+            const readLocalUsers = (key) => {
+                try {
+                    return JSON.parse(localStorage.getItem(key) || '[]');
+                } catch {
+                    return [];
+                }
+            };
+
+            const registeredUsers = readLocalUsers('gol_mock_registered_users');
+            const adminCreatedClients = readLocalUsers('clientes_db');
+            const adminCreatedEmployees = readLocalUsers('empleados_db');
+
+            const found = [
+                ...MOCK_USERS,
+                ...registeredUsers,
+                ...adminCreatedClients,
+                ...adminCreatedEmployees,
+            ].find(u =>
+                u.email.toLowerCase() === email.trim().toLowerCase() &&
+                u.password === password &&
+                u.rol !== 'profesor' &&
+                u.activo !== false &&
+                u.estado !== 'inactivo'
+            );
 
             if (!found) {
                 return { ok: false, error: 'Credenciales incorrectas.' };
             }
 
-            const { password: _pw, ...safeUser } = found;
+            const roleByRol = {
+                admin: 'Admin',
+                empleado: 'Employee',
+                cliente: 'Client',
+            };
+            const normalizedRol = found.rol || 'cliente';
+            const safeUser = {
+                ...found,
+                rol: normalizedRol,
+                role: roleByRol[normalizedRol],
+            };
+            delete safeUser.password;
             persistUser(safeUser);
             return { ok: true };
         } else {
@@ -100,7 +134,7 @@ export function AuthProvider({ children }) {
                 const response = await fetch(`${API_URL}/Auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userName, password })
+                    body: JSON.stringify({ email, password })
                 });
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));
@@ -143,24 +177,10 @@ export function AuthProvider({ children }) {
                 persistUser(normalizedUser);
 
                 return { ok: true };
-            } catch (err) {
+            } catch {
                 return { ok: false, error: 'Error de conexión con el servidor.' };
             }
         }
-    }
-
-    // 2. NUEVA FUNCIÓN: Permite loguear directamente a un usuario (ideal para post-registro)
-    function loginDirect(userData) {
-        const safeUser = {
-            id: userData.idUsuario || userData.id,
-            nombre: userData.nombre,
-            apellido: userData.apellido,
-            email: userData.email,
-            rol: userData.rol || 'cliente',
-            estado: 'activo',
-            ...userData
-        };
-        persistUser(safeUser);
     }
 
     function logout() {

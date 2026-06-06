@@ -89,10 +89,10 @@ export default function UsuariosPageContent() {
         ? clientes.filter(u => {
               const q = filtro.toLowerCase();
               return (
-                  `${u.name} ${u.lastName}`.toLowerCase().includes(q) ||
+                  `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
                   u.dni.includes(q) ||
                   u.email.toLowerCase().includes(q) ||
-                  u.userName.toLowerCase().includes(q)
+                  u.username.toLowerCase().includes(q)
               );
           })
         : clientes;

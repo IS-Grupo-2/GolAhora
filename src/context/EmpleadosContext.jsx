@@ -52,7 +52,7 @@ const MOCK_EMPLEADOS = [
 const EmpleadosContext = createContext();
 
 const API_URL = 'http://localhost:5063/api';
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 export function EmpleadosProvider({ children }) {
     const [empleados, setEmpleados] = useState([]);
@@ -64,8 +64,13 @@ export function EmpleadosProvider({ children }) {
         setError(null);
         try {
             if (USE_MOCK) {
-                await new Promise(resolve => setTimeout(resolve, 300));
-                setEmpleados(prev => prev.length === 0 ? MOCK_EMPLEADOS : prev);
+                const localData = localStorage.getItem('empleados_db');
+                if (localData) {
+                    setEmpleados(JSON.parse(localData));
+                } else {
+                    localStorage.setItem('empleados_db', JSON.stringify(MOCK_EMPLEADOS));
+                    setEmpleados(MOCK_EMPLEADOS);
+                }
             } else {
                 const response = await fetch(`${API_URL}/empleados`);
                 if (!response.ok) throw new Error('Error al obtener empleados');
@@ -89,9 +94,16 @@ export function EmpleadosProvider({ children }) {
                 ...nuevoEmpleado,
                 idUsuario: Date.now(),
                 activo: true,
-                rol: 'empleado'
+                estado: 'activo',
+                rol: 'empleado',
+                fechaRegistro: new Date().toISOString().split('T')[0],
             };
-            setEmpleados(prev => [...prev, empleadoConId]);
+            setEmpleados(prev => {
+                const next = [...prev, empleadoConId];
+                localStorage.setItem('empleados_db', JSON.stringify(next));
+                return next;
+            });
+            return empleadoConId;
         } else {
             const response = await fetch(`${API_URL}/empleados`, {
                 method: 'POST',
@@ -106,7 +118,15 @@ export function EmpleadosProvider({ children }) {
 
     const modificarEmpleado = async (empleadoModificado) => {
         if (USE_MOCK) {
-            setEmpleados(prev => prev.map(e => e.idUsuario === empleadoModificado.idUsuario ? empleadoModificado : e));
+            setEmpleados(prev => {
+                const next = prev.map(e =>
+                    e.idUsuario === empleadoModificado.idUsuario
+                        ? { ...e, ...empleadoModificado }
+                        : e
+                );
+                localStorage.setItem('empleados_db', JSON.stringify(next));
+                return next;
+            });
         } else {
             const response = await fetch(`${API_URL}/empleados/${empleadoModificado.idUsuario}`, {
                 method: 'PUT',
@@ -121,9 +141,19 @@ export function EmpleadosProvider({ children }) {
 
     const darDeBaja = async (idUsuario) => {
         if (USE_MOCK) {
-            setEmpleados(prev => prev.map(e =>
-                e.idUsuario === idUsuario ? { ...e, activo: !e.activo } : e
-            ));
+            setEmpleados(prev => {
+                const next = prev.map(e =>
+                    e.idUsuario === idUsuario
+                        ? {
+                            ...e,
+                            activo: !e.activo,
+                            estado: e.activo ? 'inactivo' : 'activo',
+                        }
+                        : e
+                );
+                localStorage.setItem('empleados_db', JSON.stringify(next));
+                return next;
+            });
         } else {
             const response = await fetch(`${API_URL}/empleados/${idUsuario}/estado`, {
                 method: 'PATCH',

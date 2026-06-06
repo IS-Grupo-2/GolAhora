@@ -100,7 +100,7 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
         if (!validar()) return;
 
         const datos = {
-            ...(empleado ? { id: empleado.id } : {}),
+            ...(empleado ? { idUsuario: empleado.idUsuario } : {}),
             nombre:   form.nombre.trim(),
             apellido: form.apellido.trim(),
             dni:      form.dni.trim(),
@@ -111,7 +111,10 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
             cargo:    form.cargo,
             turno:    form.turno,
             sector:   form.sector.trim(),
-            activo:   form.activo === 'true'
+            rol:      'empleado',
+            estado:   form.activo === 'true' ? 'activo' : 'inactivo',
+            activo:   form.activo === 'true',
+            ...(esNuevo ? { password: form.password.trim() } : {}),
         };
 
         onGuardar(datos);

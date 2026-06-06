@@ -53,7 +53,7 @@ export default function ProfesoresTable({
                         const isActivo = p.activo ?? (p.estado === 'activo');
 
                         return (
-                            <tr key={p.idUsuario || p.id}>
+                            <tr key={p.idUsuario}>
                                 <td>
                                     <div className="user-cell">
                                         <div className={`user-avatar-sm${!isActivo ? ' inactive' : ''}`}>
@@ -61,7 +61,7 @@ export default function ProfesoresTable({
                                         </div>
                                         <div className="user-cell-info">
                                             <strong>{p.nombre} {p.apellido}</strong>
-                                            <span>@{p.userName || p.username}</span>
+                                            <span>@{p.username}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -73,7 +73,7 @@ export default function ProfesoresTable({
                                 <td>
                                     <div className="action-btns">
                                         {/* Ver Detalle: visible para admin y empleado */}
-                                        <Can roles={['admin', 'empleado']}>
+                                        <Can roles={['Admin', 'Employee']}>
                                             <button
                                                 className="action-btn view"
                                                 title="Ver detalle"
@@ -84,7 +84,7 @@ export default function ProfesoresTable({
                                         </Can>
 
                                         {/* Editar: Solo admin */}
-                                        <Can roles={['admin']}>
+                                        <Can roles={['Admin']}>
                                             <button
                                                 className="action-btn edit"
                                                 title="Editar"
@@ -95,7 +95,7 @@ export default function ProfesoresTable({
                                         </Can>
 
                                         {/* Dar de baja / Reactivar: Solo admin */}
-                                        <Can roles={['admin']}>
+                                        <Can roles={['Admin']}>
                                             <button
                                                 className="action-btn toggle"
                                                 title={isActivo ? 'Dar de baja' : 'Reactivar'}

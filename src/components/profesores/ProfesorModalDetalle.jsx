@@ -51,6 +51,7 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
     }, [open]);
 
     if (!open || !profesor) return null;
+    const estaActivo = profesor.activo ?? profesor.estado === 'activo';
 
     return (
         <div
@@ -71,7 +72,7 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
                 {/* BODY */}
                 <div className="dash-modal-body">
                     {/* Avatar */}
-                    <div className={`detalle-avatar${profesor.estado === 'inactivo' ? ' inactive' : ''}`}>
+                    <div className={`detalle-avatar${estaActivo ? ' active' : ' inactive'}`}>
                         {iniciales(profesor)}
                     </div>
                     <div className="detalle-nombre">
@@ -80,8 +81,8 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
                     <div className="detalle-username">
                         @{profesor.username}
                         &nbsp;·&nbsp;
-                        <span className={`badge ${profesor.estado === 'activo' ? 'success' : 'danger'}`}>
-                            {profesor.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                        <span className={`badge ${estaActivo ? 'success' : 'danger'}`}>
+                            {estaActivo ? 'Activo' : 'Inactivo'}
                         </span>
                     </div>
 
@@ -92,14 +93,15 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
                         <Campo label="Turno"        valor={profesor.turno} />
                         <Campo label="DNI"          valor={profesor.dni} />
                         <Campo label="Teléfono"     valor={profesor.telefono} />
-                        <Campo label="Ingreso"      valor={formatFecha(profesor.fechaIngreso)} />
+                        <Campo label="Nacimiento"  valor={formatFecha(profesor.fechaNacimiento)} />
+                        <Campo label="Ingreso"      valor={formatFecha(profesor.fechaRegistro)} />
                         <Campo label="Email"        valor={profesor.email}                        full />
                         <Campo label="Certificaciones" valor={formatCerts(profesor.certificaciones)} full />
                         <Campo
                             label="Cert. verificada"
                             valor={profesor.verificacionCertificacion ? '✓ Verificada' : '✗ Sin verificar'}
                         />
-                        <Campo label="ID" valor={`#${String(profesor.id).padStart(4, '0')}`} />
+                        <Campo label="ID" valor={`#${String(profesor.idUsuario).padStart(4, '0')}`} />
                     </div>
                 </div>
 
