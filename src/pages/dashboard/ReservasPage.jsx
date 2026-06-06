@@ -10,6 +10,5 @@ export default function EnrutadorDeReservas() {
     return <AdminReservasView />; 
   }
 
-  // Si es Cliente (o Profesor si quieres que vean esta misma vista), mostramos la vista de Cards
   return <ClienteReservasView />;
 }

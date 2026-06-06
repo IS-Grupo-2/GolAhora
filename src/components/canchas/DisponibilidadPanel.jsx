@@ -82,7 +82,7 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                                 <th>Inicio</th>
                                                 <th>Fin</th>
                                                 <th>Estado</th>
-                                                <Can roles={['admin', 'empleado', 'Employee']}>
+                                                <Can roles={['Admin', 'Employee']}>
                                                     <th>Acciones</th>
                                                 </Can>
                                             </tr>
@@ -101,7 +101,7 @@ export default function DisponibilidadPanel({ canchas, tipos, disps, canchaActiv
                                                                 {f.disponible ? 'Habilitada' : 'Bloqueada'}
                                                             </span>
                                                         </td>
-                                                        <Can roles={['admin', 'empleado', 'Employee']}>
+                                                        <Can roles={['Admin', 'Employee']}>
                                                             <td>
                                                                 <div className="action-btns">
                                                                     <button className="action-btn view" onClick={() => onToggleDisp(f)}><i data-lucide={f.disponible ? 'eye-off' : 'eye'} /></button>
