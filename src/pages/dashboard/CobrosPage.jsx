@@ -34,10 +34,59 @@ export default function CobrosPageContent() {
         setModalBaja({ open: false, cobro: null });
     };
 
-    const cobrosFiltrados = filtro ? cobros.filter(c => 
-        c.cliente.nombre.toLowerCase().includes(filtro.toLowerCase()) || 
-        c.concepto.toLowerCase().includes(filtro.toLowerCase())
-    ) : cobros;
+// RF49: Imprimir el Cobro 
+    const handleImprimirCobro = (cobro) => {
+        const contenidoTxt = `
+============================================================
+                        GOL AHORA                           
+            Comprobante de Cobro Interno                 
+============================================================
+ID de Cobro:      #${String(cobro.idCobro || cobro.id).padStart(5, '0')}
+Fecha de Emisión: ${cobro.fecha}
+Estado:           ${cobro.estado.toUpperCase()}
+------------------------------------------------------------
+DATOS DEL CLIENTE:
+Nombre y Apellido: ${cobro.cliente?.nombre} ${cobro.cliente?.apellido}
+DNI:               ${cobro.cliente?.dni}
+------------------------------------------------------------
+DETALLE DE LA OPERACIÓN:
+Concepto:         ${cobro.concepto}
+Tipo de Cobro:    ${cobro.tipoCobro || 'Servicio'}
+------------------------------------------------------------
+TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+============================================================
+        `.trim();
+
+        const blob = new Blob([contenidoTxt], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Cobro_${String(cobro.idCobro || cobro.id).padStart(5, '0')}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const normalizarTexto = (texto) => {
+        return texto
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+
+    const cobrosFiltrados = cobros.filter(c => {
+        const busqueda = normalizarTexto(filtro);
+
+        const nombreCompleto = normalizarTexto(`${c.cliente?.nombre || ''} ${c.cliente?.apellido || ''}`);
+        const concepto = normalizarTexto(c.concepto || '');
+        const idCobro = String(c.idCobro || '');
+
+        return  nombreCompleto.includes(busqueda) || 
+                concepto.includes(busqueda) ||
+                idCobro.includes(busqueda);
+    });
 
      useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
@@ -65,14 +114,15 @@ export default function CobrosPageContent() {
             </div>
 
             <div className="panel-card tabla-panel">
-                {cobros.length === 0 ? <EmptyState message="No hay cobros registrados." /> : (
+                {cobrosFiltrados.length === 0 ? <EmptyState message="No hay cobros registrados." /> : (
                     <CobrosTable
                         cobros={cobrosFiltrados}
                         isAdmin={isAdmin} // Pasamos isAdmin para ocultar botones de edición
                         onVer={(c) => setModalDetalle({ open: true, cobro: c })}
                         onEditar={(c) => setModalForm({ open: true, modo: 'editar', cobro: c })}
                         onBaja={(c) => setModalBaja({ open: true, cobro: c })}
-                        onImprimir={() => window.print()}
+                        onImprimir={handleImprimirCobro}
+                        onCerrar={() => setModalDetalle({open: false, cobro: null})}
                     />
                 )}
             </div>
