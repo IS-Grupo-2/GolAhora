@@ -167,6 +167,11 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                                     </option>
                                 ))}
                             </select>
+                            {profesoresDisp.length === 0 && (
+                                <small style={{ color: 'var(--text-muted)', marginTop: '6px', display: 'block' }}>
+                                    No hay profesores con certificacion verificada disponibles.
+                                </small>
+                            )}
                         </Field>
                         <Field label="Cancha" required error={errores.cancha}>
                             <select value={form.cancha} onChange={e => set('cancha', e.target.value)} className={errores.cancha ? 'input-error-field' : ''}>

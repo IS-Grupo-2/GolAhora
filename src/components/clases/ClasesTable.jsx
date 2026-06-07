@@ -21,7 +21,7 @@ export default function ClasesTable({
     clases, filtro, onLimpiarFiltro, onVer, onEditar, onAsistencia, onCancelar, onSolicitarInscripcion
 }) {
     const { user } = useAuth();
-    const { isCliente } = useRole();
+    const { isClient } = useRole();
 
     if (clases.length === 0) {
         return (
@@ -86,7 +86,7 @@ export default function ClasesTable({
                                 <td>
                                     <div className="action-btns">
                                         {/* ACCIÓN EXCLUSIVA CLIENTE: Botón de Inscripción/Pago */}
-                                        {isCliente && (
+                                        {isClient && (
                                             yaInscripto ? (
                                                 <span className="badge success" style={{ padding: '6px 10px', fontSize: '0.78rem' }}>
                                                     <i data-lucide="check" style={{ width: 12, height: 12, marginRight: 4 }} /> Ya Inscripto
@@ -119,7 +119,7 @@ export default function ClasesTable({
                                         </Can>
 
                                         {/* Registrar asistencia — admin, empleado y profesor */}
-                                        <Can roles={['Admin', 'Employee', 'Professor']}>
+                                        <Can roles={['Admin', 'Employee']}>
                                             <button className="action-btn view" title="Registrar asistencia" onClick={() => onAsistencia(c)} disabled={c.estado === 'cancelada' || c.estado === 'finalizada'}>
                                                 <i data-lucide="clipboard-check" />
                                             </button>

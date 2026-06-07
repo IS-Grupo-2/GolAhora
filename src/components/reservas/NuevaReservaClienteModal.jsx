@@ -3,12 +3,16 @@ import { useCanchas } from '../../context/CanchasContext';
 import { useReservas } from '../../context/ReservasContext';
 import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
+import { validarReservaCancha } from '../../utils/reservasDisponibilidad';
 
 export default function NuevaReservaClienteModal({ onClose }) {
-    const { canchas = [], tiposCanchas = [] } = useCanchas();
-    const { crearReserva } = useReservas();
+    const { canchas = [], tiposCanchas = [], disponibilidades = [] } = useCanchas();
+    const { crearReserva, reservas = [] } = useReservas();
     const cobrosContext = useCobros();
     const { user } = useAuth();
+    const hoy = new Date();
+    const fechaMaximaReserva = new Date(hoy);
+    fechaMaximaReserva.setDate(fechaMaximaReserva.getDate() + 30);
 
     const [form, setForm] = useState({
         canchaId: '',
@@ -24,26 +28,23 @@ export default function NuevaReservaClienteModal({ onClose }) {
     // Precio dinámico mapeando defensivamente 'tipoCanchaId' o 'idTipo'
     const detallesCancha = useMemo(() => {
         if (!form.canchaId) return null;
-        const canchaSeleccionada = canchas.find(c => c.id === Number(form.canchaId));
-        if (!canchaSeleccionada) return null;
-
-        const tipoId = canchaSeleccionada.tipoCanchaId || canchaSeleccionada.idTipo;
-        const tipo = tiposCanchas.find(t => t.id === tipoId);
-
-        const [hIn, mIn] = form.horaInicio.split(':').map(Number);
-        const [hFin, mFin] = form.horaFin.split(':').map(Number);
-        let horas = (hFin + mFin / 60) - (hIn + mIn / 60);
-        if (horas <= 0) horas = 1;
-
-        const precioTotal = (tipo?.precioHora || 0) * horas;
-        return { cancha: canchaSeleccionada, tipo, horas, precioTotal };
-    }, [form, canchas, tiposCanchas]);
+        return validarReservaCancha({
+            canchaId: form.canchaId,
+            fechaUso: form.fechaUso,
+            horaInicio: form.horaInicio,
+            horaFin: form.horaFin,
+            canchas,
+            tiposCanchas,
+            disponibilidades,
+            reservas
+        });
+    }, [form, canchas, tiposCanchas, disponibilidades, reservas]);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = async e => {
         e.preventDefault();
-        if (!detallesCancha) return;
+        if (!detallesCancha?.ok) return;
 
         // Fallbacks seguros de ID y Nombre por si difieren las propiedades de Auth de tu equipo
         const userId = user?.idUsuario || user?.id || 1;
@@ -59,9 +60,9 @@ export default function NuevaReservaClienteModal({ onClose }) {
                 numero: detallesCancha.cancha.numero
             },
             fechaUso: form.fechaUso,
-            horaInicio: form.horaInicio,
-            horaFin: form.horaFin,
-            duracionMin: Math.round(detallesCancha.horas * 60),
+            horaInicio: detallesCancha.horaInicio,
+            horaFin: detallesCancha.horaFin,
+            duracionMin: detallesCancha.duracionMin,
             estado: 'pendiente',
             montoTotal: detallesCancha.precioTotal,
             cobro: { estado: 'pendiente', metodo: null }
@@ -109,7 +110,7 @@ export default function NuevaReservaClienteModal({ onClose }) {
                             <label>Seleccionar Cancha <span className="req">*</span></label>
                             <select name="canchaId" value={form.canchaId} onChange={handleChange} required>
                                 <option value="" disabled>Elegí una cancha...</option>
-                                {canchas.filter(c => c.activa || c.estado === 'activa').map(c => {
+                                {canchas.filter(c => c.estado !== 'inactiva').map(c => {
                                     const tipoId = c.tipoCanchaId || c.idTipo;
                                     const tipo = tiposCanchas.find(t => t.id === tipoId);
                                     return (
@@ -127,6 +128,7 @@ export default function NuevaReservaClienteModal({ onClose }) {
                                 name="fechaUso" type="date"
                                 value={form.fechaUso} onChange={handleChange}
                                 min={new Date().toISOString().split('T')[0]}
+                                max={fechaMaximaReserva.toISOString().split('T')[0]}
                                 required
                             />
                         </div>
@@ -134,15 +136,15 @@ export default function NuevaReservaClienteModal({ onClose }) {
                         <div className="form-row">
                             <div className="form-group">
                                 <label>Hora de Inicio <span className="req">*</span></label>
-                                <input name="horaInicio" type="time" value={form.horaInicio} onChange={handleChange} required />
+                                <input name="horaInicio" type="time" step="1800" value={form.horaInicio} onChange={handleChange} required />
                             </div>
                             <div className="form-group">
                                 <label>Hora de Fin <span className="req">*</span></label>
-                                <input name="horaFin" type="time" value={form.horaFin} onChange={handleChange} required />
+                                <input name="horaFin" type="time" step="1800" value={form.horaFin} onChange={handleChange} required />
                             </div>
                         </div>
 
-                        {detallesCancha && (
+                        {detallesCancha?.ok && (
                             <div className="cancel-policy" style={{ background: '#f8fafc', borderColor: '#e2e8f0', marginTop: '6px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -158,6 +160,12 @@ export default function NuevaReservaClienteModal({ onClose }) {
                                 </p>
                             </div>
                         )}
+
+                        {form.canchaId && form.fechaUso && !detallesCancha?.ok && (
+                            <div className="form-error" style={{ display: 'block', fontWeight: 600 }}>
+                                {detallesCancha?.mensaje}
+                            </div>
+                        )}
                     </form>
                 </div>
 
@@ -167,7 +175,7 @@ export default function NuevaReservaClienteModal({ onClose }) {
                         className="btn-modal-save"
                         form="reserva-wizard"
                         type="submit"
-                        disabled={!detallesCancha}
+                        disabled={!detallesCancha?.ok}
                     >
                         <i data-lucide="calendar-check" /> Confirmar Reserva
                     </button>

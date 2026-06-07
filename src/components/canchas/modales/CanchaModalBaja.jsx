@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 
 export default function CanchaModalBaja({ open, cancha, onConfirmar, onCerrar }) {
-    const esBaja = cancha?.estado === 'activa';
+    const esBaja = cancha?.estado !== 'inactiva';
 
     useEffect(() => {
         if (!open) return;

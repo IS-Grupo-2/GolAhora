@@ -2,9 +2,9 @@ function BadgeEstado({ estado }) {
     if (estado === 'pagado') {
         return <span className="badge success">Pagado / Acreditado</span>;
     }
-    if (estado === 'pendiente') {
-        return <span className="badge warning">Pendiente de Pago</span>;
-    }
+    //if (estado === 'pendiente') {
+    //    return <span className="badge warning">Pendiente de Pago</span>;
+    //}
     return <span className="badge danger">Anulado</span>;
 }
 
@@ -68,9 +68,7 @@ export default function CobrosTable({ cobros, filtro, onLimpiarFiltro, isAdmin, 
                                         </>
                                     )}
 
-                                    <button className="action-btn" style={{ borderColor: 'var(--blue)', color: 'var(--blue)' }} title="Imprimir Comprobante" onClick={() => onImprimir(c)} disabled={c.estado === 'anulado'}>
-                                        <i data-lucide="printer" />
-                                    </button>
+                                    
                                 </div>
                             </td>
                         </tr>

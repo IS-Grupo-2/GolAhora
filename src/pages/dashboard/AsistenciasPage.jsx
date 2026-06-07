@@ -26,6 +26,24 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido interno ─────────────────────────────────────────────────────────
+function clasePerteneceAlProfesor(clase, user) {
+    if (!user || user.role !== 'Professor' || !clase?.profesor) return false;
+
+    const profesorClase = clase.profesor;
+    const idsUsuario = [user.idUsuario, user.id].filter(Boolean).map(String);
+    const idsProfesorClase = [profesorClase.idUsuario, profesorClase.id].filter(Boolean).map(String);
+
+    if (idsUsuario.some(id => idsProfesorClase.includes(id))) return true;
+
+    const emailUsuario = user.email?.toLowerCase();
+    const emailProfesor = profesorClase.email?.toLowerCase();
+    if (emailUsuario && emailProfesor && emailUsuario === emailProfesor) return true;
+
+    const usernameUsuario = (user.username || user.userName)?.toLowerCase();
+    const usernameProfesor = (profesorClase.username || profesorClase.userName)?.toLowerCase();
+    return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
+}
+
 export default function AsistenciasPageContent() {
     const { user } = useAuth();
     const { isAdmin, isEmployee, isProfessor } = useRole();
@@ -43,6 +61,7 @@ export default function AsistenciasPageContent() {
         clases,
         loading: loadingClases,
         error: errorClases,
+        registrarAsistencia: registrarAsistenciaEnClase,
     } = useClases();
 
     const [filtro,        setFiltro]        = useState('');
@@ -69,7 +88,7 @@ export default function AsistenciasPageContent() {
     // profesor ve solo las que le pertenecen
     const clasesPorRol = (() => {
         if (isAdmin || isEmployee) return clases;
-        if (isProfessor && user) return clases.filter(c => c.profesor?.id === user.id);
+        if (isProfessor && user) return clases.filter(c => clasePerteneceAlProfesor(c, user));
         return []; // cliente: no debería llegar aquí (bloqueado en router)
     })();
 
@@ -93,6 +112,11 @@ export default function AsistenciasPageContent() {
                 await registrarAsistencia(idClase, arrayAsistenciasUML);
                 mostrarToast('Registro de asistencia guardado exitosamente.', 'success');
             }
+            const presentesPorAlumno = arrayAsistenciasUML.reduce((acc, asistencia) => {
+                acc[asistencia.cliente.id] = asistencia.presente;
+                return acc;
+            }, {});
+            await registrarAsistenciaEnClase(idClase, presentesPorAlumno);
             setModalToma({ open: false, clase: null, esMod: false });
         } catch {
             mostrarToast('Error al guardar el registro.', 'error');

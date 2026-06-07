@@ -1,6 +1,17 @@
 export function normalizarCertificaciones(certificaciones) {
     if (!certificaciones) return [];
-    if (Array.isArray(certificaciones)) return certificaciones;
+
+    if (Array.isArray(certificaciones)) {
+        return certificaciones.map(certificacion => ({
+            nombre: certificacion.nombre || certificacion.archivo?.nombre || 'Certificado',
+            entidadEmisora: certificacion.entidadEmisora || '',
+            fechaEmision: certificacion.fechaEmision || '',
+            fechaVencimiento: certificacion.fechaVencimiento || '',
+            archivo: certificacion.archivo || null,
+            verificada: certificacion.verificada === true,
+            estado: certificacion.verificada ? 'verificada' : (certificacion.estado || 'pendiente'),
+        }));
+    }
 
     return String(certificaciones)
         .split(',')
@@ -11,50 +22,44 @@ export function normalizarCertificaciones(certificaciones) {
             entidadEmisora: '',
             fechaEmision: '',
             fechaVencimiento: '',
+            archivo: null,
             verificada: false,
+            estado: 'pendiente',
         }));
 }
 
-export function certificacionEstaVencida(certificacion, hoy = new Date()) {
-    if (!certificacion?.fechaVencimiento) return false;
-    const vencimiento = new Date(`${certificacion.fechaVencimiento}T23:59:59`);
-    return Number.isNaN(vencimiento.getTime()) ? false : vencimiento < hoy;
+export function tieneCertificadoCargado(profesor) {
+    return normalizarCertificaciones(profesor?.certificaciones).length > 0;
 }
 
-export function tieneCertificacionVencida(profesor, hoy = new Date()) {
-    return normalizarCertificaciones(profesor?.certificaciones).some(certificacion =>
-        certificacionEstaVencida(certificacion, hoy)
-    );
-}
-
-export function tieneCertificacionVigente(profesor, hoy = new Date()) {
-    return normalizarCertificaciones(profesor?.certificaciones).some(certificacion =>
-        !certificacionEstaVencida(certificacion, hoy)
-    );
+export function tieneCertificacionPendiente(profesor) {
+    return tieneCertificadoCargado(profesor) && !tieneCertificacionVerificada(profesor);
 }
 
 export function tieneCertificacionVerificada(profesor) {
     return (
-        (Boolean(profesor?.verificacionCertificacion) && !tieneCertificacionVencida(profesor))
-        || normalizarCertificaciones(profesor?.certificaciones).some(certificacion =>
-            certificacion.verificada && !certificacionEstaVencida(certificacion)
-        )
+        Boolean(profesor?.verificacionCertificacion) ||
+        normalizarCertificaciones(profesor?.certificaciones).some(certificacion => certificacion.verificada === true)
     );
+}
+
+export function estadoCertificacionProfesor(profesor) {
+    if (tieneCertificacionVerificada(profesor)) return 'verificada';
+    if (tieneCertificacionPendiente(profesor)) return 'pendiente';
+    return 'sin_certificado';
 }
 
 export function verificarCertificacionesProfesor(profesor) {
     const certificaciones = normalizarCertificaciones(profesor.certificaciones);
-    const vencida = certificaciones.some(certificacion => certificacionEstaVencida(certificacion));
     const certificacionesActualizadas = certificaciones.map(certificacion => ({
         ...certificacion,
-        verificada: !vencida && !certificacionEstaVencida(certificacion),
+        verificada: true,
+        estado: 'verificada',
     }));
 
     return {
         ...profesor,
         certificaciones: certificacionesActualizadas,
-        verificacionCertificacion: !vencida && certificacionesActualizadas.some(certificacion => certificacion.verificada),
-        activo: vencida ? false : (profesor.activo ?? profesor.estado !== 'inactivo'),
-        estado: vencida ? 'inactivo' : 'activo',
+        verificacionCertificacion: certificacionesActualizadas.length > 0,
     };
 }

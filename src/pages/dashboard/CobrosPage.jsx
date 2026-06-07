@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useCobros } from '../../context/CobrosContext';
 import { useClientes } from '../../context/ClientesContext';
+import { useReservas } from '../../context/ReservasContext';
+import { useClases } from '../../context/ClasesContext';
+import { useTorneos } from '../../context/TorneosContext';
+import { useDescuentos } from '../../context/DescuentosContext';
 import useRole from '../../hooks/useRole';
 import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -14,15 +18,93 @@ import CobroModalBaja from '../../components/cobros/CobroModalBaja';
 export default function CobrosPageContent() {
     const { items: cobros, loading, error, crearItem, modificarItem } = useCobros();
     const { clientes } = useClientes();
+    const { reservas } = useReservas();
+    const { clases } = useClases();
+    const { competencias, equipos } = useTorneos();
+    const { descuentos } = useDescuentos();
     const { isAdmin } = useRole();
     const [filtro, setFiltro] = useState('');
     const [modalForm, setModalForm] = useState({ open: false, modo: 'nuevo', cobro: null });
     const [modalDetalle, setModalDetalle] = useState({ open: false, cobro: null });
     const [modalBaja, setModalBaja] = useState({ open: false, cobro: null });
 
+    const clienteId = (cliente) => cliente?.idUsuario || cliente?.id;
+    const cobroYaPagado = (cliente, concepto) => cobros.some(c =>
+        c.estado === 'pagado' &&
+        clienteId(c.cliente) === clienteId(cliente) &&
+        c.concepto === concepto
+    );
+
+    const operacionesPendientes = [
+        ...cobros
+            .filter(c => c.estado === 'pendiente')
+            .map(c => ({
+                id: `cobro-${c.idCobro}`,
+                clienteId: clienteId(c.cliente),
+                tipoCobro: c.tipoCobro || 'Reserva Cancha',
+                concepto: c.concepto,
+                monto: Number(c.montoFinal ?? c.monto ?? 0),
+                referencia: { idCobro: c.idCobro, idReserva: c.idReserva },
+                detalle: 'Cobro pendiente',
+            })),
+        ...reservas
+            .filter(r =>
+                r.estado !== 'cancelada' &&
+                r.cobro?.estado !== 'pagado' &&
+                !cobros.some(c => c.idReserva === r.idReserva)
+            )
+            .map(r => ({
+                id: `reserva-${r.idReserva}`,
+                clienteId: clienteId(r.cliente) || r.reservador?.id,
+                tipoCobro: 'Reserva Cancha',
+                concepto: `Reserva ${r.cancha?.nombre || 'Cancha'} - ${r.fechaUso} ${r.horaInicio || ''}`.trim(),
+                monto: Number(r.montoTotal || 0),
+                referencia: { idReserva: r.idReserva },
+                detalle: 'Reserva pendiente de pago',
+            })),
+        ...clases.flatMap(clase => (clase.alumnos || []).map(alumno => {
+            const concepto = `Inscripcion clase: ${clase.nombre}`;
+            return {
+                id: `clase-${clase.idClase}-${alumno.id}`,
+                clienteId: alumno.id,
+                tipoCobro: clase.tipoClase === 'Particular' ? 'Entrenamiento' : 'Clase/Entrenamiento',
+                concepto,
+                monto: Number(clase.precio || 0),
+                referencia: { idClase: clase.idClase },
+                detalle: `${clase.tipoClase} - ${clase.fecha} ${clase.horario || ''}`.trim(),
+            };
+        })),
+        ...competencias.flatMap(comp => (comp.equipos || []).flatMap(idEquipo => {
+            const equipo = equipos.find(e => e.idEquipo === idEquipo);
+            const miembros = [equipo?.capitan, ...(equipo?.integrantes || [])].filter(Boolean);
+            return miembros.map(nombreMiembro => {
+                const cliente = clientes.find(c => `${c.nombre} ${c.apellido}`.trim() === nombreMiembro);
+                const concepto = `Inscripcion competencia: ${comp.nombre}`;
+                return cliente ? {
+                    id: `torneo-${comp.id}-${idEquipo}-${clienteId(cliente)}`,
+                    clienteId: clienteId(cliente),
+                    tipoCobro: 'Inscripcion Torneo',
+                    concepto,
+                    monto: Number(comp.precioInscripcion || 10000),
+                    referencia: { idCompetencia: comp.id, idEquipo },
+                    detalle: `${comp.tipo} - ${equipo?.nombre || 'Equipo'}`,
+                } : null;
+            }).filter(Boolean);
+        })),
+    ].filter(op => {
+        const cliente = clientes.find(c => clienteId(c) === op.clienteId);
+        return op.monto > 0 && cliente && !cobroYaPagado(cliente, op.concepto);
+    });
+
     const handleGuardar = (datos) => {
         if (modalForm.modo === 'editar') {
             modificarItem(datos);
+        } else if (datos.referencia?.idCobro) {
+            modificarItem({
+                ...datos,
+                idCobro: datos.referencia.idCobro,
+                estado: 'pagado'
+            });
         } else {
             crearItem(datos);
         }
@@ -106,10 +188,7 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
                         <i data-lucide="search" />
                         <input type="text" placeholder="Buscar..." value={filtro} onChange={e => setFiltro(e.target.value)} />
                     </div>
-                    {/* Crear cobro habilitado para admin y empleado */}
-                    <button className="btn-primary-action" onClick={() => setModalForm({ open: true, modo: 'nuevo', cobro: null })}>
-                        <i data-lucide="receipt" /> Registrar Cobro
-                    </button>
+                    
                 </div>
             </div>
 
@@ -128,7 +207,7 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
             </div>
 
             <CobroModal open={modalForm.open} modo={modalForm.modo} cobro={modalForm.cobro} 
-                clientes={clientes} descuentos={[]} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
+                clientes={clientes} descuentos={descuentos.filter(d => d.activo)} operacionesPendientes={operacionesPendientes} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
             <CobroModalDetalle open={modalDetalle.open} cobro={modalDetalle.cobro} onImprimir={() => window.print()} onCerrar={() => setModalDetalle({ open: false, cobro: null })} />
             <CobroModalBaja open={modalBaja.open} cobro={modalBaja.cobro} onConfirmar={handleToggleEstado} onCerrar={() => setModalBaja({ open: false, cobro: null })} />
         </Can>

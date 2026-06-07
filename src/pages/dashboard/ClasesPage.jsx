@@ -10,6 +10,7 @@ import ClaseModal       from '../../components/clases/ClaseModal';
 import AsistenciaModal  from '../../components/clases/AsistenciaModal';
 import ClaseModalDetalle from '../../components/clases/ClaseModalDetalle';
 import ClaseModalBaja   from '../../components/clases/ClaseModalBaja';
+import PagoReservaModal from '../../components/reservas/PagoReservaModal';
 import Can              from '../../components/Can';
 import LoadingSpinner   from '../../components/ui/LoadingSpinner';
 import ErrorMessage     from '../../components/ui/ErrorMessage';
@@ -25,6 +26,24 @@ function Toast({ toasts }) {
             ))}
         </div>
     );
+}
+
+function clasePerteneceAlProfesor(clase, user) {
+    if (!user || user.role !== 'Professor' || !clase?.profesor) return false;
+
+    const profesorClase = clase.profesor;
+    const idsUsuario = [user.idUsuario, user.id].filter(Boolean).map(String);
+    const idsProfesorClase = [profesorClase.idUsuario, profesorClase.id].filter(Boolean).map(String);
+
+    if (idsUsuario.some(id => idsProfesorClase.includes(id))) return true;
+
+    const emailUsuario = user.email?.toLowerCase();
+    const emailProfesor = profesorClase.email?.toLowerCase();
+    if (emailUsuario && emailProfesor && emailUsuario === emailProfesor) return true;
+
+    const usernameUsuario = (user.username || user.userName)?.toLowerCase();
+    const usernameProfesor = (profesorClase.username || profesorClase.userName)?.toLowerCase();
+    return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
 }
 
 // COMPONENTE LOCAL: Modal pasarela de pagos simulada
@@ -100,7 +119,7 @@ export default function ClasesPageContent() {
     }, []);
 
     // PROCESO DE INSCRIPCIÓN Y COBRO SINCRONIZADO EN LOCALSTORAGE
-    async function handleConfirmarPago() {
+    async function handleConfirmarPago(datosPago) {
         const targetClase = modalPago.clase;
         if (!targetClase || !user) return;
 
@@ -121,10 +140,13 @@ export default function ClasesPageContent() {
                     concepto: `Inscripción clase: ${targetClase.nombre}`,
                     tipoCobro: 'Inscripción Clase',
                     monto: targetClase.precio,
-                    montoFinal: targetClase.precio,
+                    montoFinal: datosPago.montoFinal ?? targetClase.precio,
+                    descuento: datosPago.descuento,
                     fecha: new Date().toISOString().split('T')[0],
                     estado: 'pagado',
-                    metodo: 'MercadoPago'
+                    metodo: datosPago.metodo,
+                    nroTransaccion: datosPago.nroTransaccion,
+                    detallePago: datosPago.detallePago
                 });
             } catch (err) {
                 console.warn("CobrosContext omitido en este render", err);
@@ -158,14 +180,18 @@ export default function ClasesPageContent() {
         setModalBaja({ open: false, clase: null });
     }
 
-    const clasesFiltradas = filtro
-        ? clases.filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()) || c.tipoClase.toLowerCase().includes(filtro.toLowerCase()))
+    const clasesVisibles = user?.role === 'Professor'
+        ? clases.filter(c => clasePerteneceAlProfesor(c, user))
         : clases;
 
-    const programadas = clases.filter(c => c.estado === 'programada').length;
-    const canceladas  = clases.filter(c => c.estado === 'cancelada').length;
+    const clasesFiltradas = filtro
+        ? clasesVisibles.filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()) || c.tipoClase.toLowerCase().includes(filtro.toLowerCase()))
+        : clasesVisibles;
+
+    const programadas = clasesVisibles.filter(c => c.estado === 'programada').length;
+    const canceladas  = clasesVisibles.filter(c => c.estado === 'cancelada').length;
     const profesoresDisponibles = profesores
-        .filter(p => p.activo ?? p.estado === 'activo')
+        .filter(p => (p.activo ?? p.estado === 'activo') && tieneCertificacionVerificada(p))
         .map(p => ({
             id: p.idUsuario,
             idUsuario: p.idUsuario,
@@ -183,7 +209,7 @@ export default function ClasesPageContent() {
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Gestión de Clases</h2>
-                    <span className="crud-count">{clases.length} total</span>
+                    <span className="crud-count">{clasesVisibles.length} total</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -200,7 +226,7 @@ export default function ClasesPageContent() {
 
             <div className="crud-mini-stats">
                 <div className="mini-stat">
-                    <span className="mini-stat-num">{clases.length}</span>
+                    <span className="mini-stat-num">{clasesVisibles.length}</span>
                     <span className="mini-stat-label">Total</span>
                 </div>
                 <div className="mini-stat green">
@@ -236,8 +262,19 @@ export default function ClasesPageContent() {
                 <ClaseModalBaja open={modalBaja.open} clase={modalBaja.clase} onConfirmar={handleToggleEstado} onCerrar={() => setModalBaja({ open: false, clase: null })} />
             </Can>
 
-            {/* MODAL SIMULADOR PASARELA DE PAGO */}
-            <SimuladorPagoClaseModal open={modalPago.open} clase={modalPago.clase} onConfirmar={handleConfirmarPago} onCerrar={() => setModalPago({ open: false, clase: null })} />
+            {modalPago.open && modalPago.clase && (
+                <PagoReservaModal
+                    reserva={{
+                        ...modalPago.clase,
+                        montoTotal: Number(modalPago.clase.precio || 0),
+                    }}
+                    titulo="Pagar inscripcion"
+                    detalleLabel="Clase"
+                    detalleTexto={`${modalPago.clase.nombre} - ${modalPago.clase.fecha} a las ${modalPago.clase.horario} hs`}
+                    onClose={() => setModalPago({ open: false, clase: null })}
+                    onConfirmar={handleConfirmarPago}
+                />
+            )}
 
             <Toast toasts={toasts} />
         </>

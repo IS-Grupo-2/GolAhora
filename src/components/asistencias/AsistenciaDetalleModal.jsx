@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 
+function nombreAlumno(alumno) {
+    return [alumno.nombre, alumno.apellido].filter(Boolean).join(' ') || alumno.email || `Alumno #${alumno.id}`;
+}
+
 export default function AsistenciaDetalleModal({ open, clase, registros, onCerrar }) {
     
     useEffect(() => {
@@ -42,7 +46,7 @@ export default function AsistenciaDetalleModal({ open, clase, registros, onCerra
                         {registros.map(reg => (
                             <div key={reg.cliente.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '10px', borderBottom: '1px solid var(--border)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{reg.cliente.nombre} {reg.cliente.apellido}</strong>
+                                    <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{nombreAlumno(reg.cliente)}</strong>
                                     <span className={`badge ${reg.presente ? 'success' : 'danger'}`}>
                                         {reg.presente ? 'Presente' : 'Ausente'}
                                     </span>

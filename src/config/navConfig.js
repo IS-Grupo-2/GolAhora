@@ -27,19 +27,19 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/reservas',
                 label: 'Reservas',
                 icon:  'calendar-days',
-                roles: ['Admin', 'Employee', 'Professor', 'Client'],
+                roles: ['Admin', 'Employee', 'Client'],
             },
             {
                 path:  '/dashboard/canchas',
                 label: 'Canchas',
                 icon:  'goal',
-                roles: ['Admin', 'Employee', 'Professor', 'Client'],
+                roles: ['Admin', 'Employee', 'Client'],
             },
             {
                 path:  '/dashboard/torneos',
                 label: 'Competencias',
                 icon:  'trophy',
-                roles: ['Admin', 'Employee', 'Professor', 'Client'],
+                roles: ['Admin', 'Employee', 'Client'],
             },
             {
                 path:  '/dashboard/clases',
@@ -62,7 +62,7 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/profesores',
                 label: 'Profesores',
                 icon:  'user-round',
-                roles: ['Admin', 'Employee'],
+                roles: ['Admin', 'Employee', 'Professor'],
             },
             {
                 path:  '/dashboard/empleados',
@@ -91,6 +91,12 @@ export const NAV_CONFIG = [
                 path:  '/dashboard/recibos',
                 label: 'Recibos',
                 icon:  'receipt',
+                roles: ['Admin', 'Employee', 'Client'],
+            },
+            {
+                path:  '/dashboard/descuentos',
+                label: 'Descuentos',
+                icon:  'badge-percent',
                 roles: ['Admin', 'Employee'],
             },
             {

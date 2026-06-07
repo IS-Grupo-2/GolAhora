@@ -1,5 +1,6 @@
 // src/components/profesores/ProfesorModal.jsx
 import { useState, useEffect } from 'react';
+import { guardarCertificadoLocal } from '../../utils/certificadosStorage';
 
 // ── Estado vacío del formulario ───────────────────────────────────────────────
 const FORM_VACIO = {
@@ -14,6 +15,7 @@ const FORM_VACIO = {
     especialidad:    '',
     turno:           '',
     certificaciones: '',
+    certificadoArchivo: null,
     password:        '',
     rol:             '',
     estado:          'activo',
@@ -22,7 +24,7 @@ const FORM_VACIO = {
 const ERRORES_VACIOS = {
     nombre: '', apellido: '', fechaNacimiento: '', dni: '',
     telefono: '', email: '', username: '', legajo: '',
-    especialidad: '', turno: '', certificaciones: '',
+    especialidad: '', turno: '', certificaciones: '', certificadoArchivo: '',
     password: '', rol: '', estado: '',
 };
 
@@ -44,6 +46,7 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
     const [form,     setForm]     = useState(FORM_VACIO);
     const [errores,  setErrores]  = useState(ERRORES_VACIOS);
     const [showPass, setShowPass] = useState(false);
+    const [leyendoArchivo, setLeyendoArchivo] = useState(false);
 
     const esNuevo = modo === 'nuevo';
 
@@ -59,6 +62,9 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
             const certsFormateadas = Array.isArray(certs) 
                 ? certs.map(c => c.nombre).join(', ') 
                 : (certs ?? '');
+            const archivoCertificado = Array.isArray(certs)
+                ? certs.find(c => c.archivo)?.archivo || null
+                : null;
 
             setForm({
                 nombre:          profesor.nombre          ?? '',
@@ -72,6 +78,7 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
                 especialidad:    profesor.especialidad    ?? '',
                 turno:           profesor.turno           ?? '',
                 certificaciones: certsFormateadas,
+                certificadoArchivo: archivoCertificado,
                 password:        '',
                 rol:             profesor.rol             ?? 'profesor',
                 estado:          profesor.estado          ?? (profesor.activo ? 'activo' : 'inactivo'),
@@ -80,6 +87,7 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
         }
         setErrores(ERRORES_VACIOS);
         setShowPass(false);
+        setLeyendoArchivo(false);
     }, [open, modo, profesor]);
 
     // Escape para cerrar
@@ -107,6 +115,58 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
         setErrores(prev => ({ ...prev, [field]: '' }));
     }
 
+    function handleArchivoCertificado(file) {
+        if (!file) {
+            set('certificadoArchivo', null);
+            setLeyendoArchivo(false);
+            return;
+        }
+
+        const storageKey = `certificado-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const archivoBase = {
+            nombre: file.name,
+            tipo: file.type || 'archivo',
+            tamano: file.size,
+            fechaCarga: new Date().toISOString(),
+            storageKey,
+        };
+
+        set('certificadoArchivo', archivoBase);
+        if (!form.certificaciones.trim()) {
+            setForm(prev => ({ ...prev, certificaciones: file.name }));
+        }
+
+        setLeyendoArchivo(true);
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const contenido = reader.result;
+            try {
+                await guardarCertificadoLocal(storageKey, contenido);
+            } catch {
+                setForm(prev => ({ ...prev, certificadoArchivo: null }));
+                setErrores(prev => ({
+                    ...prev,
+                    certificadoArchivo: 'No se pudo guardar el archivo en el navegador.',
+                }));
+                setLeyendoArchivo(false);
+                return;
+            }
+
+            set('certificadoArchivo', {
+                ...archivoBase,
+            });
+            setLeyendoArchivo(false);
+        };
+        reader.onerror = () => {
+            setErrores(prev => ({
+                ...prev,
+                certificadoArchivo: 'No se pudo leer el archivo seleccionado.',
+            }));
+            setLeyendoArchivo(false);
+        };
+        reader.readAsDataURL(file);
+    }
+
     // ── Validación ────────────────────────────────────────────────────────────
     function validar() {
         const errs = { ...ERRORES_VACIOS };
@@ -130,6 +190,27 @@ export default function ProfesorModal({ open, modo, profesor, onGuardar, onCerra
 function handleGuardar() {
     if (!validar()) return;
 
+    const certificacionesExistentes = Array.isArray(profesor?.certificaciones) ? profesor.certificaciones : [];
+    const archivoNuevo = form.certificadoArchivo;
+    const certificadoPrevio = certificacionesExistentes[0];
+    const cambioArchivo = Boolean(archivoNuevo) && (
+        archivoNuevo.nombre !== certificadoPrevio?.archivo?.nombre ||
+        archivoNuevo.fechaCarga !== certificadoPrevio?.archivo?.fechaCarga
+    );
+    const certificaciones = form.certificaciones.trim() || archivoNuevo
+        ? [{
+            ...(certificadoPrevio && !cambioArchivo ? certificadoPrevio : {}),
+            nombre: form.certificaciones.trim() || archivoNuevo?.nombre || 'Certificado',
+            archivo: archivoNuevo || certificadoPrevio?.archivo || null,
+            verificada: cambioArchivo ? false : (certificadoPrevio?.verificada === true),
+            estado: cambioArchivo
+                ? 'pendiente'
+                : certificadoPrevio?.verificada
+                    ? 'verificada'
+                    : 'pendiente',
+        }]
+        : [];
+
     const datos = {
         // Solo incluir id cuando estamos editando
         ...(profesor ? { idUsuario: profesor.idUsuario } : {}),
@@ -145,7 +226,8 @@ function handleGuardar() {
         legajo:        form.legajo.trim(),
         turno:         form.turno,
         especialidad:  form.especialidad.trim(),
-        certificaciones: form.certificaciones.trim(),
+        certificaciones,
+        verificacionCertificacion: certificaciones.some(c => c.verificada),
         estado:        form.estado,
         activo:        form.estado === 'activo',
     };
@@ -303,6 +385,24 @@ function handleGuardar() {
                 </Field>
             </div>
 
+            <Field label="Archivo de certificado" error={errores.certificadoArchivo}>
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={e => handleArchivoCertificado(e.target.files?.[0])}
+                />
+                {form.certificadoArchivo?.nombre && (
+                    <small style={{ color: 'var(--text-muted)', marginTop: '6px', display: 'block' }}>
+                        Archivo cargado: {form.certificadoArchivo.nombre}. Quedara como certificacion pendiente hasta que un administrador la verifique.
+                    </small>
+                )}
+                {leyendoArchivo && (
+                    <small style={{ color: 'var(--text-muted)', marginTop: '6px', display: 'block' }}>
+                        Preparando vista previa del certificado...
+                    </small>
+                )}
+            </Field>
+
             {/* Contraseña — solo en alta */}
             {esNuevo && (
                 <Field label="Contraseña" required error={errores.password}>
@@ -336,9 +436,9 @@ function handleGuardar() {
         {/* FOOTER */}
         <div className="dash-modal-footer">
             <button className="btn-modal-cancel" onClick={onCerrar}>Cancelar</button>
-            <button className="btn-modal-save" onClick={handleGuardar}>
+            <button className="btn-modal-save" onClick={handleGuardar} disabled={leyendoArchivo}>
                 <i data-lucide="save" />
-                Guardar
+                {leyendoArchivo ? 'Preparando archivo...' : 'Guardar'}
             </button>
         </div>
     </div>

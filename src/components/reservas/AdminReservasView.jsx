@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReservas } from '../../context/ReservasContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCobros } from '../../context/CobrosContext';
+import { useRecibos } from '../../context/RecibosContext';
+import { calcularPoliticaReembolso, crearReciboReembolsoReserva, reservaEstaPagada } from '../../utils/reservasReembolso';
 import useRole from '../../hooks/useRole';
 import Can from '../Can';
 
@@ -21,6 +23,7 @@ export default function AdminReservasView() {
     } = useReservas();
 
     const { crearItem: crearCobro, items: cobros, modificarItem: modificarCobro } = useCobros();
+    const { items: recibos, crearItem: crearRecibo } = useRecibos();
     const { user } = useAuth();
     const { isAdmin, isEmpleado, isProfesor, isCliente } = useRole();
     const [filtro, setFiltro] = useState('');
@@ -116,14 +119,25 @@ export default function AdminReservasView() {
     };
 
     // Cancelar reserva + sincronizar cobro
-    const handleCancelar = async (idReserva, fueraDePlazo) => {
-        await cancelarReserva(idReserva, fueraDePlazo);
-
+    const handleCancelar = async (idReserva) => {
+        const reserva = reservas.find(r => r.idReserva === idReserva);
         const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
+
+        if (reserva && reservaEstaPagada(reserva, cobroAsociado)) {
+            const politica = calcularPoliticaReembolso(reserva);
+            const yaTieneReembolso = recibos.some(r => r.tipo === 'reembolso' && r.idReserva === idReserva);
+
+            if (!yaTieneReembolso) {
+                await crearRecibo(crearReciboReembolsoReserva({ reserva, cobroAsociado, politica }));
+            }
+        }
+
+        await cancelarReserva(idReserva);
+
         if (cobroAsociado) {
             await modificarCobro({
                 ...cobroAsociado,
-                estado: fueraDePlazo ? 'recargo' : 'cancelado'
+                estado: 'cancelado'
             });
         }
 
@@ -153,7 +167,7 @@ export default function AdminReservasView() {
                         />
                     </div>
 
-                    <Can roles={['admin', 'empleado']}>
+                    <Can roles={['Admin', 'Employee']}>
                         <button
                             className="btn-primary-action"
                             onClick={() => setModalForm({ isOpen: true, data: null })}

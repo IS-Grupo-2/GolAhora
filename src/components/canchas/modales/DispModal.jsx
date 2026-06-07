@@ -1,35 +1,71 @@
 // src/components/canchas/modales/DispModal.jsx
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const HORAS_INICIO = Array.from({ length: 15 }, (_, i) => i + 9);
+const HORAS_FIN = Array.from({ length: 15 }, (_, i) => i + 10);
+
+const horaOption = (h) => (
+    <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
+);
 
 export default function DispModal({ open, modo, disp, idCanchaFallback, canchas, dispsExistentes, onGuardar, onCerrar }) {
-    const defaultForm = { idCancha: '', diaSemana: '', horaInicio: 8, horaFin: 23, disponible: true };
+    const defaultForm = { idCancha: '', diaSemana: '', horaInicio: 9, horaFin: 23, disponible: true };
     const [form, setForm] = useState(defaultForm);
     const [errores, setErrores] = useState({ idCancha: '', diaSemana: '', horaInicio: '', horaFin: '' });
 
     useEffect(() => {
         if (!open) return;
-        setForm(disp ? { ...disp } : { ...defaultForm, idCancha: idCanchaFallback || '' });
+        setForm(disp ? {
+            ...disp,
+            idCancha: disp.idCancha ?? disp.canchaId,
+            horaInicio: Number(disp.horaInicio),
+            horaFin: Number(disp.horaFin)
+        } : { ...defaultForm, idCancha: idCanchaFallback || '' });
         setErrores({ idCancha: '', diaSemana: '', horaInicio: '', horaFin: '' });
     }, [open, disp, idCanchaFallback]);
 
+    useEffect(() => {
+        if (open && typeof window !== 'undefined' && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [open, form]);
+
+    const opcionesFin = useMemo(() => {
+        const inicio = Number(form.horaInicio);
+        return HORAS_FIN.filter(h => h > inicio);
+    }, [form.horaInicio]);
+
     if (!open) return null;
 
+    function actualizarInicio(valor) {
+        const inicio = Number(valor);
+        const finActual = Number(form.horaFin);
+        setForm({
+            ...form,
+            horaInicio: inicio,
+            horaFin: finActual > inicio ? finActual : Math.min(inicio + 1, 24)
+        });
+    }
+
     function handleGuardar() {
-        let errs = { idCancha: '', diaSemana: '', horaInicio: '', horaFin: '' }, ok = true;
-        const inicio = parseInt(form.horaInicio), fin = parseInt(form.horaFin), idCancha = parseInt(form.idCancha);
+        const errs = { idCancha: '', diaSemana: '', horaInicio: '', horaFin: '' };
+        let ok = true;
+        const inicio = Number(form.horaInicio);
+        const fin = Number(form.horaFin);
+        const idCancha = Number(form.idCancha);
 
         if (!idCancha) { errs.idCancha = 'Requerido'; ok = false; }
         if (!form.diaSemana) { errs.diaSemana = 'Requerido'; ok = false; }
+        if (inicio < 9 || inicio > 23) { errs.horaInicio = 'Debe estar entre 09:00 y 23:00'; ok = false; }
         if (fin <= inicio) { errs.horaFin = 'Debe ser mayor al inicio'; ok = false; }
 
         if (ok) {
-            // Lógica de Solapamiento
             const solapado = dispsExistentes.some(d => {
-                if (d.idCancha !== idCancha || d.diaSemana !== form.diaSemana) return false;
+                const dispCanchaId = Number(d.idCancha ?? d.canchaId);
+                if (dispCanchaId !== idCancha || d.diaSemana !== form.diaSemana) return false;
                 if (disp && d.id === disp.id) return false;
-                return (inicio < d.horaFin) && (fin > d.horaInicio);
+                return inicio < Number(d.horaFin) && fin > Number(d.horaInicio);
             });
 
             if (solapado) {
@@ -40,10 +76,8 @@ export default function DispModal({ open, modo, disp, idCanchaFallback, canchas,
         }
 
         setErrores(errs);
-        if (ok) onGuardar({ ...form, idCancha, horaInicio: inicio, horaFin: fin });
+        if (ok) onGuardar({ ...form, idCancha, canchaId: idCancha, horaInicio: inicio, horaFin: fin });
     }
-
-    const opcionesHora = Array.from({length: 24}, (_, i) => <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>);
 
     return (
         <div className="dash-modal-overlay activo" onClick={(e) => e.target === e.currentTarget && onCerrar()}>
@@ -55,34 +89,65 @@ export default function DispModal({ open, modo, disp, idCanchaFallback, canchas,
                 <div className="dash-modal-body">
                     <div className="form-group">
                         <label>Cancha <span className="req">*</span></label>
-                        <select value={form.idCancha} onChange={e => setForm({...form, idCancha: e.target.value})} className={errores.idCancha ? 'input-error-field' : ''}>
-                            <option value="">— Seleccionar —</option>
-                            {canchas.filter(c => c.estado === 'activa').map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                        <select
+                            value={form.idCancha}
+                            onChange={e => setForm({ ...form, idCancha: e.target.value })}
+                            className={errores.idCancha ? 'input-error-field' : ''}
+                        >
+                            <option value="">Seleccionar</option>
+                            {canchas.filter(c => c.estado !== 'inactiva').map(c => (
+                                <option key={c.id} value={c.id}>{c.nombre}</option>
+                            ))}
                         </select>
                         <span className="form-error">{errores.idCancha}</span>
                     </div>
+
                     <div className="form-group">
                         <label>Día de la semana <span className="req">*</span></label>
-                        <select value={form.diaSemana} onChange={e => setForm({...form, diaSemana: e.target.value})} className={errores.diaSemana ? 'input-error-field' : ''}>
-                            <option value="">— Seleccionar —</option>
+                        <select
+                            value={form.diaSemana}
+                            onChange={e => setForm({ ...form, diaSemana: e.target.value })}
+                            className={errores.diaSemana ? 'input-error-field' : ''}
+                        >
+                            <option value="">Seleccionar</option>
                             {DIAS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                         <span className="form-error">{errores.diaSemana}</span>
                     </div>
+
                     <div className="form-row">
                         <div className="form-group">
                             <label>Hora inicio <span className="req">*</span></label>
-                            <select value={form.horaInicio} onChange={e => setForm({...form, horaInicio: e.target.value})} className={errores.horaInicio ? 'input-error-field' : ''}>{opcionesHora}</select>
+                            <select
+                                value={form.horaInicio}
+                                onChange={e => actualizarInicio(e.target.value)}
+                                className={errores.horaInicio ? 'input-error-field' : ''}
+                            >
+                                {HORAS_INICIO.map(horaOption)}
+                            </select>
                             <span className="form-error">{errores.horaInicio}</span>
                         </div>
                         <div className="form-group">
                             <label>Hora fin <span className="req">*</span></label>
-                            <select value={form.horaFin} onChange={e => setForm({...form, horaFin: e.target.value})} className={errores.horaFin ? 'input-error-field' : ''}>{opcionesHora}</select>
+                            <select
+                                value={form.horaFin}
+                                onChange={e => setForm({ ...form, horaFin: Number(e.target.value) })}
+                                className={errores.horaFin ? 'input-error-field' : ''}
+                            >
+                                {opcionesFin.map(horaOption)}
+                            </select>
                             <span className="form-error">{errores.horaFin}</span>
                         </div>
                     </div>
+
                     <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-                        <input type="checkbox" id="fd-disp" checked={form.disponible} onChange={e => setForm({...form, disponible: e.target.checked})} style={{ width: 'auto' }} />
+                        <input
+                            type="checkbox"
+                            id="fd-disp"
+                            checked={form.disponible}
+                            onChange={e => setForm({ ...form, disponible: e.target.checked })}
+                            style={{ width: 'auto' }}
+                        />
                         <label htmlFor="fd-disp" style={{ margin: 0, fontWeight: 'normal' }}>Franja habilitada desde el alta</label>
                     </div>
                 </div>

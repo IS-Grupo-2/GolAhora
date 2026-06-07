@@ -14,6 +14,7 @@ import ReservasPage from '../pages/dashboard/ReservasPage';
 import ClasesPage from '../pages/dashboard/ClasesPage';
 import CobrosPage from '../pages/dashboard/CobrosPage';
 import RecibosPage from '../pages/dashboard/RecibosPage';
+import DescuentosPage from '../pages/dashboard/DescuentosPage';
 import ReportesPage from '../pages/dashboard/ReportesPage';
 import AsistenciasPage from '../pages/dashboard/AsistenciasPage';
 import ConfiguracionPage from '../pages/dashboard/ConfiguracionPage';
@@ -86,8 +87,14 @@ function AppRouter() {
                     } />
                     
                     <Route path="recibos" element={
-                        <RoleRoute roles={['Admin', 'Employee']}>
+                        <RoleRoute roles={['Admin', 'Employee', 'Client']}>
                             <RecibosPage />
+                        </RoleRoute>
+                    } />
+
+                    <Route path="descuentos" element={
+                        <RoleRoute roles={['Admin', 'Employee']}>
+                            <DescuentosPage />
                         </RoleRoute>
                     } />
                     

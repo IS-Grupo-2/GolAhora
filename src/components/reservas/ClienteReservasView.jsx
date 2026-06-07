@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useReservas } from '../../context/ReservasContext';
 import { useCobros } from '../../context/CobrosContext';
+import { useRecibos } from '../../context/RecibosContext';
 import { useAuth } from '../../context/AuthContext';
+import { calcularPoliticaReembolso, crearReciboReembolsoReserva, reservaEstaPagada } from '../../utils/reservasReembolso';
 import ReservaCard from './ReservaCard';
 import NuevaReservaClienteModal from './NuevaReservaClienteModal';
 import ReservaModalCancelar from './ReservaModalCancelar';
+import PagoReservaModal from './PagoReservaModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import EmptyState from '../ui/EmptyState';
 
 export default function ClienteReservasView() {
     const { reservas, loading, fetchReservas, cancelarReserva, confirmarReserva } = useReservas();
-    const { items: cobros, modificarItem: modificarCobro } = useCobros();
+    const { items: cobros, modificarItem: modificarCobro, crearItem: crearCobro } = useCobros();
+    const { items: recibos, crearItem: crearRecibo } = useRecibos();
     const { user } = useAuth();
 
     const [modalNueva, setModalNueva] = useState(false);
     const [modalCancelar, setModalCancelar] = useState({ isOpen: false, data: null });
+    const [modalPago, setModalPago] = useState({ isOpen: false, data: null });
 
     useEffect(() => {
         fetchReservas();
@@ -24,44 +29,73 @@ export default function ClienteReservasView() {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
     });
 
-    // Solo las reservas del usuario logueado
     const misReservas = useMemo(() => {
         return reservas.filter(r =>
             r.cliente?.idUsuario === user?.idUsuario ||
+            r.cliente?.idUsuario === user?.id ||
             r.reservador?.email === user?.email
         );
     }, [reservas, user]);
 
-    const handleCancelar = async (idReserva, fueraDePlazo) => {
-        await cancelarReserva(idReserva, fueraDePlazo);
-
+    const handleCancelar = async (idReserva) => {
+        const reserva = reservas.find(r => r.idReserva === idReserva);
         const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
+
+        if (reserva && reservaEstaPagada(reserva, cobroAsociado)) {
+            const politica = calcularPoliticaReembolso(reserva);
+            const yaTieneReembolso = recibos.some(r => r.tipo === 'reembolso' && r.idReserva === idReserva);
+
+            if (!yaTieneReembolso) {
+                await crearRecibo(crearReciboReembolsoReserva({ reserva, cobroAsociado, politica }));
+            }
+        }
+
+        await cancelarReserva(idReserva);
+
         if (cobroAsociado) {
             await modificarCobro({
                 ...cobroAsociado,
-                estado: fueraDePlazo ? 'recargo' : 'cancelado'
+                estado: 'cancelado'
             });
         }
 
         setModalCancelar({ isOpen: false, data: null });
     };
 
-    const handlePagar = async (idReserva) => {
-        alert('Redirigiendo a MercadoPago...');
-        setTimeout(async () => {
-            await confirmarReserva(idReserva);
+    const handleConfirmarPago = async (datosPago) => {
+        const reserva = modalPago.data;
+        if (!reserva) return;
 
-            const cobroAsociado = cobros.find(c => c.idReserva === idReserva);
-            if (cobroAsociado) {
-                await modificarCobro({
-                    ...cobroAsociado,
-                    estado: 'pagado',
-                    metodo: 'MercadoPago'
-                });
-            }
+        await confirmarReserva(reserva.idReserva, datosPago);
 
-            alert('¡Pago validado! Reserva confirmada exitosamente.');
-        }, 1500);
+        const cobroAsociado = cobros.find(c => c.idReserva === reserva.idReserva);
+        if (cobroAsociado) {
+            await modificarCobro({
+                ...cobroAsociado,
+                estado: 'pagado',
+                metodo: datosPago.metodo,
+                nroTransaccion: datosPago.nroTransaccion,
+                detallePago: datosPago.detallePago,
+                descuento: datosPago.descuento,
+                montoFinal: datosPago.montoFinal ?? cobroAsociado.montoFinal ?? cobroAsociado.monto
+            });
+        } else {
+            await crearCobro({
+                idReserva: reserva.idReserva,
+                cliente: reserva.cliente,
+                concepto: `Reserva ${reserva.cancha?.nombre || 'Cancha'} - ${reserva.fechaUso}`,
+                tipoCobro: 'Reserva Cancha',
+                monto: reserva.montoTotal,
+                montoFinal: datosPago.montoFinal ?? reserva.montoTotal,
+                descuento: datosPago.descuento,
+                estado: 'pagado',
+                metodo: datosPago.metodo,
+                nroTransaccion: datosPago.nroTransaccion,
+                detallePago: datosPago.detallePago
+            });
+        }
+
+        setModalPago({ isOpen: false, data: null });
     };
 
     if (loading && misReservas.length === 0) return <LoadingSpinner />;
@@ -83,7 +117,7 @@ export default function ClienteReservasView() {
             </div>
 
             {misReservas.length === 0 ? (
-                <EmptyState message="Aún no tenés canchas reservadas. ¡Animate a jugar!" />
+                <EmptyState message="Aún no tenés canchas reservadas. Animate a jugar." />
             ) : (
                 <div style={{
                     display: 'grid',
@@ -96,7 +130,7 @@ export default function ClienteReservasView() {
                             key={reserva.idReserva}
                             reserva={reserva}
                             onCancelar={() => setModalCancelar({ isOpen: true, data: reserva })}
-                            onPagar={handlePagar}
+                            onPagar={() => setModalPago({ isOpen: true, data: reserva })}
                         />
                     ))}
                 </div>
@@ -111,6 +145,14 @@ export default function ClienteReservasView() {
                     reserva={modalCancelar.data}
                     onClose={() => setModalCancelar({ isOpen: false, data: null })}
                     onCancel={handleCancelar}
+                />
+            )}
+
+            {modalPago.isOpen && (
+                <PagoReservaModal
+                    reserva={modalPago.data}
+                    onClose={() => setModalPago({ isOpen: false, data: null })}
+                    onConfirmar={handleConfirmarPago}
                 />
             )}
         </div>

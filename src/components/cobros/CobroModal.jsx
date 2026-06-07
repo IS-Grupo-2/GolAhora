@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 
 const FORM_VACIO = {
-    clienteId: '', concepto: '', tipoCobro: '',
+    clienteId: '', operacionId: '', concepto: '', tipoCobro: '',
     monto: '', descuentoId: '', fecha: '', estado: 'pagado',
 };
 
-const ERRORES_VACIOS = { clienteId: '', concepto: '', tipoCobro: '', monto: '', fecha: '' };
+const ERRORES_VACIOS = { clienteId: '', operacionId: '', concepto: '', tipoCobro: '', monto: '', fecha: '' };
 
 function Field({ label, required, error, children }) {
     return (
@@ -18,7 +18,7 @@ function Field({ label, required, error, children }) {
     );
 }
 
-export default function CobroModal({ open, modo, cobro, clientes, descuentos, onGuardar, onCerrar }) {
+export default function CobroModal({ open, modo, cobro, clientes, descuentos, operacionesPendientes = [], onGuardar, onCerrar }) {
     const [form, setForm]       = useState(FORM_VACIO);
     const [errores, setErrores] = useState(ERRORES_VACIOS);
     const [montoFinalCalc, setMontoFinalCalc] = useState(0);
@@ -32,6 +32,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
         } else if (cobro) {
             setForm({
                 clienteId:   cobro.cliente.idUsuario || cobro.cliente.id || '',
+                operacionId: cobro.operacionId || '',
                 concepto:    cobro.concepto || '',
                 tipoCobro:   cobro.tipoCobro || '',
                 monto:       cobro.monto || '',
@@ -69,10 +70,40 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
         setErrores(prev => ({ ...prev, [field]: '' }));
     }
 
+    const operacionesCliente = operacionesPendientes.filter(op => op.clienteId === Number(form.clienteId));
+    const operacionSeleccionada = operacionesPendientes.find(op => op.id === form.operacionId);
+
+    function setCliente(value) {
+        setForm(prev => ({
+            ...prev,
+            clienteId: value,
+            operacionId: '',
+            concepto: '',
+            tipoCobro: '',
+            monto: '',
+            descuentoId: '',
+        }));
+        setErrores(prev => ({ ...prev, clienteId: '', operacionId: '' }));
+    }
+
+    function setOperacion(value) {
+        const operacion = operacionesPendientes.find(op => op.id === value);
+        setForm(prev => ({
+            ...prev,
+            operacionId: value,
+            concepto: operacion?.concepto || '',
+            tipoCobro: operacion?.tipoCobro || '',
+            monto: operacion?.monto || '',
+            descuentoId: '',
+        }));
+        setErrores(prev => ({ ...prev, operacionId: '', concepto: '', tipoCobro: '', monto: '' }));
+    }
+
     function validar() {
         const errs = { ...ERRORES_VACIOS };
         let ok = true;
         if (!form.clienteId) { errs.clienteId = 'Seleccione un cliente'; ok = false; }
+        if (esNuevo && !form.operacionId) { errs.operacionId = 'Seleccione que debe pagar el cliente'; ok = false; }
         if (form.concepto.trim().length < 3) { errs.concepto = 'Concepto muy corto'; ok = false; }
         if (!form.tipoCobro) { errs.tipoCobro = 'Seleccione el tipo'; ok = false; }
         if (!form.monto || form.monto <= 0) { errs.monto = 'Monto inválido'; ok = false; }
@@ -90,6 +121,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
         const datos = {
             ...(cobro ? { idCobro: cobro.idCobro } : {}),
             cliente,
+            operacionId: form.operacionId,
             concepto: form.concepto.trim(),
             tipoCobro: form.tipoCobro,
             monto: parseFloat(form.monto),
@@ -97,6 +129,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
             descuento,
             fecha: form.fecha,
             estado: form.estado,
+            referencia: operacionSeleccionada?.referencia,
         };
         onGuardar(datos);
     }
@@ -113,7 +146,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
 
                 <div className="dash-modal-body">
                     <Field label="Cliente" required error={errores.clienteId}>
-                        <select value={form.clienteId} onChange={e => set('clienteId', e.target.value)} className={errores.clienteId ? 'input-error-field' : ''}>
+                        <select value={form.clienteId} onChange={e => setCliente(e.target.value)} className={errores.clienteId ? 'input-error-field' : ''} disabled={!esNuevo}>
                             <option value="">Buscar o seleccionar cliente...</option>
                             {clientes.map(c => (
                                 <option key={c.idUsuario || c.id} value={c.idUsuario || c.id}>{c.nombre} {c.apellido} - DNI: {c.dni}</option>
@@ -121,15 +154,40 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
                         </select>
                     </Field>
 
+                    {esNuevo && (
+                        <Field label="Que debe pagar" required error={errores.operacionId}>
+                            <select
+                                value={form.operacionId}
+                                onChange={e => setOperacion(e.target.value)}
+                                className={errores.operacionId ? 'input-error-field' : ''}
+                                disabled={!form.clienteId}
+                            >
+                                <option value="">Seleccionar deuda u operacion pendiente...</option>
+                                {operacionesCliente.map(op => (
+                                    <option key={op.id} value={op.id}>
+                                        {op.tipoCobro} - {op.concepto} (${Number(op.monto).toLocaleString('es-AR')})
+                                    </option>
+                                ))}
+                            </select>
+                            {form.clienteId && operacionesCliente.length === 0 && (
+                                <small style={{ color: 'var(--text-muted)' }}>
+                                    Este cliente no registra reservas, clases, entrenamientos o torneos pendientes de cobro.
+                                </small>
+                            )}
+                        </Field>
+                    )}
+
                     <div className="form-row">
                         <Field label="Concepto / Detalle" required error={errores.concepto}>
-                            <input type="text" placeholder="Ej: Pago cuota mensual" value={form.concepto} onChange={e => set('concepto', e.target.value)} className={errores.concepto ? 'input-error-field' : ''} />
+                            <input type="text" placeholder="Seleccione una operacion pendiente" value={form.concepto} onChange={e => set('concepto', e.target.value)} className={errores.concepto ? 'input-error-field' : ''} disabled={esNuevo} />
                         </Field>
                         <Field label="Tipo de Cobro" required error={errores.tipoCobro}>
-                            <select value={form.tipoCobro} onChange={e => set('tipoCobro', e.target.value)} className={errores.tipoCobro ? 'input-error-field' : ''}>
+                            <select value={form.tipoCobro} onChange={e => set('tipoCobro', e.target.value)} className={errores.tipoCobro ? 'input-error-field' : ''} disabled={esNuevo}>
                                 <option value="">Seleccionar</option>
                                 <option value="Reserva Cancha">Reserva Cancha</option>
                                 <option value="Clase/Entrenamiento">Clase / Entrenamiento</option>
+                                <option value="Entrenamiento">Entrenamiento</option>
+                                <option value="Inscripcion Torneo">Inscripcion Torneo</option>
                                 <option value="Inscripción Torneo">Inscripción Torneo</option>
                                 <option value="Sanción/Multa">Sanción / Multa</option>
                             </select>
@@ -154,7 +212,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
 
                     <div className="form-row" style={{ alignItems: 'flex-end' }}>
                         <Field label="Monto Base ($)" required error={errores.monto}>
-                            <input type="number" min="0" step="100" placeholder="0.00" value={form.monto} onChange={e => set('monto', e.target.value)} className={errores.monto ? 'input-error-field' : ''} />
+                            <input type="number" min="0" step="100" placeholder="0.00" value={form.monto} onChange={e => set('monto', e.target.value)} className={errores.monto ? 'input-error-field' : ''} disabled={esNuevo} />
                         </Field>
                         <Field label="Aplicar Descuento (Autorizado)">
                             <select value={form.descuentoId} onChange={e => set('descuentoId', e.target.value)}>

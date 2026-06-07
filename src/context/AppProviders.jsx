@@ -11,6 +11,7 @@ import { CobrosProvider } from './CobrosContext';
 import { RecibosProvider } from './RecibosContext';
 import { ReservasProvider } from './ReservasContext';
 import { ReportesProvider } from './ReportesContext';
+import { DescuentosProvider } from './DescuentosContext';
 
 export default function AppProviders({ children }) {
   return (
@@ -24,13 +25,15 @@ export default function AppProviders({ children }) {
                   <TorneosProvider>
                     <ReservasProvider>                     
                       <CobrosProvider>
-                        <RecibosProvider>
-                          <ReportesProvider>
-                            
-                            {children}
-                            
-                          </ReportesProvider>
-                        </RecibosProvider>
+                        <DescuentosProvider>
+                          <RecibosProvider>
+                            <ReportesProvider>
+                              
+                              {children}
+                              
+                            </ReportesProvider>
+                          </RecibosProvider>
+                        </DescuentosProvider>
                       </CobrosProvider>             
                     </ReservasProvider>
                   </TorneosProvider>

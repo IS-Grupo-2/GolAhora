@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { calcularPoliticaReembolso } from '../../utils/reservasReembolso';
 
 export default function ReservaModalCancelar({ reserva, onClose, onCancel }) {
-    // Estado para simular la detección del plazo de cancelación (verificarAnt30Dias o similar)
-    const [fueraDePlazo, setFueraDePlazo] = useState(false); 
+    const politica = useMemo(() => reserva ? calcularPoliticaReembolso(reserva) : null, [reserva]);
+    const estaPagada = reserva?.cobro?.estado === 'pagado';
 
     useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) {
@@ -36,30 +37,22 @@ export default function ReservaModalCancelar({ reserva, onClose, onCancel }) {
                         </div>
                         <div className="cancel-info-card full-width">
                             <span className="cancel-info-label">Estado del pago</span>
-                            <strong>{reserva.cobro.estado === 'pagado' ? 'Pago completado' : 'Pago pendiente'}</strong>
+                            <strong>{estaPagada ? 'Pago completado' : 'Pago pendiente'}</strong>
                         </div>
                     </div>
 
                     <div className="detalle-campo detalle-full cancel-policy">
-                        <label className="cancel-policy-toggle">
-                            <input 
-                                type="checkbox" 
-                                checked={fueraDePlazo} 
-                                onChange={(e) => setFueraDePlazo(e.target.checked)} 
-                            />
-                            La cancelación está fuera del plazo mínimo de antelación.
-                        </label>
                         <p>
-                            {fueraDePlazo 
-                                ? "🚨 Se aplicará un recargo al usuario según las políticas del club (RF25)."
-                                : "✅ Se procesará el reembolso total o parcial según la política de devoluciones (RF26)."
+                            {estaPagada
+                                ? `Se emitirá un recibo de reembolso por el ${politica.porcentaje}% del pago. ${politica.descripcion}`
+                                : 'La reserva no está pagada, por lo tanto no se emitirá recibo de reembolso.'
                             }
                         </p>
                     </div>
                 </div>
                 <div className="dash-modal-footer">
                     <button className="btn-modal-cancel" onClick={onClose}>Cerrar</button>
-                    <button className="btn-modal-danger" onClick={() => onCancel(reserva.idReserva, fueraDePlazo)}>
+                    <button className="btn-modal-danger" onClick={() => onCancel(reserva.idReserva)}>
                         <i data-lucide="trash-2" /> Confirmar Cancelación
                     </button>
                 </div>

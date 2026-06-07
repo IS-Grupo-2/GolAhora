@@ -845,6 +845,11 @@
     background: rgba(165, 111, 216, 0.12);
 }
 
+.cancha-selector-item.maintenance {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+}
+
 .cancha-selector-text {
     display: flex;
     flex-direction: column;

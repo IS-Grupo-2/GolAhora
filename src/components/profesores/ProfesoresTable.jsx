@@ -1,9 +1,10 @@
 // src/components/profesores/ProfesoresTable.jsx
 import Can from '../Can';
+import { useAuth } from '../../context/AuthContext';
 import {
-    tieneCertificacionVencida,
+    estadoCertificacionProfesor,
+    tieneCertificadoCargado,
     tieneCertificacionVerificada,
-    tieneCertificacionVigente,
 } from '../../utils/profesoresCertificacion';
 
 function iniciales(p) {
@@ -28,6 +29,8 @@ export default function ProfesoresTable({
     onBaja,
     onVerificarCertificacion,
 }) {
+    const { user } = useAuth();
+
     if (!profesores || profesores.length === 0) {
         return (
             <div className="tabla-empty">
@@ -57,9 +60,21 @@ export default function ProfesoresTable({
                 <tbody>
                     {profesores.map(p => {
                         const isActivo = p.activo ?? (p.estado === 'activo');
-                        const certificacionVencida = tieneCertificacionVencida(p);
                         const certificacionVerificada = tieneCertificacionVerificada(p);
-                        const certificacionVigente = tieneCertificacionVigente(p);
+                        const tieneCertificado = tieneCertificadoCargado(p);
+                        const esPropioProfesor = user?.role === 'Professor' && (
+                            user?.idUsuario === p.idUsuario ||
+                            user?.id === p.idUsuario ||
+                            user?.email === p.email ||
+                            user?.username === p.username
+                        );
+                        const puedeEditar = user?.role === 'Admin' || esPropioProfesor;
+                        const estadoCertificacion = estadoCertificacionProfesor(p);
+                        const badgeCertificacion = {
+                            verificada: { clase: 'success', texto: 'Cert. verificada' },
+                            pendiente: { clase: 'warning', texto: 'Cert. pendiente' },
+                            sin_certificado: { clase: 'neutral', texto: 'Sin certificado' },
+                        }[estadoCertificacion];
 
                         return (
                             <tr key={p.idUsuario}>
@@ -79,18 +94,10 @@ export default function ProfesoresTable({
                                 <td>
                                     <BadgeEstado activo={isActivo} />
                                     <span
-                                        className={`badge ${
-                                            certificacionVencida ? 'danger'
-                                            : certificacionVerificada ? 'success'
-                                            : 'warning'
-                                        }`}
+                                        className={`badge ${badgeCertificacion.clase}`}
                                         style={{ marginLeft: '0.4rem' }}
                                     >
-                                        {certificacionVencida
-                                            ? 'Cert. vencida'
-                                            : certificacionVerificada
-                                                ? 'Cert. verificada'
-                                                : 'Cert. pendiente'}
+                                        {badgeCertificacion.texto}
                                     </span>
                                 </td>
                                 <td>
@@ -106,8 +113,8 @@ export default function ProfesoresTable({
                                             </button>
                                         </Can>
 
-                                        {/* Editar: Solo admin */}
-                                        <Can roles={['Admin']}>
+                                        {/* Editar: admin o profesor sobre su propio registro */}
+                                        {puedeEditar && (
                                             <button
                                                 className="action-btn edit"
                                                 title="Editar"
@@ -115,7 +122,7 @@ export default function ProfesoresTable({
                                             >
                                                 <i data-lucide="pencil" />
                                             </button>
-                                        </Can>
+                                        )}
 
                                         {/* Dar de baja / Reactivar: Solo admin */}
                                         <Can roles={['Admin']}>
@@ -130,14 +137,15 @@ export default function ProfesoresTable({
 
                                         {/* Verificar certificacion: Solo admin */}
                                         <Can roles={['Admin']}>
-                                            <button
-                                                className="action-btn edit"
-                                                title={certificacionVencida ? 'Deshabilitar por certificado vencido' : 'Verificar certificacion'}
-                                                onClick={() => onVerificarCertificacion(p)}
-                                                disabled={!certificacionVigente && !certificacionVencida}
-                                            >
-                                                <i data-lucide={certificacionVencida ? 'shield-x' : 'badge-check'} />
-                                            </button>
+                                            {!certificacionVerificada && tieneCertificado && (
+                                                <button
+                                                    className="action-btn edit"
+                                                    title="Verificar certificación"
+                                                    onClick={() => onVerificarCertificacion(p)}
+                                                >
+                                                    <i data-lucide="badge-check" />
+                                                </button>
+                                            )}
                                         </Can>
 
                                     </div>

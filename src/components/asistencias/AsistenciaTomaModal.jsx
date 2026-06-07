@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 
+function nombreAlumno(alumno) {
+    return [alumno.nombre, alumno.apellido].filter(Boolean).join(' ') || alumno.email || `Alumno #${alumno.id}`;
+}
+
 export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onGuardar, onCerrar }) {
     // Estado que mapea ID del cliente -> { presente: boolean, observaciones: string }
     const [asistencias, setAsistencias] = useState({});
@@ -12,7 +16,7 @@ export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onG
             // Buscamos si ya hay un registro previo en la BD para este alumno (Modificación RF41)
             const previo = (registrosPrevios || []).find(r => r.cliente.id === al.id);
             inicial[al.id] = {
-                presente: previo ? previo.presente : true, // Por defecto marcamos presentes para agilizar
+                presente: previo ? previo.presente : false,
                 observaciones: previo ? previo.observaciones : ''
             };
         });
@@ -49,7 +53,10 @@ export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onG
         const datosUML = clase.alumnos.map(al => ({
             idAsistencia: Date.now() + al.id, // ID ficticio
             clase: clase,
-            cliente: al,
+            cliente: {
+                ...al,
+                nombre: nombreAlumno(al),
+            },
             fecha: new Date().toISOString().split('T')[0],
             presente: asistencias[al.id].presente,
             observaciones: asistencias[al.id].observaciones
@@ -88,7 +95,7 @@ export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onG
                                         <div key={al.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                             
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <strong style={{ color: 'var(--text)', fontSize: '0.95rem' }}>{al.nombre} {al.apellido}</strong>
+                                                <strong style={{ color: 'var(--text)', fontSize: '0.95rem' }}>{nombreAlumno(al)}</strong>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: record.presente ? '#f0fdf4' : '#fef2f2', padding: '6px 12px', borderRadius: '8px', border: `1px solid ${record.presente ? '#bbf7d0' : '#fecaca'}` }}>
                                                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: record.presente ? '#16a34a' : '#ef4444' }}>
                                                         {record.presente ? 'Presente' : 'Ausente'}

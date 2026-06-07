@@ -140,6 +140,15 @@ const API_URL = 'http://localhost:5063/api'
 
 const USE_MOCK = true;
 
+function normalizarProfesor(profesor) {
+    const certificaciones = normalizarCertificaciones(profesor.certificaciones);
+    return {
+        ...profesor,
+        certificaciones,
+        verificacionCertificacion: Boolean(profesor.verificacionCertificacion) || certificaciones.some(c => c.verificada),
+    };
+}
+
 export function ProfesoresProvider({ children }) {
     const [profesores, setProfesores] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -152,10 +161,13 @@ export function ProfesoresProvider({ children }) {
             if (USE_MOCK) {
                 const localData = localStorage.getItem('profesores_db');
                 if (localData) {
-                    setProfesores(JSON.parse(localData));
+                    const profesoresNormalizados = JSON.parse(localData).map(normalizarProfesor);
+                    localStorage.setItem('profesores_db', JSON.stringify(profesoresNormalizados));
+                    setProfesores(profesoresNormalizados);
                 } else {
-                    localStorage.setItem('profesores_db', JSON.stringify(MOCK_PROFESORES));
-                    setProfesores(MOCK_PROFESORES);
+                    const profesoresNormalizados = MOCK_PROFESORES.map(normalizarProfesor);
+                    localStorage.setItem('profesores_db', JSON.stringify(profesoresNormalizados));
+                    setProfesores(profesoresNormalizados);
                 }
             } else {
                 const response = await fetch(`${API_URL}/User/Users/Professors`);
@@ -207,15 +219,21 @@ export function ProfesoresProvider({ children }) {
     const modificarProfesor = async (profesorModificado) => {
         if (USE_MOCK) {
             setProfesores(prev => {
-                const next = prev.map(p =>
-                    p.idUsuario === profesorModificado.idUsuario
-                        ? {
-                            ...p,
-                            ...profesorModificado,
-                            password: profesorModificado.password || p.password,
-                        }
-                        : p
-                );
+                const next = prev.map(p => {
+                    if (p.idUsuario !== profesorModificado.idUsuario) return p;
+
+                    const certificaciones = profesorModificado.certificaciones !== undefined
+                        ? normalizarCertificaciones(profesorModificado.certificaciones)
+                        : normalizarCertificaciones(p.certificaciones);
+
+                    return {
+                        ...p,
+                        ...profesorModificado,
+                        certificaciones,
+                        verificacionCertificacion: Boolean(profesorModificado.verificacionCertificacion) || certificaciones.some(c => c.verificada),
+                        password: profesorModificado.password || p.password,
+                    };
+                });
                 localStorage.setItem('profesores_db', JSON.stringify(next));
                 return next;
             });

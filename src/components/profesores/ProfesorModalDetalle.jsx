@@ -1,5 +1,8 @@
 // src/components/profesores/ProfesorModalDetalle.jsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { obtenerCertificadoLocal } from '../../utils/certificadosStorage';
+import { estadoCertificacionProfesor } from '../../utils/profesoresCertificacion';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function iniciales(p) {
@@ -19,6 +22,16 @@ function formatCerts(certs) {
     return certs;
 }
 
+function formatArchivoCertificado(certs) {
+    if (!Array.isArray(certs)) return 'â€”';
+    return certs.find(c => c.archivo)?.archivo?.nombre || 'â€”';
+}
+
+function obtenerArchivoCertificado(certs) {
+    if (!Array.isArray(certs)) return null;
+    return certs.find(c => c.archivo)?.archivo || null;
+}
+
 function Campo({ label, valor, full }) {
     return (
         <div className={`detalle-campo${full ? ' detalle-full' : ''}`}>
@@ -30,6 +43,9 @@ function Campo({ label, valor, full }) {
 
 // ── Componente ────────────────────────────────────────────────────────────────
 export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
+    const { user } = useAuth();
+    const [contenidoCertificado, setContenidoCertificado] = useState(null);
+    const [cargandoCertificado, setCargandoCertificado] = useState(false);
 
     // Escape para cerrar
     useEffect(() => {
@@ -50,8 +66,60 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
         if (open && window.lucide) window.lucide.createIcons();
     }, [open]);
 
+    const archivoCertificado = profesor ? obtenerArchivoCertificado(profesor.certificaciones) : null;
+
+    useEffect(() => {
+        let cancelado = false;
+
+        async function cargarContenido() {
+            setContenidoCertificado(null);
+            setCargandoCertificado(false);
+
+            if (!open || user?.role !== 'Admin' || !archivoCertificado) return;
+
+            if (archivoCertificado.contenido) {
+                setContenidoCertificado(archivoCertificado.contenido);
+                return;
+            }
+
+            if (!archivoCertificado.storageKey) return;
+
+            setCargandoCertificado(true);
+            try {
+                const contenido = await obtenerCertificadoLocal(archivoCertificado.storageKey);
+                if (!cancelado) setContenidoCertificado(contenido);
+            } catch {
+                if (!cancelado) setContenidoCertificado(null);
+            } finally {
+                if (!cancelado) setCargandoCertificado(false);
+            }
+        }
+
+        cargarContenido();
+
+        return () => { cancelado = true; };
+    }, [open, user?.role, archivoCertificado?.storageKey, archivoCertificado?.contenido]);
+
     if (!open || !profesor) return null;
     const estaActivo = profesor.activo ?? profesor.estado === 'activo';
+    const estadoCertificacion = {
+        verificada: 'Verificada',
+        pendiente: 'Pendiente',
+        sin_certificado: 'Sin certificado',
+    }[estadoCertificacionProfesor(profesor)];
+    const puedeAbrirCertificado = user?.role === 'Admin' && Boolean(contenidoCertificado || archivoCertificado?.contenido);
+
+    function descargarCertificado() {
+        const contenido = contenidoCertificado || archivoCertificado?.contenido;
+        if (!contenido) return;
+
+        const link = document.createElement('a');
+        link.href = contenido;
+        link.download = archivoCertificado?.nombre || `certificado-${profesor.apellido}-${profesor.nombre}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
     return (
         <div
@@ -97,12 +165,28 @@ export default function ProfesorModalDetalle({ open, profesor, onCerrar }) {
                         <Campo label="Ingreso"      valor={formatFecha(profesor.fechaRegistro)} />
                         <Campo label="Email"        valor={profesor.email}                        full />
                         <Campo label="Certificaciones" valor={formatCerts(profesor.certificaciones)} full />
+                        <Campo label="Archivo certificado" valor={formatArchivoCertificado(profesor.certificaciones)} full />
                         <Campo
-                            label="Cert. verificada"
+                            label="Certificacion"
                             valor={profesor.verificacionCertificacion ? '✓ Verificada' : '✗ Sin verificar'}
                         />
                         <Campo label="ID" valor={`#${String(profesor.idUsuario).padStart(4, '0')}`} />
                     </div>
+
+                    {user?.role === 'Admin' && archivoCertificado?.nombre && (
+                        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                className="btn-primary-action"
+                                onClick={descargarCertificado}
+                                disabled={!puedeAbrirCertificado}
+                                title={puedeAbrirCertificado ? 'Guardar certificado cargado' : 'El certificado todavia no esta disponible para guardar'}
+                            >
+                                <i data-lucide="download" />
+                                {cargandoCertificado ? 'Cargando certificado...' : 'Guardar certificado'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* FOOTER */}

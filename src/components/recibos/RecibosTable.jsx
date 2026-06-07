@@ -69,9 +69,7 @@ export default function RecibosTable({ recibos, filtro, onLimpiarFiltro, isAdmin
                                         </>
                                     )}
 
-                                    <button className="action-btn" style={{ borderColor: 'var(--blue)', color: 'var(--blue)' }} title="Imprimir" onClick={() => onImprimir(r)} disabled={r.estado === 'anulado'}>
-                                        <i data-lucide="printer" />
-                                    </button>
+                                    
                                 </div>
                             </td>
                         </tr>

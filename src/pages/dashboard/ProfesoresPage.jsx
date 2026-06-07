@@ -8,10 +8,8 @@ import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { useProfesores } from '../../context/ProfesoresContext';
-import {
-    tieneCertificacionVencida,
-    verificarCertificacionesProfesor,
-} from '../../utils/profesoresCertificacion';
+import { useAuth } from '../../context/AuthContext';
+import { verificarCertificacionesProfesor } from '../../utils/profesoresCertificacion';
 
 // ── Toast interno ─────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -32,8 +30,26 @@ function Toast({ toasts }) {
 }
 
 // ── Contenido de la Página ────────────────────────────────────────────────────
+function esProfesorActual(profesor, user) {
+    if (!user || user.role !== 'Professor') return true;
+
+    const idsUsuario = [user.idUsuario, user.id].filter(Boolean).map(String);
+    const idsProfesor = [profesor.idUsuario, profesor.id].filter(Boolean).map(String);
+
+    if (idsUsuario.some(id => idsProfesor.includes(id))) return true;
+
+    const emailUsuario = user.email?.toLowerCase();
+    const emailProfesor = profesor.email?.toLowerCase();
+    if (emailUsuario && emailProfesor && emailUsuario === emailProfesor) return true;
+
+    const usernameUsuario = (user.username || user.userName)?.toLowerCase();
+    const usernameProfesor = (profesor.username || profesor.userName)?.toLowerCase();
+    return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
+}
+
 export default function ProfesoresPageContent() {
     const { profesores, loading, error, crearProfesor, modificarProfesor, darDeBaja } = useProfesores();
+    const { user } = useAuth();
     
     const [filtro, setFiltro] = useState('');
     const [toasts, setToasts] = useState([]);
@@ -81,14 +97,6 @@ export default function ProfesoresPageContent() {
         const profesorActualizado = verificarCertificacionesProfesor(profesor);
         await modificarProfesor(profesorActualizado);
 
-        if (tieneCertificacionVencida(profesor)) {
-            mostrarToast(
-                `${profesor.nombre} ${profesor.apellido} fue deshabilitado por certificado vencido.`,
-                'warning'
-            );
-            return;
-        }
-
         mostrarToast(
             `Certificacion de ${profesor.nombre} ${profesor.apellido} verificada correctamente.`,
             'success'
@@ -102,11 +110,15 @@ export default function ProfesoresPageContent() {
     const abrirBaja    = (p) => setModalBaja({ open: true, profesor: p });
 
     // ── Stats y Filtrado ──
-    const activos   = profesores.filter(p => p.activo).length;
-    const inactivos = profesores.filter(p => !p.activo).length;
+    const profesoresVisibles = user?.role === 'Professor'
+        ? profesores.filter(p => esProfesorActual(p, user))
+        : profesores;
+
+    const activos   = profesoresVisibles.filter(p => p.activo).length;
+    const inactivos = profesoresVisibles.filter(p => !p.activo).length;
 
     const profesoresFiltrados = filtro
-        ? profesores.filter(p => {
+        ? profesoresVisibles.filter(p => {
               const q = filtro.toLowerCase();
               return (
                   `${p.nombre} ${p.apellido}`.toLowerCase().includes(q) ||
@@ -114,7 +126,7 @@ export default function ProfesoresPageContent() {
                   (p.email || '').toLowerCase().includes(q)
               );
           })
-        : profesores;
+        : profesoresVisibles;
 
     if (loading) return <LoadingSpinner message="Cargando profesores..." />;
     if (error) return <ErrorMessage message={`Ocurrió un error: ${error}`} />;
@@ -125,7 +137,7 @@ export default function ProfesoresPageContent() {
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Profesores</h2>
-                    <span className="crud-count">{profesores.length} total</span>
+                    <span className="crud-count">{profesoresVisibles.length} total</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -151,7 +163,7 @@ export default function ProfesoresPageContent() {
             {/* MINI STATS */}
             <div className="crud-mini-stats">
                 <div className="mini-stat">
-                    <span className="mini-stat-num">{profesores.length}</span>
+                    <span className="mini-stat-num">{profesoresVisibles.length}</span>
                     <span className="mini-stat-label">Total</span>
                 </div>
                 <div className="mini-stat green">

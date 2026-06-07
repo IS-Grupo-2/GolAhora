@@ -15,6 +15,8 @@ import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { useCanchas } from '../../context/CanchasContext';
+import { useReservas } from '../../context/ReservasContext';
+import { reservasActivasDeCancha, reservasEnFranja, resumenReservasBloqueantes } from '../../utils/canchasReservas';
 
 function Toast({ toasts }) {
     return (
@@ -29,6 +31,41 @@ function Toast({ toasts }) {
     );
 }
 
+function ModalReservasBloqueantes({ open, titulo, mensaje, reservas, onCerrar }) {
+    useEffect(() => {
+        if (open && typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
+    }, [open]);
+
+    if (!open) return null;
+
+    return (
+        <div className="dash-modal-overlay activo" role="dialog" aria-modal="true" onClick={(e) => e.target === e.currentTarget && onCerrar()}>
+            <div className="dash-modal dash-modal--sm">
+                <div className="dash-modal-header">
+                    <h3>{titulo}</h3>
+                    <button className="dash-modal-close" onClick={onCerrar} aria-label="Cerrar"><i data-lucide="x" /></button>
+                </div>
+                <div className="dash-modal-body">
+                    <p style={{ color: 'var(--text)', lineHeight: 1.6, marginTop: 0 }}>{mensaje}</p>
+                    <div className="cancel-policy" style={{ marginTop: '12px' }}>
+                        <strong>Reservas asociadas</strong>
+                        <ul style={{ margin: '10px 0 0', paddingLeft: '18px', display: 'grid', gap: '6px' }}>
+                            {resumenReservasBloqueantes(reservas).map((linea, index) => (
+                                <li key={`${linea}-${index}`} style={{ fontSize: '0.88rem' }}>{linea}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+                <div className="dash-modal-footer">
+                    <button className="btn-modal-save" onClick={onCerrar}>
+                        <i data-lucide="check" /> Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CanchasPageContent() {
     const { 
         canchas, tiposCanchas: tipos, disponibilidades: disps, loading, error,
@@ -36,6 +73,7 @@ export default function CanchasPageContent() {
         crearTipo, modificarTipo, eliminarTipo,
         crearDisp, modificarDisp, toggleDisp, eliminarDisp
     } = useCanchas();
+    const { reservas = [] } = useReservas();
 
     const [tabActivo, setTabActivo] = useState('canchas');
     const [canchaSelDispId, setCanchaSelDispId] = useState(null);
@@ -53,6 +91,7 @@ export default function CanchasPageContent() {
     const [modalBajaTipo, setModalBajaTipo] = useState({ open: false, data: null });
 
     const [modalDisp, setModalDisp] = useState({ open: false, modo: 'nuevo', data: null, idCanchaFallback: null });
+    const [modalBloqueoReservas, setModalBloqueoReservas] = useState({ open: false, titulo: '', mensaje: '', reservas: [] });
 
     useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();
@@ -61,8 +100,8 @@ export default function CanchasPageContent() {
     useEffect(() => {
         if (tabActivo === 'disponibilidad' && canchas.length > 0) {
             const check = canchas.find(c => c.id === canchaSelDispId);
-            if (!check || check.estado !== 'activa') {
-                const primeraActiva = canchas.find(c => c.estado === 'activa');
+            if (!check || check.estado === 'inactiva') {
+                const primeraActiva = canchas.find(c => c.estado !== 'inactiva');
                 setCanchaSelDispId(primeraActiva ? primeraActiva.id : null);
             }
         }
@@ -86,6 +125,19 @@ export default function CanchasPageContent() {
         setModalCancha({ open: false, modo: 'nuevo', data: null });
     }
     async function handleToggleEstadoCancha(cancha) {
+        if (cancha.estado !== 'inactiva') {
+            const reservasBloqueantes = reservasActivasDeCancha(reservas, cancha.id);
+            if (reservasBloqueantes.length > 0) {
+                setModalBloqueoReservas({
+                    open: true,
+                    titulo: 'No se puede dar de baja la cancha',
+                    mensaje: `La cancha "${cancha.nombre}" tiene reservas asociadas. Primero debés cancelar esas reservas y realizar los reembolsos correspondientes antes de bloquearla o eliminarla.`,
+                    reservas: reservasBloqueantes
+                });
+                setModalBajaCancha({ open: false, data: null });
+                return;
+            }
+        }
         await toggleEstadoCancha(cancha);
         mostrarToast(`Estado de "${cancha.nombre}" actualizado.`);
         setModalBajaCancha({ open: false, data: null });
@@ -121,10 +173,32 @@ export default function CanchasPageContent() {
         setModalDisp({ open: false, modo: 'nuevo', data: null, idCanchaFallback: null });
     }
     async function handleToggleDisp(disp) {
+        if (disp.disponible) {
+            const reservasBloqueantes = reservasEnFranja(reservas, disp);
+            if (reservasBloqueantes.length > 0) {
+                setModalBloqueoReservas({
+                    open: true,
+                    titulo: 'No se puede bloquear la disponibilidad',
+                    mensaje: 'Hay reservas dentro de esta franja horaria. Primero debés cancelar esas reservas y emitir los reembolsos que correspondan.',
+                    reservas: reservasBloqueantes
+                });
+                return;
+            }
+        }
         await toggleDisp(disp.id);
         mostrarToast(disp.disponible ? 'Franja bloqueada.' : 'Franja habilitada.', disp.disponible ? 'warning' : 'success');
     }
     async function handleEliminarDisp(disp) {
+        const reservasBloqueantes = reservasEnFranja(reservas, disp);
+        if (reservasBloqueantes.length > 0) {
+            setModalBloqueoReservas({
+                open: true,
+                titulo: 'No se puede eliminar la franja',
+                mensaje: 'Esta disponibilidad tiene reservas asociadas. Primero debés cancelar esas reservas y realizar los reembolsos correspondientes.',
+                reservas: reservasBloqueantes
+            });
+            return;
+        }
         if (window.confirm('¿Eliminar esta franja horaria permanentemente?')) {
             await eliminarDisp(disp.id);
             mostrarToast('Franja eliminada.');
@@ -164,7 +238,7 @@ export default function CanchasPageContent() {
                         onEditar={(c) => setModalCancha({ open: true, modo: 'editar', data: c })}
                         onBaja={(c) => setModalBajaCancha({ open: true, data: c })}
                         onVerDisp={(c) => {
-                            if (c.estado === 'activa') {
+                            if (c.estado !== 'inactiva') {
                                 setCanchaSelDispId(c.id);
                                 setTabActivo('disponibilidad');
                             } else {
@@ -215,6 +289,14 @@ export default function CanchasPageContent() {
             <TipoModalBaja open={modalBajaTipo.open} tipo={modalBajaTipo.data} onConfirmar={handleEliminarTipo} onCerrar={() => setModalBajaTipo({ open: false, data: null })} />
             
             <DispModal open={modalDisp.open} modo={modalDisp.modo} disp={modalDisp.data} idCanchaFallback={modalDisp.idCanchaFallback} canchas={canchas} dispsExistentes={disps} onGuardar={guardarDisp} onCerrar={() => setModalDisp({ open: false, modo: 'nuevo', data: null })} />
+
+            <ModalReservasBloqueantes
+                open={modalBloqueoReservas.open}
+                titulo={modalBloqueoReservas.titulo}
+                mensaje={modalBloqueoReservas.mensaje}
+                reservas={modalBloqueoReservas.reservas}
+                onCerrar={() => setModalBloqueoReservas({ open: false, titulo: '', mensaje: '', reservas: [] })}
+            />
 
             <Toast toasts={toasts} />
         </div>

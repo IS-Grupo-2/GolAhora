@@ -25,6 +25,7 @@ function buildSubtitle(label) {
         Asistencias:    'Registro de asistencias.',
         Cobros:         'Gestión de cobros y pagos.',
         Recibos:        'Gestión de recibos.',
+        Descuentos:     'Gestión de códigos promocionales.',
         Reportes:       'Reportes e informes del sistema.',
         Configuración:  'Configuración del sistema.',
     };

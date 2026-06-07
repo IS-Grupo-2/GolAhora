@@ -3,6 +3,11 @@ import Can from '../Can';
 export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {
     const activas = canchas.filter(c => c.estado === 'activa' || c.activa === true).length;
     const inactivas = canchas.filter(c => c.estado === 'inactiva').length;
+    const estadoCancha = (c) => {
+        if (c.estado === 'mantenimiento') return { clase: 'warning', texto: 'Mantenimiento' };
+        if (c.estado === 'activa' || c.activa === true) return { clase: 'success', texto: 'Activa' };
+        return { clase: 'danger', texto: 'Inactiva' };
+    };
 
     const normalizarTexto = (texto) => {
         return texto
@@ -80,6 +85,7 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                             <tbody>
                                 {filtradas.map(c => {
                                     const tipo = tipos.find(t => t.id === c.idTipo);
+                                    const estado = estadoCancha(c);
                                     return (
                                         <tr key={c.id}>
                                             <td>
@@ -95,8 +101,8 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                                             <td><span className="badge info">{tipo?.capacidadJugadores || '—'} jug.</span></td>
                                             <td>{tipo ? `$${tipo.precioHora.toLocaleString('es-AR')}/h` : '—'}</td>
                                             <td>
-                                                <span className={`badge ${c.estado === 'activa' ? 'success' : 'danger'}`}>
-                                                    {c.estado === 'activa' ? 'Activa' : 'Inactiva'}
+                                                <span className={`badge ${estado.clase}`}>
+                                                    {estado.texto}
                                                 </span>
                                             </td>
                                             <td>
@@ -109,12 +115,12 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                                                             <i data-lucide="pencil" />
                                                         </button>
                                                     </Can>
-                                                    <button className="action-btn view" title={c.estado === 'activa' ? 'Ver disponibilidad' : 'Cancha inactiva'} style={{ opacity: c.estado !== 'activa' ? 0.5 : 1 }} onClick={() => onVerDisp(c)}>
+                                                    <button className="action-btn view" title={c.estado !== 'inactiva' ? 'Ver disponibilidad' : 'Cancha inactiva'} style={{ opacity: c.estado === 'inactiva' ? 0.5 : 1 }} onClick={() => onVerDisp(c)}>
                                                         <i data-lucide="calendar-clock" />
                                                     </button>
                                                     <Can roles={['Admin']}>
-                                                        <button className="action-btn toggle" title={c.estado === 'activa' ? 'Dar de baja' : 'Reactivar'} onClick={() => onBaja(c)}>
-                                                            <i data-lucide={c.estado === 'activa' ? 'x-circle' : 'check-circle'} />
+                                                        <button className="action-btn toggle" title={c.estado === 'inactiva' ? 'Reactivar' : 'Dar de baja'} onClick={() => onBaja(c)}>
+                                                            <i data-lucide={c.estado === 'inactiva' ? 'check-circle' : 'x-circle'} />
                                                         </button>
                                                     </Can>
                                                 </div>
