@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useTorneos } from '../../context/TorneosContext';
+import { useClientes } from '../../context/ClientesContext';
+import { useProfesores } from '../../context/ProfesoresContext';
+import { useEmpleados } from '../../context/EmpleadosContext';
 import CompetenciasTable from '../../components/torneos/CompetenciasTable';
 import CompetenciaModal from '../../components/torneos/CompetenciaModal';
 import CompetenciaModalDetalle from '../../components/torneos/CompetenciaModalDetalle';
@@ -17,6 +20,9 @@ export default function TorneosPageContent() {
         guardarEquipo, eliminarEquipo, inscribirEquipo, 
         generarFixture, registrarResultado 
     } = useTorneos();
+    const { clientes } = useClientes();
+    const { profesores } = useProfesores();
+    const { empleados } = useEmpleados();
 
     // Estado para controlar la pestaña activa: 'competencias', 'equipos' o 'fixtures'
     const [activeTab, setActiveTab] = useState('competencias');
@@ -32,6 +38,7 @@ export default function TorneosPageContent() {
     const [equipoAEditar, setEquipoAEditar] = useState(null);
     const [modalDetalleEquipoOpen, setModalDetalleEquipoOpen] = useState(false);
     const [equipoDetalle, setEquipoDetalle] = useState(null);
+    const usuariosSistema = [...clientes, ...profesores, ...empleados];
 
     // Handlers para Competencias
     const handleNuevoCompetenciaClick = () => {
@@ -98,10 +105,13 @@ export default function TorneosPageContent() {
             {activeTab === 'competencias' && (
                 <CompetenciasTable 
                     competencias={competencias}
+                    equipos={equipos}
+                    fixtures={fixtures}
                     onNuevo={handleNuevoCompetenciaClick}
                     onEditar={handleEditarCompetenciaClick}
                     onEliminar={eliminarCompetencia}
                     onDetalle={handleVerDetalleCompetenciaClick}
+                    onInscribirEquipo={inscribirEquipo}
                 />
             )}
 
@@ -140,6 +150,7 @@ export default function TorneosPageContent() {
             <CompetenciaModalDetalle 
                 open={modalDetalleCompOpen} 
                 competencia={competenciaDetalle} 
+                equipos={equipos}
                 onClose={() => setModalDetalleCompOpen(false)} 
                 onEditar={handleEditarCompetenciaClick} 
             />
@@ -150,6 +161,7 @@ export default function TorneosPageContent() {
                 onClose={() => setModalEquipoOpen(false)} 
                 onSave={guardarEquipo} 
                 equipoEditar={equipoAEditar} 
+                usuarios={usuariosSistema}
             />
             <EquipoModalDetalle 
                 open={modalDetalleEquipoOpen} 

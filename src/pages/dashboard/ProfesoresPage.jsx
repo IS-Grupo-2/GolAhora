@@ -8,6 +8,10 @@ import Can from '../../components/Can';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { useProfesores } from '../../context/ProfesoresContext';
+import {
+    tieneCertificacionVencida,
+    verificarCertificacionesProfesor,
+} from '../../utils/profesoresCertificacion';
 
 // ── Toast interno ─────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -71,6 +75,24 @@ export default function ProfesoresPageContent() {
             deBaja ? 'warning' : 'success'
         );
         setModalBaja({ open: false, profesor: null });
+    }
+
+    async function handleVerificarCertificacion(profesor) {
+        const profesorActualizado = verificarCertificacionesProfesor(profesor);
+        await modificarProfesor(profesorActualizado);
+
+        if (tieneCertificacionVencida(profesor)) {
+            mostrarToast(
+                `${profesor.nombre} ${profesor.apellido} fue deshabilitado por certificado vencido.`,
+                'warning'
+            );
+            return;
+        }
+
+        mostrarToast(
+            `Certificacion de ${profesor.nombre} ${profesor.apellido} verificada correctamente.`,
+            'success'
+        );
     }
 
     // ── Abrir modales ──
@@ -151,6 +173,7 @@ export default function ProfesoresPageContent() {
                     onVer={abrirDetalle}
                     onEditar={abrirEditar}
                     onBaja={abrirBaja}
+                    onVerificarCertificacion={handleVerificarCertificacion}
                 />
             </div>
 

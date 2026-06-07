@@ -1,5 +1,6 @@
 // src/context/ProfesoresContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { normalizarCertificaciones } from '../utils/profesoresCertificacion';
 
 export const MOCK_PROFESORES = [
     {
@@ -132,7 +133,6 @@ export const MOCK_PROFESORES = [
     },
 ];
 
-
 const ProfesoresContext = createContext();
 
 const API_URL = 'http://localhost:5063/api'
@@ -150,8 +150,13 @@ export function ProfesoresProvider({ children }) {
         setError(null);
         try {
             if (USE_MOCK) {
-                await new Promise(resolve => setTimeout(resolve, 300));
-                setProfesores(prev => prev.length === 0 ? MOCK_PROFESORES : prev);
+                const localData = localStorage.getItem('profesores_db');
+                if (localData) {
+                    setProfesores(JSON.parse(localData));
+                } else {
+                    localStorage.setItem('profesores_db', JSON.stringify(MOCK_PROFESORES));
+                    setProfesores(MOCK_PROFESORES);
+                }
             } else {
                 const response = await fetch(`${API_URL}/User/Users/Professors`);
                 if (!response.ok) throw new Error('Error al obtener profesores');
@@ -175,9 +180,18 @@ export function ProfesoresProvider({ children }) {
                 ...nuevoProfesor,
                 idUsuario: Date.now(),
                 activo: true,
-                rol: 'profesor'
+                estado: nuevoProfesor.estado || 'activo',
+                rol: 'profesor',
+                fechaRegistro: new Date().toISOString().split('T')[0],
+                certificaciones: normalizarCertificaciones(nuevoProfesor.certificaciones),
+                verificacionCertificacion: false,
             };
-            setProfesores(prev => [...prev, profesorConId]);
+            setProfesores(prev => {
+                const next = [...prev, profesorConId];
+                localStorage.setItem('profesores_db', JSON.stringify(next));
+                return next;
+            });
+            return profesorConId;
         } else {
             const response = await fetch(`${API_URL}/Auth/register/professor`, {
                 method: 'POST',
@@ -192,9 +206,19 @@ export function ProfesoresProvider({ children }) {
 
     const modificarProfesor = async (profesorModificado) => {
         if (USE_MOCK) {
-            setProfesores(prev => prev.map(p =>
-                p.idUsuario === profesorModificado.idUsuario ? profesorModificado : p
-            ));
+            setProfesores(prev => {
+                const next = prev.map(p =>
+                    p.idUsuario === profesorModificado.idUsuario
+                        ? {
+                            ...p,
+                            ...profesorModificado,
+                            password: profesorModificado.password || p.password,
+                        }
+                        : p
+                );
+                localStorage.setItem('profesores_db', JSON.stringify(next));
+                return next;
+            });
         } else {
             const idUser = profesorModificado.idUser
             const idProfessor = profesorModificado.idProfessor
@@ -236,9 +260,19 @@ export function ProfesoresProvider({ children }) {
 
     const darDeBaja = async (idUsuario) => {
         if (USE_MOCK) {
-            setProfesores(prev => prev.map(p =>
-                p.idUsuario === idUsuario ? { ...p, activo: !p.activo } : p
-            ));
+            setProfesores(prev => {
+                const next = prev.map(p =>
+                    p.idUsuario === idUsuario
+                        ? {
+                            ...p,
+                            activo: !p.activo,
+                            estado: p.activo ? 'inactivo' : 'activo',
+                        }
+                        : p
+                );
+                localStorage.setItem('profesores_db', JSON.stringify(next));
+                return next;
+            });
         } else {
             const response = await fetch(`${API_URL}/User/${idUsuario}`, {
                 method: 'DELETE',

@@ -37,7 +37,7 @@ export const NAV_CONFIG = [
             },
             {
                 path:  '/dashboard/torneos',
-                label: 'Torneos',
+                label: 'Competencias',
                 icon:  'trophy',
                 roles: ['Admin', 'Employee', 'Professor', 'Client'],
             },

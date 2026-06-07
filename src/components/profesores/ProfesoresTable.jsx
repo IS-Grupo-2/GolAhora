@@ -1,5 +1,10 @@
 // src/components/profesores/ProfesoresTable.jsx
 import Can from '../Can';
+import {
+    tieneCertificacionVencida,
+    tieneCertificacionVerificada,
+    tieneCertificacionVigente,
+} from '../../utils/profesoresCertificacion';
 
 function iniciales(p) {
     if (!p.nombre || !p.apellido) return '??';
@@ -21,6 +26,7 @@ export default function ProfesoresTable({
     onVer,
     onEditar,
     onBaja,
+    onVerificarCertificacion,
 }) {
     if (!profesores || profesores.length === 0) {
         return (
@@ -51,6 +57,9 @@ export default function ProfesoresTable({
                 <tbody>
                     {profesores.map(p => {
                         const isActivo = p.activo ?? (p.estado === 'activo');
+                        const certificacionVencida = tieneCertificacionVencida(p);
+                        const certificacionVerificada = tieneCertificacionVerificada(p);
+                        const certificacionVigente = tieneCertificacionVigente(p);
 
                         return (
                             <tr key={p.idUsuario}>
@@ -69,6 +78,20 @@ export default function ProfesoresTable({
                                 <td>{p.telefono || '—'}</td>
                                 <td>
                                     <BadgeEstado activo={isActivo} />
+                                    <span
+                                        className={`badge ${
+                                            certificacionVencida ? 'danger'
+                                            : certificacionVerificada ? 'success'
+                                            : 'warning'
+                                        }`}
+                                        style={{ marginLeft: '0.4rem' }}
+                                    >
+                                        {certificacionVencida
+                                            ? 'Cert. vencida'
+                                            : certificacionVerificada
+                                                ? 'Cert. verificada'
+                                                : 'Cert. pendiente'}
+                                    </span>
                                 </td>
                                 <td>
                                     <div className="action-btns">
@@ -104,6 +127,19 @@ export default function ProfesoresTable({
                                                 <i data-lucide={isActivo ? 'user-x' : 'user-check'} />
                                             </button>
                                         </Can>
+
+                                        {/* Verificar certificacion: Solo admin */}
+                                        <Can roles={['Admin']}>
+                                            <button
+                                                className="action-btn edit"
+                                                title={certificacionVencida ? 'Deshabilitar por certificado vencido' : 'Verificar certificacion'}
+                                                onClick={() => onVerificarCertificacion(p)}
+                                                disabled={!certificacionVigente && !certificacionVencida}
+                                            >
+                                                <i data-lucide={certificacionVencida ? 'shield-x' : 'badge-check'} />
+                                            </button>
+                                        </Can>
+
                                     </div>
                                 </td>
                             </tr>

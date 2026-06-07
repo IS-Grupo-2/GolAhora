@@ -73,7 +73,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                         <Icon name="alert-triangle" />
                         <p>Esta competencia aún no tiene su fixture generado.</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Equipos inscriptos actualmente: {currentCompetencia?.equipos?.length || 0}</p>
-                        <Can roles={['admin', 'empleado']}>
+                        <Can roles={['Admin', 'Employee']}>
                             <button className="btn-primary-action" style={{ marginTop: '15px' }} onClick={() => onGenerarFixture(parseInt(selectedCompId))}>
                                 <Icon name="git-branch" /> Generar Cuadro Automático
                             </button>
@@ -119,7 +119,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                                             <span className="equipo-nombre equipo-visitante">{getEquipoNombre(partido.equipoVisitanteId)}</span>
                                         </div>
 
-                                        <Can roles={['admin', 'empleado']}>
+                                        <Can roles={['Admin', 'Employee']}>
                                             <button className="btn-primary-action" style={{ width: '100%', justifyContent: 'center' }} onClick={() => abrirModalResultado(partido)}>
                                                 <Icon name="clipboard-check" /> {partido.estado === 'finalizado' ? 'Editar Resultado' : 'Cargar Resultado'}
                                             </button>

@@ -19,6 +19,13 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
     const handleInscripcionSubmit = (e) => {
         e.preventDefault();
         if (!selectedEquipo || !selectedTorneo) return;
+        const competencia = competencias.find(c => c.id === parseInt(selectedTorneo));
+        if (!competencia) return;
+        const equiposInscriptos = competencia.equipos || [];
+        const cupoCompleto = equiposInscriptos.length >= Number(competencia.maxEquipos || Infinity);
+        const yaInscripto = equiposInscriptos.includes(parseInt(selectedEquipo));
+        const cerrada = fixtures?.some(f => f.competenciaID === competencia.id) || competencia.estado === 'finalizado';
+        if (cupoCompleto || yaInscripto || cerrada) return;
         onInscribir(parseInt(selectedTorneo), parseInt(selectedEquipo));
         setSelectedEquipo(''); setSelectedTorneo('');
     };
@@ -37,7 +44,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                     <span className="crud-count">{equipos.length}</span>
                 </div>
                 <div className="crud-toolbar-right">
-                    <Can roles={['admin', 'empleado', 'cliente']}>
+                    <Can roles={['Admin', 'Employee', 'Client']}>
                         <button className="btn-primary-action" onClick={onNuevo}>
                             <Icon name="plus" /> Nuevo Equipo
                         </button>
@@ -45,7 +52,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                 </div>
             </div>
 
-            <Can roles={['admin', 'empleado', 'cliente']}>
+            <Can roles={['Admin', 'Employee', 'Client']}>
                 <div className="panel-card" style={{ marginBottom: '24px', marginTop: '24px', padding: '18px' }}>
                     <h4 className="ronda-header" style={{ borderBottom: 'none', marginBottom: '1rem' }}>
                         <Icon name="user-plus" /> Inscripción Rápida a Competencia
@@ -63,10 +70,12 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                             <select value={selectedTorneo} onChange={e => setSelectedTorneo(e.target.value)} required>
                                 <option value="">-- Seleccionar --</option>
                                 {competencias.map(c => {
+                                    const equiposInscriptos = c.equipos || [];
                                     const isClosed = fixtures?.some(f => f.competenciaID === c.id) || c.estado === 'finalizado';
+                                    const cupoCompleto = equiposInscriptos.length >= Number(c.maxEquipos || Infinity);
                                     const tipoLabel = c.tipo ? (c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1)) : c.tipo;
                                     return (
-                                        <option key={c.id} value={c.id} disabled={isClosed}>
+                                        <option key={c.id} value={c.id} disabled={isClosed || cupoCompleto}>
                                             {c.nombre} ({tipoLabel}){isClosed ? ' — Cerrada' : ''}
                                         </option>
                                     );
@@ -102,10 +111,10 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                                         <td>
                                             <div className="action-btns">
                                                 <button type="button" className="action-btn view" title="Ver Detalle" onClick={() => onDetalle?.(eq)}><Icon name="eye" /></button>
-                                                <Can roles={['admin', 'empleado']}>
+                                                <Can roles={['Admin', 'Employee']}>
                                                     <button type="button" className="action-btn edit" title="Editar" onClick={() => onEditar(eq)}><Icon name="pencil" /></button>
                                                 </Can>
-                                                <Can roles={['admin', 'empleado']}>
+                                                <Can roles={['Admin', 'Employee']}>
                                                     <button type="button" className="action-btn toggle" style={{ color: '#ef4444' }} title="Eliminar" onClick={() => handleEliminar(eq)}><Icon name="trash-2" /></button>
                                                 </Can>
                                             </div>

@@ -1,6 +1,8 @@
 // src/pages/dashboard/ClasesPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { useClases, PROFESORES_DISPONIBLES, ALUMNOS_DISPONIBLES } from '../../context/ClasesContext';
+import { useClases, ALUMNOS_DISPONIBLES } from '../../context/ClasesContext';
+import { useProfesores } from '../../context/ProfesoresContext';
+import { tieneCertificacionVerificada } from '../../utils/profesoresCertificacion';
 import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
 import ClasesTable      from '../../components/clases/ClasesTable';
@@ -72,6 +74,7 @@ function SimuladorPagoClaseModal({ open, clase, onConfirmar, onCerrar }) {
 
 export default function ClasesPageContent() {
     const { clases, loading, error, fetchClases, crearClase, modificarClase, cancelarClase, registrarAsistencia, inscribirAlumno } = useClases();
+    const { profesores } = useProfesores();
     const cobrosContext = useCobros();
     const { user } = useAuth();
 
@@ -161,6 +164,16 @@ export default function ClasesPageContent() {
 
     const programadas = clases.filter(c => c.estado === 'programada').length;
     const canceladas  = clases.filter(c => c.estado === 'cancelada').length;
+    const profesoresDisponibles = profesores
+        .filter(p => p.activo ?? p.estado === 'activo')
+        .map(p => ({
+            id: p.idUsuario,
+            idUsuario: p.idUsuario,
+            nombre: p.nombre,
+            apellido: p.apellido,
+            email: p.email,
+            verificacionCertificacion: tieneCertificacionVerificada(p),
+        }));
 
     if (loading) return <LoadingSpinner />;
     if (error)   return <ErrorMessage message={error} />;
@@ -213,7 +226,7 @@ export default function ClasesPageContent() {
 
             {/* MODALES REGULARES */}
             <Can roles={['Admin', 'Employee']}>
-                <ClaseModal open={modalForm.open} modo={modalForm.modo} clase={modalForm.clase} profesoresDisp={PROFESORES_DISPONIBLES} alumnosDisp={ALUMNOS_DISPONIBLES} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', clase: null })} />
+                <ClaseModal open={modalForm.open} modo={modalForm.modo} clase={modalForm.clase} profesoresDisp={profesoresDisponibles} alumnosDisp={ALUMNOS_DISPONIBLES} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', clase: null })} />
             </Can>
             <Can roles={['Admin', 'Employee', 'Professor']}>
                 <AsistenciaModal open={modalAsistencia.open} clase={modalAsistencia.clase} onGuardar={handleAsistencia} onCerrar={() => setModalAsistencia({ open: false, clase: null })} />

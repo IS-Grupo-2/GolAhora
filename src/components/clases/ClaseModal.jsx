@@ -46,7 +46,7 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                 nombre: clase.nombre || '',
                 descripcion: clase.descripcion || '',
                 tipoClase: clase.tipoClase || '',
-                idProfesor: clase.profesor?.id || '',
+                idProfesor: clase.profesor?.idUsuario || clase.profesor?.id || '',
                 cancha: clase.cancha || '',
                 fecha: clase.fecha || '',
                 horario: clase.horario || '',
@@ -106,7 +106,10 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
     function handleGuardar() {
         if (!validar()) return;
         
-        const profSeleccionado = profesoresDisp.find(p => p.id === Number(form.idProfesor)) || null;
+        const idProfesor = Number(form.idProfesor);
+        const profSeleccionado = profesoresDisp.find(p =>
+            p.idUsuario === idProfesor || p.id === idProfesor
+        ) || null;
         const alumnosSeleccionados = alumnosDisp
             .filter(al => selectedAlumnoIds.includes(al.id))
             .map(al => ({ id: al.id, nombre: `${al.nombre} ${al.apellido}`, presente: false, email: al.email }));
@@ -159,7 +162,7 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                             <select value={form.idProfesor} onChange={e => set('idProfesor', e.target.value)}>
                                 <option value="">Sin asignar / A definir</option>
                                 {profesoresDisp.map(p => (
-                                    <option key={p.id} value={p.id}>
+                                    <option key={p.idUsuario || p.id} value={p.idUsuario || p.id}>
                                         {p.nombre} {p.apellido} {p.verificacionCertificacion ? '(Certificado)' : ''}
                                     </option>
                                 ))}

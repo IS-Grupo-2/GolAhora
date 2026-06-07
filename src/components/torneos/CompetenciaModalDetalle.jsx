@@ -14,7 +14,7 @@ function Campo({ label, valor, full }) {
     );
 }
 
-export default function CompetenciaModalDetalle({ open, competencia, onClose, onEditar }) {
+export default function CompetenciaModalDetalle({ open, competencia, equipos = [], onClose, onEditar }) {
     
     // Cerrar con Escape y bloquear scroll
     useEffect(() => {
@@ -34,6 +34,11 @@ export default function CompetenciaModalDetalle({ open, competencia, onClose, on
     }, [open]);
 
     if (!open || !competencia) return null;
+
+    const nombreEquipo = (idEquipo) => {
+        const equipo = equipos.find(e => e.idEquipo === idEquipo);
+        return equipo?.nombre || `Equipo #${idEquipo}`;
+    };
 
     return (
         <div className="dash-modal-overlay activo" onClick={onClose}>
@@ -73,7 +78,7 @@ export default function CompetenciaModalDetalle({ open, competencia, onClose, on
                                     {/* Aquí mostramos los IDs. En un futuro podrías cruzarlo con el array de equipos para mostrar los nombres */}
                                     {competencia.equipos.map((eqId, idx) => (
                                         <span key={idx} className="badge info" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid #3b82f6' }}>
-                                            Eq. ID: {eqId}
+                                            {nombreEquipo(eqId)}
                                         </span>
                                     ))}
                                 </div>

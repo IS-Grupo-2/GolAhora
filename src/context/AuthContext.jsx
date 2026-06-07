@@ -96,16 +96,17 @@ export function AuthProvider({ children }) {
             const registeredUsers = readLocalUsers('gol_mock_registered_users');
             const adminCreatedClients = readLocalUsers('clientes_db');
             const adminCreatedEmployees = readLocalUsers('empleados_db');
+            const adminCreatedProfessors = readLocalUsers('profesores_db');
 
             const found = [
                 ...MOCK_USERS,
                 ...registeredUsers,
                 ...adminCreatedClients,
                 ...adminCreatedEmployees,
+                ...adminCreatedProfessors,
             ].find(u =>
                 u.email.toLowerCase() === email.trim().toLowerCase() &&
                 u.password === password &&
-                u.rol !== 'profesor' &&
                 u.activo !== false &&
                 u.estado !== 'inactivo'
             );
@@ -117,6 +118,7 @@ export function AuthProvider({ children }) {
             const roleByRol = {
                 admin: 'Admin',
                 empleado: 'Employee',
+                profesor: 'Professor',
                 cliente: 'Client',
             };
             const normalizedRol = found.rol || 'cliente';

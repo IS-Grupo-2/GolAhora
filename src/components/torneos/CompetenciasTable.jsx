@@ -9,14 +9,22 @@ function Icon({ name }) {
 
 export default function CompetenciasTable({
     competencias,
+    equipos = [],
+    fixtures = [],
     onNuevo,
     onEditar,
     onEliminar,
-    onDetalle
+    onDetalle,
+    onInscribirEquipo
 }) {
     const [modalEliminar, setModalEliminar] = useState({
         open: false,
         competencia: null
+    });
+    const [modalEquipo, setModalEquipo] = useState({
+        open: false,
+        competencia: null,
+        equipoId: ''
     });
 
     // Estadísticas
@@ -35,11 +43,22 @@ export default function CompetenciasTable({
         setModalEliminar({ open: false, competencia: null });
     };
 
+    const abrirAgregarEquipo = (competencia) => {
+        setModalEquipo({ open: true, competencia, equipoId: '' });
+    };
+
+    const confirmarAgregarEquipo = (e) => {
+        e.preventDefault();
+        if (!modalEquipo.competencia || !modalEquipo.equipoId) return;
+        onInscribirEquipo(modalEquipo.competencia.id, Number(modalEquipo.equipoId));
+        setModalEquipo({ open: false, competencia: null, equipoId: '' });
+    };
+
     useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) {
             window.lucide.createIcons();
         }
-    }, []);
+    }, [modalEliminar.open, modalEquipo.open, competencias]);
 
     return (
         <>
@@ -67,7 +86,7 @@ export default function CompetenciasTable({
                         </div>
                     </div>
 
-                    <Can roles={['admin', 'empleado']}>
+                    <Can roles={['Admin', 'Employee']}>
                         <button className="btn-primary-action" onClick={onNuevo}>
                             <Icon name="plus" /> Nueva Competencia
                         </button>
@@ -98,6 +117,10 @@ export default function CompetenciasTable({
                             <tbody>
                                 {competencias.map(comp => {
                                     const totalEquipos = comp.equipos?.length || 0;
+                                    const tieneFixture = fixtures.some(f => f.competenciaID === comp.id);
+                                    const estaCerrada = comp.estado === 'finalizado' || tieneFixture;
+                                    const equiposDisponibles = equipos.filter(e => !comp.equipos?.includes(e.idEquipo));
+                                    const cupoCompleto = totalEquipos >= Number(comp.maxEquipos || Infinity);
                                     return (
                                         <tr key={comp.id}>
                                             <td>
@@ -157,17 +180,19 @@ export default function CompetenciasTable({
                                                         <Icon name="eye" />
                                                     </button>
 
-                                                    <Can roles={['admin', 'empleado']}>
+                                                    
+
+                                                    <Can roles={['Admin', 'Employee']}>
                                                         <button
                                                             className="action-btn edit"
-                                                            title="Editar"
+                                                            title="Modificar datos"
                                                             onClick={() => onEditar(comp)}
                                                         >
                                                             <Icon name="pencil" />
                                                         </button>
                                                     </Can>
 
-                                                    <Can roles={['admin']}>
+                                                    <Can roles={['Admin']}>
                                                         <button
                                                             className="action-btn toggle"
                                                             title="Eliminar"
@@ -197,6 +222,52 @@ export default function CompetenciasTable({
                 onConfirmar={confirmarEliminar}
                 onCerrar={() => setModalEliminar({ open: false, competencia: null })}
             />
+
+            {modalEquipo.open && (
+                <div className="dash-modal-overlay activo" onClick={() => setModalEquipo({ open: false, competencia: null, equipoId: '' })}>
+                    <div className="dash-modal dash-modal--sm" onClick={e => e.stopPropagation()}>
+                        <div className="dash-modal-header">
+                            <h3>Agregar equipo a competencia</h3>
+                            <button className="dash-modal-close" onClick={() => setModalEquipo({ open: false, competencia: null, equipoId: '' })}>
+                                <Icon name="x" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={confirmarAgregarEquipo}>
+                            <div className="dash-modal-body">
+                                <div className="form-group">
+                                    <label>Competencia</label>
+                                    <input value={modalEquipo.competencia?.nombre || ''} disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label>Equipo disponible</label>
+                                    <select
+                                        value={modalEquipo.equipoId}
+                                        onChange={e => setModalEquipo(prev => ({ ...prev, equipoId: e.target.value }))}
+                                        required
+                                    >
+                                        <option value="">Seleccionar equipo</option>
+                                        {equipos
+                                            .filter(e => !modalEquipo.competencia?.equipos?.includes(e.idEquipo))
+                                            .map(e => (
+                                                <option key={e.idEquipo} value={e.idEquipo}>{e.nombre}</option>
+                                            ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="dash-modal-footer">
+                                <button type="button" className="btn-modal-cancel" onClick={() => setModalEquipo({ open: false, competencia: null, equipoId: '' })}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="btn-modal-save">
+                                    <Icon name="user-plus" /> Agregar equipo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

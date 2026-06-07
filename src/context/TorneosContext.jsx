@@ -13,13 +13,18 @@ const MOCK_EQUIPOS = [
     { idEquipo: 2, nombre: 'Real Bañil', capitan: 'Martín López', integrantes: ['Martín López', 'Luis Díaz'], fechaCreacion: '2023-10-05' },
     { idEquipo: 3, nombre: 'Deportivo Tapita', capitan: 'Diego Maradona', integrantes: ['Diego Maradona', 'Leo Messi', 'Angel Di Maria'], fechaCreacion: '2023-10-10' },
     { idEquipo: 4, nombre: 'Sacachispas', capitan: 'Pepe M.', integrantes: ['Pepe M.', 'Manuel Neuer'], fechaCreacion: '2023-10-12' },
+    { idEquipo: 5, nombre: 'Barrio Norte FC', capitan: 'Tomas Herrera', integrantes: ['Tomas Herrera', 'Nicolas Ruiz', 'Ezequiel Luna'], fechaCreacion: '2024-01-08' },
+    { idEquipo: 6, nombre: 'La Banda del Sur', capitan: 'Santiago Molina', integrantes: ['Santiago Molina', 'Mateo Castro'], fechaCreacion: '2024-01-14' },
+    { idEquipo: 7, nombre: 'Fenix Azul', capitan: 'Federico Acosta', integrantes: ['Federico Acosta', 'Ivan Torres', 'Bruno Vera'], fechaCreacion: '2024-01-21' },
 ];
 
 const MOCK_COMPETENCIAS = [
     { id: 1, nombre: 'Liga Apertura 2024', descripcion: 'Liga principal de la temporada', tipo: 'liga', estado: 'en_curso', maxEquipos: 8, equipos: [1, 2, 3, 4], fechaInicio: '2024-01-10', fechaFin: '2024-06-10' },
     { id: 2, nombre: 'Copa de Verano', descripcion: 'Torneo corto eliminatorio', tipo: 'torneo', estado: 'inscripcion', maxEquipos: 16, equipos: [1, 2], fechaInicio: '2024-02-01', fechaFin: '2024-02-28' },
     { id: 3, nombre: 'Liga Nocturna', descripcion: 'Solo partidos después de las 20hs', tipo: 'liga', estado: 'inscripcion', maxEquipos: 10, equipos: [], fechaInicio: '2024-03-01', fechaFin: '2024-08-01' },
-    { id: 4, nombre: 'Torneo Relámpago Finalizado', descripcion: 'Jugado el fin de semana pasado', tipo: 'torneo', estado: 'finalizado', maxEquipos: 4, equipos: [1, 2, 3, 4], fechaInicio: '2023-12-01', fechaFin: '2023-12-02' }
+    { id: 4, nombre: 'Torneo Relámpago Finalizado', descripcion: 'Jugado el fin de semana pasado', tipo: 'torneo', estado: 'finalizado', maxEquipos: 4, equipos: [1, 2, 3, 4], fechaInicio: '2023-12-01', fechaFin: '2023-12-02' },
+    { id: 5, nombre: 'Copa Invierno 2024', descripcion: 'Eliminacion directa para probar creacion de torneo', tipo: 'torneo', estado: 'inscripcion', maxEquipos: 8, equipos: [3, 5, 6, 7], fechaInicio: '2024-07-05', fechaFin: '2024-07-30' },
+    { id: 6, nombre: 'Liga Promocional', descripcion: 'Liga abierta con cupos disponibles', tipo: 'liga', estado: 'inscripcion', maxEquipos: 12, equipos: [5, 6], fechaInicio: '2024-08-10', fechaFin: '2024-11-20' }
 ];
 
 const MOCK_FIXTURES = [
@@ -28,6 +33,13 @@ const MOCK_FIXTURES = [
         rondas: algoritmoBergerTodosContraTodos(1, [1, 2, 3, 4])
     }
 ];
+
+function mergePorIdGuardandoLocal(localItems, mockItems, idKey) {
+    if (!Array.isArray(localItems) || localItems.length === 0) return mockItems;
+    const idsLocales = new Set(localItems.map(item => item[idKey]));
+    const faltantes = mockItems.filter(item => !idsLocales.has(item[idKey]));
+    return [...localItems, ...faltantes];
+}
 
 export function TorneosProvider({ children }) {
     const [competencias, setCompetencias] = useState([]);
@@ -55,24 +67,26 @@ export function TorneosProvider({ children }) {
         setError(null);
         try {
             if (USE_MOCK) {
-                setTimeout(() => {
+                {
                     // Intentamos leer lo que ya esté guardado en el navegador
-                    const localComp = localStorage.getItem('competencias');
-                    const localEq = localStorage.getItem('equipos');
-                    const localFix = localStorage.getItem('fixtures');
+                    const localComp = JSON.parse(localStorage.getItem('competencias') || 'null');
+                    const localEq = JSON.parse(localStorage.getItem('equipos') || 'null');
+                    const localFix = JSON.parse(localStorage.getItem('fixtures') || 'null');
 
                     // Si es la primera vez que abre la app, sembramos el LocalStorage con tus MOCKs
-                    if (!localComp) localStorage.setItem('competencias', JSON.stringify(MOCK_COMPETENCIAS));
-                    if (!localEq) localStorage.setItem('equipos', JSON.stringify(MOCK_EQUIPOS));
-                    if (!localFix) localStorage.setItem('fixtures', JSON.stringify(MOCK_FIXTURES));
+                    const competenciasIniciales = mergePorIdGuardandoLocal(localComp, MOCK_COMPETENCIAS, 'id');
+                    const equiposIniciales = mergePorIdGuardandoLocal(localEq, MOCK_EQUIPOS, 'idEquipo');
+                    const fixturesIniciales = mergePorIdGuardandoLocal(localFix, MOCK_FIXTURES, 'competenciaID');
+
+                    localStorage.setItem('competencias', JSON.stringify(competenciasIniciales));
+                    localStorage.setItem('equipos', JSON.stringify(equiposIniciales));
+                    localStorage.setItem('fixtures', JSON.stringify(fixturesIniciales));
 
                     // Seteamos los estados usando lo que hay en LocalStorage o el fallback inicial
-                    setCompetencias(localComp ? JSON.parse(localComp) : MOCK_COMPETENCIAS);
-                    setEquipos(localEq ? JSON.parse(localEq) : MOCK_EQUIPOS);
-                    setFixtures(localFix ? JSON.parse(localFix) : MOCK_FIXTURES);
-                    
-                    setLoading(false);
-                }, 400);
+                    setCompetencias(competenciasIniciales);
+                    setEquipos(equiposIniciales);
+                    setFixtures(fixturesIniciales);
+                }
             } else {
                 const [resComp, resEq, resFix] = await Promise.all([
                     fetch(`${API_URL}/competencias`),
@@ -99,7 +113,7 @@ export function TorneosProvider({ children }) {
     const guardarCompetencia = async (comp) => {
         if (USE_MOCK) {
             if (comp.id) setCompetencias(prev => prev.map(c => c.id === comp.id ? { ...c, ...comp } : c));
-            else setCompetencias(prev => [...prev, { ...comp, id: Date.now(), equipos: [], fechaInicio: new Date().toISOString().split('T')[0] }]);
+            else setCompetencias(prev => [...prev, { ...comp, id: Date.now(), equipos: comp.equipos || [] }]);
             return;
         }
         
@@ -167,7 +181,14 @@ export function TorneosProvider({ children }) {
     const inscribirEquipo = async (competenciaId, equipoId) => {
         if (USE_MOCK) {
             setCompetencias(prev => prev.map(c => {
-                if (c.id === competenciaId && !c.equipos.includes(equipoId)) return { ...c, equipos: [...c.equipos, equipoId] };
+                if (c.id !== competenciaId) return c;
+                const equiposActuales = c.equipos || [];
+                const tieneCupo = equiposActuales.length < Number(c.maxEquipos || Infinity);
+                const tieneFixture = fixtures.some(f => f.competenciaID === competenciaId);
+                const abierta = c.estado !== 'finalizado' && !tieneFixture;
+                if (abierta && tieneCupo && !equiposActuales.includes(equipoId)) {
+                    return { ...c, equipos: [...equiposActuales, equipoId] };
+                }
                 return c;
             }));
             return;
