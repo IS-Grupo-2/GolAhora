@@ -21,6 +21,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
 
     const currentFixture = fixtures.find(f => f.competenciaID === parseInt(selectedCompId));
     const currentCompetencia = competencias.find(c => c.id === parseInt(selectedCompId));
+    const fixtureBloqueado = currentCompetencia?.estado === 'finalizado';
 
     const getEquipoNombre = (id) => {
         const eq = equipos.find(e => e.idEquipo === id);
@@ -28,6 +29,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
     };
 
     const abrirModalResultado = (partido) => {
+        if (fixtureBloqueado) return;
         setModalPartido(partido);
         if (partido.resultado) {
             setGolesLocal(partido.resultado.golesLocal); setGolesVisitante(partido.resultado.golesVisitante);
@@ -39,6 +41,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
 
     const handleSubmitResultado = (e) => {
         e.preventDefault();
+        if (fixtureBloqueado) return;
         onRegistrarResultado(parseInt(selectedCompId), modalPartido.idPartido, { golesLocal, golesVisitante, faltas, observaciones });
         setModalPartido(null);
     };
@@ -120,10 +123,15 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                                         </div>
 
                                         <Can roles={['Admin', 'Employee']}>
-                                            <button className="btn-primary-action" style={{ width: '100%', justifyContent: 'center' }} onClick={() => abrirModalResultado(partido)}>
+                                            <button className="btn-primary-action" style={{ width: '100%', justifyContent: 'center' }} onClick={() => abrirModalResultado(partido)} disabled={fixtureBloqueado}>
                                                 <Icon name="clipboard-check" /> {partido.estado === 'finalizado' ? 'Editar Resultado' : 'Cargar Resultado'}
                                             </button>
                                         </Can>
+                                        {fixtureBloqueado && (
+                                            <p style={{ margin: '10px 0 0', color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center' }}>
+                                                Competencia finalizada: fixture bloqueado.
+                                            </p>
+                                        )}
                                     </div>
                                 ))}
                             </div>

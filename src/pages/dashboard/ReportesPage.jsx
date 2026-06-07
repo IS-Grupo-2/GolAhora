@@ -11,8 +11,8 @@ export default function ReportesPageContent() {
     const [tabActiva, setTabActiva] = useState('ingresos');
     const { loading } = useReportes();
     const date = new Date();
-    const [fechaDesde, setFechaDesde] = useState(new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0]);
-    const [fechaHasta, setFechaHasta] = useState(new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0]);
+    const [fechaDesde, setFechaDesde] = useState(new Date(date.getFullYear(), 0, 1).toISOString().split('T')[0]);
+    const [fechaHasta, setFechaHasta] = useState(new Date(date.getFullYear(), 11, 31).toISOString().split('T')[0]);
 
      useEffect(() => {
         if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();

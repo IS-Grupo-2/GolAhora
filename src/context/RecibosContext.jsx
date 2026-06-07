@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useCobros } from './CobrosContext';
 
 const RecibosContext = createContext();
 
@@ -16,7 +17,38 @@ const MOCK_RECIBOS = [
     }
 ];
 
+function nroReciboDesdeCobro(idCobro) {
+    return `0001-${String(idCobro).padStart(8, '0')}`;
+}
+
+function crearReciboDesdeCobro(cobro) {
+    const fechaPago = cobro.fecha || new Date().toISOString().split('T')[0];
+    const metodoPago = cobro.metodo || cobro.cobro?.metodo || 'No informado';
+
+    return {
+        idRecibo: Number(`9${String(cobro.idCobro).slice(-10)}`),
+        nroRecibo: nroReciboDesdeCobro(cobro.idCobro),
+        cobro: {
+            idCobro: cobro.idCobro,
+            concepto: cobro.concepto,
+            montoFinal: cobro.montoFinal ?? cobro.monto ?? 0,
+        },
+        cliente: cobro.cliente,
+        pago: {
+            metodoPago,
+            nroTransaccion: cobro.nroTransaccion || `AUTO-${cobro.idCobro}`,
+            fechaPago,
+            estado: 'Completado',
+        },
+        fecha: fechaPago,
+        total: cobro.montoFinal ?? cobro.monto ?? 0,
+        detalles: `Recibo generado automaticamente por cobro pagado: ${cobro.concepto || 'Sin concepto'}.`,
+        estado: 'emitido',
+    };
+}
+
 export function RecibosProvider({ children }) {
+    const { items: cobros = [], loading: loadingCobros } = useCobros();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -39,6 +71,26 @@ export function RecibosProvider({ children }) {
     }, []);
 
     useEffect(() => { fetchItems(); }, [fetchItems]);
+
+    useEffect(() => {
+        if (loading || loadingCobros) return;
+
+        const cobrosPagados = cobros.filter(c => c.estado === 'pagado' && c.idCobro);
+        if (cobrosPagados.length === 0) return;
+
+        setItems(prev => {
+            const idsConRecibo = new Set(prev.map(r => r.cobro?.idCobro));
+            const recibosFaltantes = cobrosPagados
+                .filter(c => !idsConRecibo.has(c.idCobro))
+                .map(crearReciboDesdeCobro);
+
+            if (recibosFaltantes.length === 0) return prev;
+
+            const next = [...recibosFaltantes, ...prev];
+            localStorage.setItem('recibos_db', JSON.stringify(next));
+            return next;
+        });
+    }, [cobros, loading, loadingCobros]);
 
     const crearItem = async (nuevo) => {
         const item = { ...nuevo, idRecibo: Date.now(), nroRecibo: `0001-${String(Date.now()).slice(-8)}`, fecha: new Date().toISOString().split('T')[0] };

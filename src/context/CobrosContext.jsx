@@ -28,8 +28,28 @@ const MOCK_COBROS = [
         fecha: '2026-05-21',
         estado: 'pendiente',
         metodo: null,
+    },
+    {
+        idCobro: 1003,
+        idReserva: null,
+        cliente: { idUsuario: 3, nombre: 'Sofia', apellido: 'Lopez', dni: '38999111' },
+        concepto: 'Inscripcion clase: Futbol Femenino',
+        tipoCobro: 'Clase/Entrenamiento',
+        monto: 4500,
+        descuento: null,
+        montoFinal: 4500,
+        fecha: '2026-06-05',
+        estado: 'pagado',
+        metodo: 'Efectivo',
     }
 ];
+
+function mergeCobrosLocales(localItems) {
+    if (!Array.isArray(localItems) || localItems.length === 0) return MOCK_COBROS;
+    const idsLocales = new Set(localItems.map(item => item.idCobro));
+    const faltantes = MOCK_COBROS.filter(item => !idsLocales.has(item.idCobro));
+    return [...localItems, ...faltantes];
+}
 
 export function CobrosProvider({ children }) {
     const [items, setItems] = useState([]);
@@ -41,7 +61,9 @@ export function CobrosProvider({ children }) {
         try {
             const localData = localStorage.getItem('cobros_db');
             if (localData) {
-                setItems(JSON.parse(localData));
+                const next = mergeCobrosLocales(JSON.parse(localData));
+                localStorage.setItem('cobros_db', JSON.stringify(next));
+                setItems(next);
             } else {
                 localStorage.setItem('cobros_db', JSON.stringify(MOCK_COBROS));
                 setItems(MOCK_COBROS);

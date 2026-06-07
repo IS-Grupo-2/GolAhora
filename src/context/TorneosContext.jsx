@@ -214,7 +214,9 @@ export function TorneosProvider({ children }) {
                 : algoritmoEliminacionDirecta(competenciaId, comp.equipos);
 
             setFixtures(prev => [...prev.filter(f => f.competenciaID !== competenciaId), { competenciaID: competenciaId, rondas: nuevasRondas }]);
-            setCompetencias(prev => prev.map(c => c.id === competenciaId ? { ...c, estado: 'en_curso' } : c));
+            setCompetencias(prev => prev.map(c =>
+                c.id === competenciaId && c.estado !== 'finalizado' ? { ...c, estado: 'en_curso' } : c
+            ));
             return;
         }
 
@@ -227,11 +229,15 @@ export function TorneosProvider({ children }) {
             return [...filtrado, data];
         });
         
-        setCompetencias(prev => prev.map(c => c.id === competenciaId ? { ...c, estado: 'en_curso' } : c));
+        setCompetencias(prev => prev.map(c =>
+            c.id === competenciaId && c.estado !== 'finalizado' ? { ...c, estado: 'en_curso' } : c
+        ));
     };
 
     const registrarResultado = async (competenciaId, partidoId, resultado) => {
         if (USE_MOCK) {
+            const competencia = competencias.find(c => c.id === competenciaId);
+            if (competencia?.estado === 'finalizado') return;
             setFixtures(prev => prev.map(fix => {
                 if (fix.competenciaID === competenciaId) {
                     const rondasMod = fix.rondas.map(r => ({

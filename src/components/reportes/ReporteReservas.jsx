@@ -1,20 +1,51 @@
-// src/components/reportes/ReporteReservas.jsx
-export default function ReporteReservas({ periodoDesde, periodoHasta }) {
-    // MOCK DATA: Equivalente a calcularOcupacion(), reservasPorCancha y reservasPorEstado de UML
-    const totalReservas = 312;
-    
-    const reservasPorEstado = [
-        { estado: 'Completadas', cantidad: 250, porcentaje: 80, color: 'fill-green' },
-        { estado: 'Canceladas', cantidad: 42, porcentaje: 13.5, color: 'fill-red' },
-        { estado: 'Pendientes', cantidad: 20, porcentaje: 6.5, color: 'fill-yellow' }
-    ];
+import { useReservas } from '../../context/ReservasContext';
 
-    const reservasPorCancha = [
-        { cancha: 'Cancha 1 (F5 Cubierta)', cantidad: 120, porcentaje: 100, color: 'fill-purple' },
-        { cancha: 'Cancha 2 (F5 Descubierta)', cantidad: 95, porcentaje: 79, color: 'fill-purple' },
-        { cancha: 'Cancha 3 (F7 Sintético)', cantidad: 75, porcentaje: 62, color: 'fill-purple' },
-        { cancha: 'Cancha 4 (F11 Pasto)', cantidad: 22, porcentaje: 18, color: 'fill-purple' }
-    ];
+function enPeriodo(fecha, desde, hasta) {
+    if (!fecha) return false;
+    return fecha >= desde && fecha <= hasta;
+}
+
+function porcentaje(valor, total) {
+    return total ? Math.round((valor / total) * 100) : 0;
+}
+
+function colorEstado(estado) {
+    if (estado === 'confirmada') return 'fill-green';
+    if (estado === 'cancelada') return 'fill-red';
+    return 'fill-yellow';
+}
+
+export default function ReporteReservas({ periodoDesde, periodoHasta }) {
+    const { reservas = [] } = useReservas();
+    const reservasPeriodo = reservas.filter(r => enPeriodo(r.fechaUso, periodoDesde, periodoHasta));
+    const totalReservas = reservasPeriodo.length;
+
+    const porEstado = reservasPeriodo.reduce((acc, r) => {
+        const estado = r.estado || 'pendiente';
+        acc[estado] = (acc[estado] || 0) + 1;
+        return acc;
+    }, {});
+
+    const reservasPorEstado = Object.entries(porEstado).map(([estado, cantidad]) => ({
+        estado: estado.charAt(0).toUpperCase() + estado.slice(1),
+        cantidad,
+        porcentaje: porcentaje(cantidad, totalReservas),
+        color: colorEstado(estado),
+    }));
+
+    const porCancha = reservasPeriodo.reduce((acc, r) => {
+        const cancha = r.cancha?.nombre || `Cancha ${r.cancha?.numero || '-'}`;
+        acc[cancha] = (acc[cancha] || 0) + 1;
+        return acc;
+    }, {});
+    const maxCancha = Math.max(...Object.values(porCancha), 0);
+
+    const reservasPorCancha = Object.entries(porCancha).map(([cancha, cantidad]) => ({
+        cancha,
+        cantidad,
+        porcentaje: porcentaje(cantidad, maxCancha),
+        color: 'fill-purple',
+    }));
 
     return (
         <div className="bento-grid">
@@ -24,7 +55,9 @@ export default function ReporteReservas({ periodoDesde, periodoHasta }) {
                     <span className="kpi-value" style={{ fontSize: '1.5rem' }}>{totalReservas} <small style={{fontSize:'0.8rem', color:'var(--text-light)'}}>totales</small></span>
                 </div>
                 <div className="css-chart">
-                    {reservasPorEstado.map((item, idx) => (
+                    {reservasPorEstado.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)' }}>No hay reservas en el periodo seleccionado.</p>
+                    ) : reservasPorEstado.map((item, idx) => (
                         <div className="chart-row" key={idx}>
                             <div className="chart-label-group">
                                 <span>{item.estado}</span>
@@ -41,7 +74,9 @@ export default function ReporteReservas({ periodoDesde, periodoHasta }) {
             <div className="bento-card chart-half">
                 <h3 className="kpi-title" style={{ color: 'var(--text)' }}>Uso por Cancha</h3>
                 <div className="css-chart">
-                    {reservasPorCancha.map((item, idx) => (
+                    {reservasPorCancha.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)' }}>No hay uso de canchas en el periodo seleccionado.</p>
+                    ) : reservasPorCancha.map((item, idx) => (
                         <div className="chart-row" key={idx}>
                             <div className="chart-label-group">
                                 <span>{item.cancha}</span>

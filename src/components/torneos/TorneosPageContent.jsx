@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useTorneos } from '../../context/TorneosContext';
 import { useClientes } from '../../context/ClientesContext';
-import { useProfesores } from '../../context/ProfesoresContext';
-import { useEmpleados } from '../../context/EmpleadosContext';
 import CompetenciasTable from '../../components/torneos/CompetenciasTable';
 import CompetenciaModal from '../../components/torneos/CompetenciaModal';
 import CompetenciaModalDetalle from '../../components/torneos/CompetenciaModalDetalle';
@@ -21,8 +19,6 @@ export default function TorneosPageContent() {
         generarFixture, registrarResultado 
     } = useTorneos();
     const { clientes } = useClientes();
-    const { profesores } = useProfesores();
-    const { empleados } = useEmpleados();
 
     // Estado para controlar la pestaña activa: 'competencias', 'equipos' o 'fixtures'
     const [activeTab, setActiveTab] = useState('competencias');
@@ -38,7 +34,7 @@ export default function TorneosPageContent() {
     const [equipoAEditar, setEquipoAEditar] = useState(null);
     const [modalDetalleEquipoOpen, setModalDetalleEquipoOpen] = useState(false);
     const [equipoDetalle, setEquipoDetalle] = useState(null);
-    const usuariosSistema = [...clientes, ...profesores, ...empleados];
+    const usuariosSistema = clientes;
 
     // Handlers para Competencias
     const handleNuevoCompetenciaClick = () => {

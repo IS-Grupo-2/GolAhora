@@ -31,7 +31,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
             setForm({ ...FORM_VACIO, fecha: new Date().toISOString().split('T')[0] });
         } else if (cobro) {
             setForm({
-                clienteId:   cobro.cliente.id || '',
+                clienteId:   cobro.cliente.idUsuario || cobro.cliente.id || '',
                 concepto:    cobro.concepto || '',
                 tipoCobro:   cobro.tipoCobro || '',
                 monto:       cobro.monto || '',
@@ -84,7 +84,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
     function handleGuardar() {
         if (!validar()) return;
 
-        const cliente = clientes.find(c => c.id === Number(form.clienteId));
+        const cliente = clientes.find(c => (c.idUsuario || c.id) === Number(form.clienteId));
         const descuento = descuentos.find(d => d.id === Number(form.descuentoId)) || null;
 
         const datos = {
@@ -116,7 +116,7 @@ export default function CobroModal({ open, modo, cobro, clientes, descuentos, on
                         <select value={form.clienteId} onChange={e => set('clienteId', e.target.value)} className={errores.clienteId ? 'input-error-field' : ''}>
                             <option value="">Buscar o seleccionar cliente...</option>
                             {clientes.map(c => (
-                                <option key={c.id} value={c.id}>{c.nombre} {c.apellido} - DNI: {c.dni}</option>
+                                <option key={c.idUsuario || c.id} value={c.idUsuario || c.id}>{c.nombre} {c.apellido} - DNI: {c.dni}</option>
                             ))}
                         </select>
                     </Field>
