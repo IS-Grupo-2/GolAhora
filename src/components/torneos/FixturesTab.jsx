@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import Can from '../Can';
+import { calcularTablaLiga } from '../../utils/fixtures';
 
 function Icon({ name }) {
     return <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${name}"></i>` }} />;
 }
 
-export default function FixturesTab({ competencias, fixtures, equipos, onGenerarFixture, onRegistrarResultado }) {
+export default function FixturesTab({ competencias, fixtures, equipos, onGenerarFixture, onRegistrarResultado, onConfirmarDefinitivo, onSimularFixture }) {
     const [selectedCompId, setSelectedCompId] = useState('');
     const [modalPartido, setModalPartido] = useState(null); 
     const [golesLocal, setGolesLocal] = useState(0);
@@ -22,6 +23,10 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
     const currentFixture = fixtures.find(f => f.competenciaID === parseInt(selectedCompId));
     const currentCompetencia = competencias.find(c => c.id === parseInt(selectedCompId));
     const fixtureBloqueado = currentCompetencia?.estado === 'finalizado';
+    const esLiga = currentCompetencia?.tipo === 'liga';
+    const tablaLiga = esLiga && currentFixture
+        ? calcularTablaLiga(currentFixture.rondas, currentCompetencia?.equipos || [])
+        : [];
 
     const getEquipoNombre = (id) => {
         const eq = equipos.find(e => e.idEquipo === id);
@@ -30,6 +35,8 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
 
     const abrirModalResultado = (partido) => {
         if (fixtureBloqueado) return;
+        if (!partido.equipoLocalId || !partido.equipoVisitanteId) return;
+        if (partido.definitivo) return;
         setModalPartido(partido);
         if (partido.resultado) {
             setGolesLocal(partido.resultado.golesLocal); setGolesVisitante(partido.resultado.golesVisitante);
@@ -86,9 +93,21 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
             ) : (
                 <>
                     <div className="panel-card" style={{ padding: '20px' }}>
-                        <h4 className="ronda-header" style={{ borderBottom: 'none', marginBottom: '1rem' }}>
-                            <Icon name="target" /> Progreso del Fixture
-                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                            <h4 className="ronda-header" style={{ borderBottom: 'none', marginBottom: '1rem' }}>
+                                <Icon name="target" /> Progreso del Fixture
+                            </h4>
+                            <Can roles={['Admin', 'Employee']}>
+                                <button
+                                    className="btn-primary-action"
+                                    type="button"
+                                    disabled={fixtureBloqueado}
+                                    onClick={() => onSimularFixture?.(parseInt(selectedCompId))}
+                                >
+                                    <Icon name="wand-2" /> {esLiga ? 'Simular fechas' : 'Simular llaves'}
+                                </button>
+                            </Can>
+                        </div>
                         <div className="progreso-container">
                             {currentFixture.rondas.map((ronda) => {
                                 const todosFinalizados = ronda.partidos.every(p => p.estado === 'finalizado');
@@ -106,10 +125,55 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                         </div>
                     </div>
 
+                    {esLiga && (
+                        <div className="panel-card tabla-panel" style={{ padding: '20px' }}>
+                            <h3 className="ronda-header">
+                                <Icon name="table-2" /> Tabla de Posiciones
+                            </h3>
+                            <div className="table-wrapper">
+                                <table className="crud-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Equipo</th>
+                                            <th>Pts</th>
+                                            <th>PJ</th>
+                                            <th>PG</th>
+                                            <th>PE</th>
+                                            <th>PP</th>
+                                            <th>GF</th>
+                                            <th>GC</th>
+                                            <th>DG</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {tablaLiga.map((fila, index) => (
+                                            <tr key={fila.idEquipo}>
+                                                <td>{index + 1}</td>
+                                                <td className="bold-text">{getEquipoNombre(fila.idEquipo)}</td>
+                                                <td><strong>{fila.pts}</strong></td>
+                                                <td>{fila.pj}</td>
+                                                <td>{fila.pg}</td>
+                                                <td>{fila.pe}</td>
+                                                <td>{fila.pp}</td>
+                                                <td>{fila.gf}</td>
+                                                <td>{fila.gc}</td>
+                                                <td>{fila.dg}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
                     {currentFixture.rondas.map(ronda => (
                         <div key={ronda.id} className="panel-card" style={{ padding: '20px' }}>
                             <h3 className="ronda-header">
-                                <Icon name="zap" /> {ronda.nombre}
+                                <Icon name={esLiga ? 'calendar-days' : 'git-branch'} /> {ronda.nombre}
+                                {ronda.fecha && (
+                                    <span className="badge info" style={{ marginLeft: '10px' }}>{ronda.fecha}</span>
+                                )}
                             </h3>
                             <div className="grid-cards">
                                 {ronda.partidos.map(partido => (
@@ -123,10 +187,31 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                                         </div>
 
                                         <Can roles={['Admin', 'Employee']}>
-                                            <button className="btn-primary-action" style={{ width: '100%', justifyContent: 'center' }} onClick={() => abrirModalResultado(partido)} disabled={fixtureBloqueado}>
-                                                <Icon name="clipboard-check" /> {partido.estado === 'finalizado' ? 'Editar Resultado' : 'Cargar Resultado'}
+                                            <button
+                                                className="btn-primary-action"
+                                                style={{ width: '100%', justifyContent: 'center' }}
+                                                onClick={() => abrirModalResultado(partido)}
+                                                disabled={fixtureBloqueado || partido.definitivo || !partido.equipoLocalId || !partido.equipoVisitanteId}
+                                            >
+                                                <Icon name="clipboard-check" /> {partido.definitivo ? 'Resultado definitivo' : partido.estado === 'finalizado' ? 'Editar Resultado' : 'Cargar Resultado'}
                                             </button>
+                                            {partido.estado === 'finalizado' && !partido.definitivo && (
+                                                <button
+                                                    className="btn-primary-action"
+                                                    type="button"
+                                                    style={{ width: '100%', justifyContent: 'center', marginTop: '8px', background: '#16a34a' }}
+                                                    disabled={fixtureBloqueado}
+                                                    onClick={() => onConfirmarDefinitivo?.(parseInt(selectedCompId), partido.idPartido)}
+                                                >
+                                                    <Icon name="lock" /> Dejar definitivo
+                                                </button>
+                                            )}
                                         </Can>
+                                        {partido.definitivo && (
+                                            <p style={{ margin: '10px 0 0', color: '#16a34a', fontSize: '0.82rem', textAlign: 'center', fontWeight: 700 }}>
+                                                Resultado definitivo.
+                                            </p>
+                                        )}
                                         {fixtureBloqueado && (
                                             <p style={{ margin: '10px 0 0', color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center' }}>
                                                 Competencia finalizada: fixture bloqueado.

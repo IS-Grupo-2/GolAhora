@@ -17,7 +17,7 @@ export default function TorneosPageContent() {
         competencias, equipos, fixtures, loading, error, 
         guardarCompetencia, eliminarCompetencia, 
         guardarEquipo, eliminarEquipo, inscribirEquipo, 
-        generarFixture, registrarResultado 
+        generarFixture, registrarResultado, confirmarResultadoDefinitivo, simularFixture
     } = useTorneos();
     const { clientes } = useClientes();
 
@@ -132,6 +132,8 @@ export default function TorneosPageContent() {
                     equipos={equipos}
                     onGenerarFixture={generarFixture} 
                     onRegistrarResultado={registrarResultado}
+                    onConfirmarDefinitivo={confirmarResultadoDefinitivo}
+                    onSimularFixture={simularFixture}
                 />
             )}
 

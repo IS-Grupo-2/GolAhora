@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { algoritmoBergerTodosContraTodos, algoritmoEliminacionDirecta } from '../utils/fixtures';
+import {
+    algoritmoBergerTodosContraTodos,
+    algoritmoEliminacionDirecta,
+    crearResultadoSimulado,
+    ganadorPartido,
+} from '../utils/fixtures';
 
 const TorneosContext = createContext();
 
@@ -30,7 +35,7 @@ const MOCK_COMPETENCIAS = [
 const MOCK_FIXTURES = [
     {
         competenciaID: 1,
-        rondas: algoritmoBergerTodosContraTodos(1, [1, 2, 3, 4])
+        rondas: algoritmoBergerTodosContraTodos(1, [1, 2, 3, 4], '2024-01-10')
     }
 ];
 
@@ -46,6 +51,39 @@ function normalizarEquipo(equipo) {
         ...equipo,
         integrantes: integrantes.slice(0, MAX_INTEGRANTES_EQUIPO),
     };
+}
+
+function avanzarLlavesEliminacion(rondas) {
+    const next = rondas.map(ronda => ({
+        ...ronda,
+        partidos: ronda.partidos.map(partido => ({ ...partido }))
+    }));
+
+    for (let rondaIndex = 0; rondaIndex < next.length - 1; rondaIndex++) {
+        const ronda = next[rondaIndex];
+        const siguiente = next[rondaIndex + 1];
+
+        ronda.partidos.forEach((partido, partidoIndex) => {
+            if (!partido.definitivo) return;
+            const ganador = ganadorPartido(partido);
+            if (!ganador) return;
+
+            const partidoDestino = siguiente.partidos[Math.floor(partidoIndex / 2)];
+            if (!partidoDestino) return;
+
+            if (partidoIndex % 2 === 0) {
+                partidoDestino.equipoLocalId = ganador;
+            } else {
+                partidoDestino.equipoVisitanteId = ganador;
+            }
+
+            if (partidoDestino.equipoLocalId && partidoDestino.equipoVisitanteId && partidoDestino.estado === 'pendiente') {
+                partidoDestino.estado = 'programado';
+            }
+        });
+    }
+
+    return next;
 }
 
 function mergePorIdGuardandoLocal(localItems, mockItems, idKey) {
@@ -225,8 +263,8 @@ export function TorneosProvider({ children }) {
             if (!comp || comp.equipos.length < 2) return;
 
             let nuevasRondas = comp.tipo === 'liga' 
-                ? algoritmoBergerTodosContraTodos(competenciaId, comp.equipos) 
-                : algoritmoEliminacionDirecta(competenciaId, comp.equipos);
+                ? algoritmoBergerTodosContraTodos(competenciaId, comp.equipos, comp.fechaInicio) 
+                : algoritmoEliminacionDirecta(competenciaId, comp.equipos, comp.fechaInicio);
 
             setFixtures(prev => [...prev.filter(f => f.competenciaID !== competenciaId), { competenciaID: competenciaId, rondas: nuevasRondas }]);
             setCompetencias(prev => prev.map(c =>
@@ -255,9 +293,13 @@ export function TorneosProvider({ children }) {
             if (competencia?.estado === 'finalizado') return;
             setFixtures(prev => prev.map(fix => {
                 if (fix.competenciaID === competenciaId) {
-                    const rondasMod = fix.rondas.map(r => ({
-                        ...r, partidos: r.partidos.map(p => p.idPartido === partidoId ? { ...p, resultado, estado: 'finalizado' } : p)
+                    let rondasMod = fix.rondas.map(r => ({
+                        ...r,
+                        partidos: r.partidos.map(p =>
+                            p.idPartido === partidoId ? { ...p, resultado, estado: 'finalizado', definitivo: false } : p
+                        )
                     }));
+
                     return { ...fix, rondas: rondasMod };
                 }
                 return fix;
@@ -275,12 +317,96 @@ export function TorneosProvider({ children }) {
         await fetchDatos();
     };
 
+    const confirmarResultadoDefinitivo = async (competenciaId, partidoId) => {
+        if (USE_MOCK) {
+            const competencia = competencias.find(c => c.id === competenciaId);
+            if (competencia?.estado === 'finalizado') return;
+
+            setFixtures(prev => prev.map(fix => {
+                if (fix.competenciaID !== competenciaId) return fix;
+
+                let rondasMod = fix.rondas.map(ronda => ({
+                    ...ronda,
+                    partidos: ronda.partidos.map(partido =>
+                        partido.idPartido === partidoId && partido.estado === 'finalizado'
+                            ? { ...partido, definitivo: true }
+                            : partido
+                    )
+                }));
+
+                if (competencia?.tipo === 'torneo') {
+                    rondasMod = avanzarLlavesEliminacion(rondasMod);
+                }
+
+                return { ...fix, rondas: rondasMod };
+            }));
+            return;
+        }
+    };
+
+    const simularFixture = async (competenciaId) => {
+        if (USE_MOCK) {
+            const competencia = competencias.find(c => c.id === competenciaId);
+            if (!competencia || competencia.estado === 'finalizado') return;
+
+            setFixtures(prev => prev.map(fix => {
+                if (fix.competenciaID !== competenciaId) return fix;
+
+                let rondasMod = fix.rondas;
+
+                if (competencia.tipo === 'liga') {
+                    rondasMod = rondasMod.map(ronda => ({
+                        ...ronda,
+                        partidos: ronda.partidos.map((partido, index) => ({
+                            ...partido,
+                            estado: 'finalizado',
+                            definitivo: true,
+                            resultado: partido.resultado || crearResultadoSimulado(ronda.numero * 10 + index),
+                        }))
+                    }));
+                } else {
+                    rondasMod = rondasMod.map((ronda, rondaIndex) => ({
+                        ...ronda,
+                        partidos: ronda.partidos.map((partido, index) => {
+                            if (!partido.equipoLocalId || !partido.equipoVisitanteId) return partido;
+                            return {
+                                ...partido,
+                                estado: 'finalizado',
+                                definitivo: true,
+                                resultado: partido.resultado || crearResultadoSimulado((rondaIndex + 1) * 10 + index),
+                            };
+                        })
+                    }));
+
+                    for (let i = 0; i < rondasMod.length; i++) {
+                        rondasMod = avanzarLlavesEliminacion(rondasMod);
+                        rondasMod = rondasMod.map((ronda, rondaIndex) => ({
+                            ...ronda,
+                            partidos: ronda.partidos.map((partido, index) => {
+                                if (partido.estado === 'finalizado' || !partido.equipoLocalId || !partido.equipoVisitanteId) return partido;
+                                return {
+                                    ...partido,
+                                    estado: 'finalizado',
+                                    definitivo: true,
+                                    resultado: crearResultadoSimulado((rondaIndex + 1) * 100 + index),
+                                };
+                            })
+                        }));
+                    }
+                }
+
+                return { ...fix, rondas: rondasMod };
+            }));
+            return;
+        }
+    };
+
     return (
         <TorneosContext.Provider value={{
             competencias, equipos, fixtures, loading, error,
             guardarCompetencia, eliminarCompetencia,
             guardarEquipo, eliminarEquipo, inscribirEquipo,
-            generarFixture, registrarResultado
+            generarFixture, registrarResultado, confirmarResultadoDefinitivo, simularFixture
         }}>
             {children}
         </TorneosContext.Provider>
