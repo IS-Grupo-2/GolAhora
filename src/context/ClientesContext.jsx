@@ -1,91 +1,93 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const ClientesContext = createContext();
+const CLIENTES_SEED_VERSION = 'presentacion-mocks-2026-06-08';
 
 const MOCK_CLIENTES = [
     {
-        idUsuario: 1,
-        nombre: 'Laura',
-        apellido: 'García',
+        idUsuario: 101,
+        id: 101,
+        nombre: 'Lucia',
+        apellido: 'Martinez',
         fechaNacimiento: '1992-03-14',
         dni: '33788901',
-        email: 'laura.garcia@example.com',
+        email: 'lucia.martinez@example.com',
+        password: '123456',
         telefono: '+54 9 11 5678 1234',
-        username: 'lauragarcia',
+        username: 'lucia.martinez',
         activo: true,
+        estado: 'activo',
         fechaRegistro: '2024-01-10',
         rol: 'cliente',
         nroSocio: 'C-001',
     },
     {
-        idUsuario: 2,
-        nombre: 'Martín',
-        apellido: 'Pérez',
+        idUsuario: 102,
+        id: 102,
+        nombre: 'Tomas',
+        apellido: 'Herrera',
         fechaNacimiento: '1988-07-22',
         dni: '28455903',
-        email: 'martin.perez@example.com',
+        email: 'tomas.herrera@example.com',
+        password: '123456',
         telefono: '+54 9 11 5522 3344',
-        username: 'martinp',
+        username: 'tomas.herrera',
         activo: true,
+        estado: 'activo',
         fechaRegistro: '2024-02-02',
         rol: 'cliente',
         nroSocio: 'C-002',
     },
     {
-        idUsuario: 3,
-        nombre: 'Sofía',
-        apellido: 'López',
+        idUsuario: 103,
+        id: 103,
+        nombre: 'Camila',
+        apellido: 'Torres',
         fechaNacimiento: '1995-11-05',
         dni: '38999111',
-        email: 'sofia.lopez@example.com',
+        email: 'camila.torres@example.com',
+        password: '123456',
         telefono: '+54 9 11 6123 4567',
-        username: 'sofial',
+        username: 'camila.torres',
         activo: true,
+        estado: 'activo',
         fechaRegistro: '2024-03-15',
         rol: 'cliente',
         nroSocio: 'C-003',
     },
     {
-        idUsuario: 4,
+        idUsuario: 104,
+        id: 104,
         nombre: 'Diego',
         apellido: 'Vega',
         fechaNacimiento: '1990-12-06',
         dni: '29500782',
         email: 'diego.vega@example.com',
+        password: '123456',
         telefono: '+54 9 11 5338 4477',
-        username: 'dvega',
+        username: 'diego.vega',
         activo: true,
+        estado: 'activo',
         fechaRegistro: '2024-04-05',
         rol: 'cliente',
         nroSocio: 'C-004',
     },
     {
-        idUsuario: 5,
-        nombre: 'Mariana',
-        apellido: 'Santos',
+        idUsuario: 105,
+        id: 105,
+        nombre: 'Valentina',
+        apellido: 'Garcia',
         fechaNacimiento: '2001-09-20',
         dni: '42211856',
-        email: 'mariana.santos@example.com',
+        email: 'valentina.garcia@example.com',
+        password: '123456',
         telefono: '+54 9 11 5999 0011',
-        username: 'marianas',
-        activo: false,
+        username: 'valentina.garcia',
+        activo: true,
+        estado: 'activo',
         fechaRegistro: '2024-04-30',
         rol: 'cliente',
         nroSocio: 'C-005',
-    },
-    {
-        idUsuario: 6,
-        nombre: 'Facundo',
-        apellido: 'Ortiz',
-        fechaNacimiento: '1998-06-12',
-        dni: '37890012',
-        email: 'facundo.ortiz@example.com',
-        telefono: '+54 9 11 5777 3344',
-        username: 'facundoo',
-        activo: true,
-        fechaRegistro: '2024-05-12',
-        rol: 'cliente',
-        nroSocio: 'C-006',
     },
 ];
 
@@ -98,10 +100,12 @@ export function ClientesProvider({ children }) {
         setLoading(true);
         try {
             const localData = localStorage.getItem('clientes_db');
-            if (localData) {
+            const seedVersion = localStorage.getItem('clientes_seed_version');
+            if (localData && seedVersion === CLIENTES_SEED_VERSION) {
                 setClientes(JSON.parse(localData));
             } else {
                 localStorage.setItem('clientes_db', JSON.stringify(MOCK_CLIENTES));
+                localStorage.setItem('clientes_seed_version', CLIENTES_SEED_VERSION);
                 setClientes(MOCK_CLIENTES);
             }
         } catch {

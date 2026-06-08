@@ -1,51 +1,26 @@
 // src/context/EmpleadosContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+const EMPLEADOS_SEED_VERSION = 'presentacion-mocks-2026-06-08';
+
 const MOCK_EMPLEADOS = [
     {
-        idUsuario: 30,
-        nombre: 'Valeria',
-        apellido: 'Cardozo',
-        email: 'valeria.cardozo@example.com',
+        idUsuario: 301,
+        id: 301,
+        nombre: 'Carla',
+        apellido: 'Gomez',
+        email: 'carla.gomez@example.com',
+        password: '123456',
         telefono: '+54 9 11 5775 8899',
-        userName: 'valeriac',
+        username: 'carla.gomez',
+        userName: 'carla.gomez',
         activo: true,
-        fechaRegistro: '2023-09-05',
+        estado: 'activo',
+        fechaRegistro: '2024-05-10',
         rol: 'empleado',
-        legajo: 'E-201',
-        cargo: 'Recepcionista',
-        turno: 'Mañana',
-        sector: 'Administración',
-    },
-    {
-        idUsuario: 31,
-        nombre: 'Federico',
-        apellido: 'Méndez',
-        email: 'federico.mendez@example.com',
-        telefono: '+54 9 11 5881 3344',
-        userName: 'federicom',
-        activo: true,
-        fechaRegistro: '2023-10-21',
-        rol: 'empleado',
-        legajo: 'E-202',
-        cargo: 'Mantenimiento',
-        turno: 'Tarde',
-        sector: 'Operaciones',
-    },
-    {
-        idUsuario: 32,
-        nombre: 'Natalia',
-        apellido: 'Rosales',
-        email: 'natalia.rosales@example.com',
-        telefono: '+54 9 11 5994 7766',
-        userName: 'nataliar',
-        activo: false,
-        fechaRegistro: '2024-01-08',
-        rol: 'empleado',
-        legajo: 'E-203',
-        cargo: 'Coordinador',
-        turno: 'Noche',
-        sector: 'Eventos',
+        legajo: 'E-301',
+        turno: 'Manana',
+        sector: 'Recepcion',
     },
 ];
 
@@ -65,10 +40,12 @@ export function EmpleadosProvider({ children }) {
         try {
             if (USE_MOCK) {
                 const localData = localStorage.getItem('empleados_db');
-                if (localData) {
+                const seedVersion = localStorage.getItem('empleados_seed_version');
+                if (localData && seedVersion === EMPLEADOS_SEED_VERSION) {
                     setEmpleados(JSON.parse(localData));
                 } else {
                     localStorage.setItem('empleados_db', JSON.stringify(MOCK_EMPLEADOS));
+                    localStorage.setItem('empleados_seed_version', EMPLEADOS_SEED_VERSION);
                     setEmpleados(MOCK_EMPLEADOS);
                 }
             } else {
@@ -104,16 +81,16 @@ export function EmpleadosProvider({ children }) {
                 return next;
             });
             return empleadoConId;
-        } else {
-            const response = await fetch(`${API_URL}/empleados`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nuevoEmpleado),
-            });
-            if (!response.ok) throw new Error('Error al crear el empleado');
-            const empleadoCreado = await response.json();
-            setEmpleados(prev => [...prev, empleadoCreado]);
         }
+
+        const response = await fetch(`${API_URL}/empleados`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoEmpleado),
+        });
+        if (!response.ok) throw new Error('Error al crear el empleado');
+        const empleadoCreado = await response.json();
+        setEmpleados(prev => [...prev, empleadoCreado]);
     };
 
     const modificarEmpleado = async (empleadoModificado) => {

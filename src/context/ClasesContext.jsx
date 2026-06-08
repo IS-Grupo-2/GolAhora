@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import { MOCK_PROFESORES } from '../context/ProfesoresContext';
 
 const USE_MOCK = true;
+const CLASES_SEED_VERSION = 'presentacion-mocks-2026-06-08';
 
 export const PROFESORES_DISPONIBLES = MOCK_PROFESORES.slice(0, 4).map((p, idx) => ({
     id: idx + 1,
@@ -14,87 +15,64 @@ export const PROFESORES_DISPONIBLES = MOCK_PROFESORES.slice(0, 4).map((p, idx) =
 }));
 
 export const ALUMNOS_DISPONIBLES = [
-    { id: 101, nombre: 'Juan',       apellido: 'Pérez',     email: 'juan@mail.com'          },
-    { id: 102, nombre: 'Martín',     apellido: 'López',     email: 'martin.l@mail.com'      },
-    { id: 103, nombre: 'Camila',     apellido: 'Torres',    email: 'cami.torres@gmail.com'  },
-    { id: 104, nombre: 'Lucas',      apellido: 'Díaz',      email: 'lucas.diaz@mail.com'    },
-    { id: 105, nombre: 'Valentina',  apellido: 'García',    email: 'vale.garcia@mail.com'   },
-    { id: 106, nombre: 'Rodrigo',    apellido: 'Fernández', email: 'rodri.f@mail.com'       },
-    { id: 107, nombre: 'Sofía',      apellido: 'Martínez',  email: 'sofi.martinez@mail.com' },
-    { id: 108, nombre: 'Nicolás',    apellido: 'Romero',    email: 'nico.romero@mail.com'   },
+    { id: 101, nombre: 'Lucia', apellido: 'Martinez', email: 'lucia.martinez@example.com' },
+    { id: 102, nombre: 'Tomas', apellido: 'Herrera', email: 'tomas.herrera@example.com' },
+    { id: 103, nombre: 'Camila', apellido: 'Torres', email: 'camila.torres@example.com' },
+    { id: 104, nombre: 'Diego', apellido: 'Vega', email: 'diego.vega@example.com' },
+    { id: 105, nombre: 'Valentina', apellido: 'Garcia', email: 'valentina.garcia@example.com' },
 ];
 
 const MOCK_DATA = [
     {
         idClase: 1,
-        nombre: 'Escuelita Sub-12',
-        descripcion: 'Entrenamiento táctico y técnico para pequeños de hasta 12 años.',
-        tipoClase: 'Escuelita',
-        profesor: PROFESORES_DISPONIBLES[0],
-        cancha: 'Cancha 1 (F5)',
-        fecha: '2026-06-10',
-        horario: '17:00',
-        duracionMin: 90,
-        maxAlumnos: 20,
-        precio: 3000,
-        estado: 'programada',
-        alumnos: [
-            { id: 101, nombre: 'Juan Pérez',    presente: false },
-            { id: 102, nombre: 'Martín López',  presente: false },
-            { id: 103, nombre: 'Camila Torres', presente: false },
-        ],
-    },
-    {
-        idClase: 2,
-        nombre: 'Entrenamiento Arqueros',
-        descripcion: 'Trabajo de reflejos, posicionamiento y saque.',
-        tipoClase: 'Particular',
+        nombre: 'Entrenamiento Intensivo',
+        descripcion: 'Clase de entrenamiento fisico y tecnico para clientes inscriptos.',
+        tipoClase: 'Entrenamiento',
         profesor: null,
-        cancha: 'Cancha 2 (F7)',
-        fecha: '2026-06-11',
-        horario: '19:00',
+        cancha: 'Cancha Futbol 5',
+        fecha: '2026-06-15',
+        horario: '18:00',
         duracionMin: 60,
-        maxAlumnos: 5,
-        precio: 8000,
+        maxAlumnos: 10,
+        precio: 5000,
         estado: 'programada',
         alumnos: [],
     },
     {
-        idClase: 3,
-        nombre: 'Fútbol Femenino',
-        descripcion: 'Clase grupal mixta con foco en técnica individual.',
-        tipoClase: 'Grupal',
-        profesor: PROFESORES_DISPONIBLES[1],
-        cancha: 'Cancha 1 (F5)',
-        fecha: '2026-06-12',
-        horario: '10:00',
-        duracionMin: 75,
-        maxAlumnos: 12,
-        precio: 4500,
+        idClase: 2,
+        nombre: 'Jugadas Preparadas',
+        descripcion: 'Clase orientada a practicar jugadas de pelota parada y transiciones.',
+        tipoClase: 'Jugadas',
+        profesor: null,
+        cancha: 'Cancha Futbol 7',
+        fecha: '2026-06-16',
+        horario: '19:00',
+        duracionMin: 90,
+        maxAlumnos: 14,
+        precio: 6500,
         estado: 'programada',
-        alumnos: [
-            { id: 105, nombre: 'Valentina García',  presente: false },
-            { id: 107, nombre: 'Sofía Martínez',    presente: false },
-        ],
+        alumnos: [],
     }
 ];
 
 const ClasesContext = createContext(null);
 
 export function ClasesProvider({ children }) {
-    const [clases,  setClases]  = useState([]);
+    const [clases, setClases] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error,   setError]   = useState(null);
+    const [error, setError] = useState(null);
 
     const fetchClases = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             const localData = localStorage.getItem('clases_db');
-            if (localData) {
+            const seedVersion = localStorage.getItem('clases_seed_version');
+            if (localData && seedVersion === CLASES_SEED_VERSION) {
                 setClases(JSON.parse(localData));
             } else {
                 localStorage.setItem('clases_db', JSON.stringify(MOCK_DATA));
+                localStorage.setItem('clases_seed_version', CLASES_SEED_VERSION);
                 setClases(MOCK_DATA);
             }
         } catch (err) {
@@ -164,7 +142,6 @@ export function ClasesProvider({ children }) {
         });
     }, []);
 
-    // MÉTODO NUEVO PARA CLIENTES: Autogestiona el localStorage al inscribirse
     const inscribirAlumno = useCallback(async (idClase, user) => {
         if (!user) return null;
         const userId = user.idUsuario || user.id || 999;
@@ -175,8 +152,6 @@ export function ClasesProvider({ children }) {
         setClases(prev => {
             const next = prev.map(c => {
                 if (c.idClase !== idClase) return c;
-                
-                // Si ya está inscripto o no hay cupo, no hace nada
                 if (c.alumnos.some(al => al.id === userId) || c.alumnos.length >= c.maxAlumnos) return c;
 
                 const nuevoAlumno = { id: userId, nombre: userNombreCompleto, email: userEmail, presente: false };

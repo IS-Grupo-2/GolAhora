@@ -1,0 +1,62 @@
+MOCKS GOL AHORA - PRESENTACION
+Generado: 08/06/2026
+
+USUARIOS
+--------
+tipo: Admin | id: 1 | nombre: Franco Diaz | email: admin@golahora.com | usuario: franco.admin | password: 123456 | estado: activo | detalle: Administrador predefinido
+tipo: Cliente | id: 101 | nombre: Lucia Martinez | email: lucia.martinez@example.com | usuario: lucia.martinez | password: 123456 | estado: activo | detalle: Capitana de Los Halcones FC
+tipo: Cliente | id: 102 | nombre: Tomas Herrera | email: tomas.herrera@example.com | usuario: tomas.herrera | password: 123456 | estado: activo | detalle: Capitan de Barrio Norte
+tipo: Cliente | id: 103 | nombre: Camila Torres | email: camila.torres@example.com | usuario: camila.torres | password: 123456 | estado: activo | detalle: Capitana de Las Torres
+tipo: Cliente | id: 104 | nombre: Diego Vega | email: diego.vega@example.com | usuario: diego.vega | password: 123456 | estado: activo | detalle: Capitan de Vega United
+tipo: Cliente | id: 105 | nombre: Valentina Garcia | email: valentina.garcia@example.com | usuario: valentina.garcia | password: 123456 | estado: activo | detalle: Cliente sin equipo como capitan
+tipo: Profesor | id: 201 | nombre: Nicolas Suarez | email: nicolas.suarez@example.com | usuario: nicolas.suarez | password: 123456 | estado: activo | detalle: Sin certificado verificado
+tipo: Profesor | id: 202 | nombre: Brenda Molina | email: brenda.molina@example.com | usuario: brenda.molina | password: 123456 | estado: activo | detalle: Sin certificado verificado
+tipo: Empleado | id: 301 | nombre: Carla Gomez | email: carla.gomez@example.com | usuario: carla.gomez | password: 123456 | estado: activo | detalle: Empleado de recepcion
+
+CANCHAS
+-------
+id: 101 | numero: 1 | nombre: Cancha Futbol 5 | tipo: Futbol 5 | capacidad: 10 | duracionMaxMin: 60 | precioHora: 15000 | estado: activa
+id: 102 | numero: 2 | nombre: Cancha Futbol 7 | tipo: Futbol 7 | capacidad: 14 | duracionMaxMin: 90 | precioHora: 22000 | estado: activa
+id: 103 | numero: 3 | nombre: Cancha Futbol 11 | tipo: Futbol 11 | capacidad: 22 | duracionMaxMin: 120 | precioHora: 38000 | estado: activa
+
+CLASES
+------
+id: 1 | nombre: Entrenamiento Intensivo | tipo: Entrenamiento | profesor: Sin asignar | cancha: Cancha Futbol 5 | fecha: 15/06/2026 | horario: 18:00 | duracionMin: 60 | cupo: 10 | precio: 5000
+id: 2 | nombre: Jugadas Preparadas | tipo: Jugadas | profesor: Sin asignar | cancha: Cancha Futbol 7 | fecha: 16/06/2026 | horario: 19:00 | duracionMin: 90 | cupo: 14 | precio: 6500
+
+EQUIPOS
+-------
+id: 1 | nombre: Los Halcones FC | capitan: Lucia Martinez | integrantes: Lucia Martinez; Matias Correa; Paula Rivero | fechaCreacion: 01/05/2024
+id: 2 | nombre: Barrio Norte | capitan: Tomas Herrera | integrantes: Tomas Herrera; Nicolas Ruiz; Ezequiel Luna | fechaCreacion: 02/05/2024
+id: 3 | nombre: Las Torres | capitan: Camila Torres | integrantes: Camila Torres; Sofia Rojas; Agustina Paz | fechaCreacion: 03/05/2024
+id: 4 | nombre: Vega United | capitan: Diego Vega | integrantes: Diego Vega; Joaquin Silva; Ramon Pereyra | fechaCreacion: 04/05/2024
+
+COMPETENCIAS
+------------
+id: 1 | nombre: Liga Apertura Demo | tipo: liga | estado: en_curso | equipos: Los Halcones FC; Barrio Norte; Las Torres; Vega United | maxEquipos: 8 | inicio: 15/06/2026 | fin: 24/06/2026 | inscripcion: 12000
+id: 2 | nombre: Copa Presentacion | tipo: torneo | estado: inscripcion | equipos: Los Halcones FC; Barrio Norte | maxEquipos: 8 | inicio: 20/06/2026 | fin: 24/06/2026 | inscripcion: 10000
+id: 3 | nombre: Liga Nocturna Demo | tipo: liga | estado: inscripcion | equipos:  | maxEquipos: 10 | inicio: 22/06/2026 | fin: 03/07/2026 | inscripcion: 9000
+
+DISPONIBILIDAD
+--------------
+cancha: Cancha Futbol 5 | dia: Lunes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Martes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Miercoles | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Jueves | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Viernes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Sabado | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 5 | dia: Domingo | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Lunes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Martes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Miercoles | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Jueves | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Viernes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Sabado | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 7 | dia: Domingo | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Lunes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Martes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Miercoles | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Jueves | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Viernes | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Sabado | inicio: 09:00 | fin: 23:00 | estado: Habilitada
+cancha: Cancha Futbol 11 | dia: Domingo | inicio: 09:00 | fin: 23:00 | estado: Habilitada
