@@ -20,6 +20,20 @@ function idCanchaReserva(reserva) {
     return Number(reserva?.cancha?.idCancha ?? reserva?.cancha?.id ?? reserva?.idCancha ?? reserva?.canchaId);
 }
 
+function idCanchaClase(clase, canchas = []) {
+    const idDirecto = Number(clase?.cancha?.idCancha ?? clase?.cancha?.id ?? clase?.idCancha ?? clase?.canchaId);
+    if (idDirecto) return idDirecto;
+
+    const valor = clase?.cancha;
+    const numero = String(valor || '').match(/cancha\s*(\d+)/i)?.[1];
+    const encontrada = canchas.find(c =>
+        c.nombre === valor ||
+        (numero && Number(c.numero) === Number(numero))
+    );
+
+    return Number(encontrada?.id);
+}
+
 function seSolapan(inicioA, finA, inicioB, finB) {
     return inicioA < finB && finA > inicioB;
 }
@@ -33,7 +47,9 @@ export function validarReservaCancha({
     canchas = [],
     tiposCanchas = [],
     disponibilidades = [],
-    reservas = []
+    reservas = [],
+    clases = [],
+    claseId
 }) {
     const idCancha = Number(canchaId);
     const cancha = canchas.find(c => Number(c.id) === idCancha);
@@ -102,6 +118,20 @@ export function validarReservaCancha({
 
     if (reservaSolapada) {
         return { ok: false, mensaje: 'Ya existe una reserva para esa cancha en la franja horaria elegida.' };
+    }
+
+    const claseSolapada = clases.some(c => {
+        if (c.estado === 'cancelada') return false;
+        if (claseId && Number(c.idClase) === Number(claseId)) return false;
+        if (idCanchaClase(c, canchas) !== idCancha) return false;
+        if (c.fecha !== fechaUso) return false;
+        const inicioClase = horaAMinutos(c.horario);
+        const finClase = inicioClase + Number(c.duracionMin || 0);
+        return seSolapan(inicio, fin, inicioClase, finClase);
+    });
+
+    if (claseSolapada) {
+        return { ok: false, mensaje: 'Ya existe una clase para esa cancha en la franja horaria elegida.' };
     }
 
     return {

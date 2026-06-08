@@ -2,12 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useCanchas } from '../../context/CanchasContext';
 import { useClientes } from '../../context/ClientesContext';
 import { useReservas } from '../../context/ReservasContext';
+import { useClases } from '../../context/ClasesContext';
 import { validarReservaCancha } from '../../utils/reservasDisponibilidad';
 
 export default function ReservaModal({ reserva, onClose, onSave }) {
     const { canchas, tiposCanchas, disponibilidades } = useCanchas();
     const { clientes } = useClientes();
     const { reservas } = useReservas();
+    const { clases } = useClases();
     const isEdit = !!reserva;
     const hoy = new Date();
     const fechaMaximaReserva = new Date(hoy);
@@ -37,9 +39,10 @@ export default function ReservaModal({ reserva, onClose, onSave }) {
             canchas,
             tiposCanchas,
             disponibilidades,
-            reservas
+            reservas,
+            clases
         });
-    }, [form, canchas, tiposCanchas, disponibilidades, reservas, reserva?.idReserva]);
+    }, [form, canchas, tiposCanchas, disponibilidades, reservas, clases, reserva?.idReserva]);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 

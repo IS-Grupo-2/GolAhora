@@ -1,6 +1,6 @@
 // src/pages/dashboard/ClasesPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { useClases, ALUMNOS_DISPONIBLES } from '../../context/ClasesContext';
+import { useClases } from '../../context/ClasesContext';
 import { useProfesores } from '../../context/ProfesoresContext';
 import { tieneCertificacionVerificada } from '../../utils/profesoresCertificacion';
 import { useCobros } from '../../context/CobrosContext';
@@ -252,7 +252,7 @@ export default function ClasesPageContent() {
 
             {/* MODALES REGULARES */}
             <Can roles={['Admin', 'Employee']}>
-                <ClaseModal open={modalForm.open} modo={modalForm.modo} clase={modalForm.clase} profesoresDisp={profesoresDisponibles} alumnosDisp={ALUMNOS_DISPONIBLES} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', clase: null })} />
+                <ClaseModal open={modalForm.open} modo={modalForm.modo} clase={modalForm.clase} profesoresDisp={profesoresDisponibles} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', clase: null })} />
             </Can>
             <Can roles={['Admin', 'Employee', 'Professor']}>
                 <AsistenciaModal open={modalAsistencia.open} clase={modalAsistencia.clase} onGuardar={handleAsistencia} onCerrar={() => setModalAsistencia({ open: false, clase: null })} />

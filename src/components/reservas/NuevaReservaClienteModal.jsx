@@ -3,11 +3,13 @@ import { useCanchas } from '../../context/CanchasContext';
 import { useReservas } from '../../context/ReservasContext';
 import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
+import { useClases } from '../../context/ClasesContext';
 import { validarReservaCancha } from '../../utils/reservasDisponibilidad';
 
 export default function NuevaReservaClienteModal({ onClose }) {
     const { canchas = [], tiposCanchas = [], disponibilidades = [] } = useCanchas();
     const { crearReserva, reservas = [] } = useReservas();
+    const { clases = [] } = useClases();
     const cobrosContext = useCobros();
     const { user } = useAuth();
     const hoy = new Date();
@@ -36,9 +38,10 @@ export default function NuevaReservaClienteModal({ onClose }) {
             canchas,
             tiposCanchas,
             disponibilidades,
-            reservas
+            reservas,
+            clases
         });
-    }, [form, canchas, tiposCanchas, disponibilidades, reservas]);
+    }, [form, canchas, tiposCanchas, disponibilidades, reservas, clases]);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 

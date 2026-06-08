@@ -109,7 +109,10 @@ export default function ReciboModal({ open, modo, recibo, cobrosPendientes, onGu
     return (
         <div className="dash-modal-overlay activo" onClick={e => { if (e.target === e.currentTarget) onCerrar(); }}>
             <div className="dash-modal">
-                
+                <div className="dash-modal-header">
+                    <h3>{esNuevo ? 'Emitir Nuevo Recibo' : 'Modificar Recibo'}</h3>
+                    <button className="dash-modal-close" onClick={onCerrar}><i data-lucide="x" /></button>
+                </div>
 
                 <div className="dash-modal-body">
                     <Field label="Cobro Asociado (Referencia)" required error={errores.cobroId}>

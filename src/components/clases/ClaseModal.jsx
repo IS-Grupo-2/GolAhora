@@ -1,5 +1,9 @@
 // src/components/clases/ClaseModal.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useCanchas } from '../../context/CanchasContext';
+import { useReservas } from '../../context/ReservasContext';
+import { useClases } from '../../context/ClasesContext';
+import { diaSemanaDeFecha, horaAMinutos, minutosAHora } from '../../utils/reservasDisponibilidad';
 
 const FORM_VACIO = {
     nombre: '', descripcion: '', tipoClase: '', idProfesor: '',
@@ -11,6 +15,32 @@ const ERRORES_VACIOS = {
     nombre: '', tipoClase: '', cancha: '', fecha: '', horario: '', maxAlumnos: ''
 };
 
+function seSolapan(inicioA, finA, inicioB, finB) {
+    return inicioA < finB && finA > inicioB;
+}
+
+function resolverCanchaSeleccionada(valor, canchas) {
+    if (!valor) return null;
+    const numero = String(valor).match(/cancha\s*(\d+)/i)?.[1];
+    const id = Number(valor);
+
+    return canchas.find(c =>
+        Number(c.id) === id ||
+        (numero && Number(c.numero) === Number(numero)) ||
+        c.nombre === valor
+    ) || null;
+}
+
+function idCanchaReserva(reserva) {
+    return Number(reserva?.cancha?.idCancha ?? reserva?.cancha?.id ?? reserva?.idCancha ?? reserva?.canchaId);
+}
+
+function idCanchaClase(clase, canchas) {
+    const idDirecto = Number(clase?.cancha?.idCancha ?? clase?.cancha?.id ?? clase?.idCancha ?? clase?.canchaId);
+    if (idDirecto) return idDirecto;
+    return Number(resolverCanchaSeleccionada(clase?.cancha, canchas)?.id);
+}
+
 function Field({ label, required, error, children }) {
     return (
         <div className="form-group">
@@ -21,26 +51,85 @@ function Field({ label, required, error, children }) {
     );
 }
 
-export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosDisp = [], onGuardar, onCerrar }) {
+export default function ClaseModal({ open, modo, clase, profesoresDisp, onGuardar, onCerrar }) {
+    const { canchas, disponibilidades } = useCanchas();
+    const { reservas = [] } = useReservas();
+    const { clases = [] } = useClases();
     const [form, setForm] = useState(FORM_VACIO);
     const [errores, setErrores] = useState(ERRORES_VACIOS);
-    const [alumnosBusqueda, setAlumnosBusqueda] = useState('');
-    const [selectedAlumnoIds, setSelectedAlumnoIds] = useState([]);
     const esNuevo = modo === 'nuevo';
 
-    const alumnosFiltrados = (alumnosDisp || []).filter(al => {
-        const q = alumnosBusqueda.toLowerCase();
-        return (
-            `${al.nombre} ${al.apellido}`.toLowerCase().includes(q) ||
-            al.email.toLowerCase().includes(q)
+    const disponibilidadClase = useMemo(() => {
+        if (!form.cancha || !form.fecha || !form.horario || !form.duracionMin) return null;
+
+        const canchaSeleccionada = resolverCanchaSeleccionada(form.cancha, canchas);
+        if (!canchaSeleccionada) return { ok: false, mensaje: 'Seleccione una cancha valida.' };
+        if (canchaSeleccionada.estado === 'inactiva') return { ok: false, mensaje: 'La cancha seleccionada no esta activa.' };
+
+        const inicio = horaAMinutos(form.horario);
+        const fin = inicio + Number(form.duracionMin || 0);
+        if (fin <= inicio) return { ok: false, mensaje: 'La duracion de la clase debe ser mayor a cero.' };
+
+        const diaSemana = diaSemanaDeFecha(form.fecha);
+        const franjasCanchaDia = disponibilidades.filter(d =>
+            Number(d.idCancha ?? d.canchaId) === Number(canchaSeleccionada.id) &&
+            d.diaSemana === diaSemana
         );
-    });
+
+        const franjaHabilitada = franjasCanchaDia.some(d =>
+            d.disponible === true &&
+            inicio >= Number(d.horaInicio) * 60 &&
+            fin <= Number(d.horaFin) * 60
+        );
+
+        if (!franjaHabilitada) {
+            return {
+                ok: false,
+                mensaje: `La cancha no tiene disponibilidad habilitada para ${diaSemana} de ${minutosAHora(inicio)} a ${minutosAHora(fin)}.`
+            };
+        }
+
+        const franjaBloqueada = franjasCanchaDia.some(d =>
+            d.disponible === false &&
+            seSolapan(inicio, fin, Number(d.horaInicio) * 60, Number(d.horaFin) * 60)
+        );
+
+        if (franjaBloqueada) {
+            return { ok: false, mensaje: 'La cancha esta bloqueada o en mantenimiento en ese horario.' };
+        }
+
+        const reservaSolapada = reservas.some(r => {
+            if (r.estado === 'cancelada') return false;
+            if (idCanchaReserva(r) !== Number(canchaSeleccionada.id)) return false;
+            if (r.fechaUso !== form.fecha) return false;
+            return seSolapan(inicio, fin, horaAMinutos(r.horaInicio), horaAMinutos(r.horaFin));
+        });
+
+        if (reservaSolapada) {
+            return { ok: false, mensaje: 'Ya existe una reserva para esa cancha en la franja horaria elegida.' };
+        }
+
+        const claseSolapada = clases.some(c => {
+            if (c.estado === 'cancelada') return false;
+            if (clase?.idClase && Number(c.idClase) === Number(clase.idClase)) return false;
+            if (idCanchaClase(c, canchas) !== Number(canchaSeleccionada.id)) return false;
+            if (c.fecha !== form.fecha) return false;
+            const inicioClase = horaAMinutos(c.horario);
+            const finClase = inicioClase + Number(c.duracionMin || 0);
+            return seSolapan(inicio, fin, inicioClase, finClase);
+        });
+
+        if (claseSolapada) {
+            return { ok: false, mensaje: 'Ya existe una clase para esa cancha en la franja horaria elegida.' };
+        }
+
+        return { ok: true, cancha: canchaSeleccionada, horaFin: minutosAHora(fin), diaSemana };
+    }, [form.cancha, form.fecha, form.horario, form.duracionMin, canchas, disponibilidades, reservas, clases, clase?.idClase]);
 
     useEffect(() => {
         if (!open) return;
         if (esNuevo) {
             setForm(FORM_VACIO);
-            setSelectedAlumnoIds([]);
         } else if (clase) {
             setForm({
                 nombre: clase.nombre || '',
@@ -55,9 +144,7 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                 precio: clase.precio || 0,
                 estado: clase.estado || 'programada',
             });
-            setSelectedAlumnoIds((clase.alumnos || []).map(al => al.id));
         }
-        setAlumnosBusqueda('');
         setErrores(ERRORES_VACIOS);
     }, [open, modo, clase, esNuevo]);
 
@@ -75,9 +162,6 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
     function set(field, value) {
         setForm(prev => ({ ...prev, [field]: value }));
         setErrores(prev => ({ ...prev, [field]: '' }));
-        if (field === 'maxAlumnos' && Number(value) < selectedAlumnoIds.length) {
-            setSelectedAlumnoIds(prev => prev.slice(0, Number(value)));
-        }
     }
 
     function validar() {
@@ -89,18 +173,12 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
         if (!form.fecha) { errs.fecha = 'Seleccione fecha'; ok = false; }
         if (!form.horario) { errs.horario = 'Seleccione horario'; ok = false; }
         if (form.maxAlumnos < 1) { errs.maxAlumnos = 'Mínimo 1 alumno'; ok = false; }
+        if (disponibilidadClase && !disponibilidadClase.ok) {
+            errs.cancha = disponibilidadClase.mensaje;
+            ok = false;
+        }
         setErrores(errs);
         return ok;
-    }
-
-    function toggleAlumno(id) {
-        setSelectedAlumnoIds(prev =>
-            prev.includes(id)
-                ? prev.filter(item => item !== id)
-                : prev.length < Number(form.maxAlumnos)
-                    ? [...prev, id]
-                    : prev
-        );
     }
 
     function handleGuardar() {
@@ -110,10 +188,6 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
         const profSeleccionado = profesoresDisp.find(p =>
             p.idUsuario === idProfesor || p.id === idProfesor
         ) || null;
-        const alumnosSeleccionados = alumnosDisp
-            .filter(al => selectedAlumnoIds.includes(al.id))
-            .map(al => ({ id: al.id, nombre: `${al.nombre} ${al.apellido}`, presente: false, email: al.email }));
-
         const datos = {
             ...(clase ? { idClase: clase.idClase } : {}),
             nombre: form.nombre.trim(),
@@ -127,7 +201,7 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
             maxAlumnos: Number(form.maxAlumnos),
             precio: Number(form.precio),
             estado: form.estado,
-            alumnos: alumnosSeleccionados,
+            alumnos: clase?.alumnos || [],
         };
         onGuardar(datos);
     }
@@ -176,9 +250,11 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                         <Field label="Cancha" required error={errores.cancha}>
                             <select value={form.cancha} onChange={e => set('cancha', e.target.value)} className={errores.cancha ? 'input-error-field' : ''}>
                                 <option value="">Seleccionar</option>
-                                <option value="Cancha 1 (F5)">Cancha 1 (Fútbol 5)</option>
-                                <option value="Cancha 2 (F7)">Cancha 2 (Fútbol 7)</option>
-                                <option value="Pista Funcional">Pista Funcional</option>
+                                {canchas.filter(c => c.estado !== 'inactiva').map(c => (
+                                    <option key={c.id} value={c.nombre}>
+                                        {c.nombre}
+                                    </option>
+                                ))}
                             </select>
                         </Field>
                     </div>
@@ -220,6 +296,19 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                         <textarea rows="2" placeholder="Notas sobre la clase..." value={form.descripcion} onChange={e => set('descripcion', e.target.value)} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)', padding: '0.5rem', background: 'var(--bg)', color: 'var(--text)', outline: 'none' }}></textarea>
                     </Field>
 
+                    {disponibilidadClase && !disponibilidadClase.ok && (
+                        <div className="form-error" style={{ display: 'block', fontWeight: 600 }}>
+                            {disponibilidadClase.mensaje}
+                        </div>
+                    )}
+
+                    {disponibilidadClase?.ok && (
+                        <div className="badge success" style={{ display: 'inline-flex', width: 'fit-content' }}>
+                            Cancha disponible hasta las {disponibilidadClase.horaFin}
+                        </div>
+                    )}
+
+                    {false && (
                     <div style={{ marginTop: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                             <label style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text)' }}>Alumnos inscriptos</label>
@@ -284,11 +373,12 @@ export default function ClaseModal({ open, modo, clase, profesoresDisp, alumnosD
                             </p>
                         )}
                     </div>
+                    )}
                 </div>
 
                 <div className="dash-modal-footer">
                     <button className="btn-modal-cancel" onClick={onCerrar}>Cancelar</button>
-                    <button className="btn-modal-save" onClick={handleGuardar}>
+                    <button className="btn-modal-save" onClick={handleGuardar} disabled={disponibilidadClase?.ok === false}>
                         <i data-lucide="save" /> Guardar
                     </button>
                 </div>
