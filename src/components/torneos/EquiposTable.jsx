@@ -6,6 +6,10 @@ function Icon({ name }) {
     return <i data-lucide={name} />;
 }
 
+function normalizarTexto(texto) {
+    return String(texto || '').trim().toLowerCase();
+}
+
 export default function EquiposTable({ equipos, competencias, onNuevo, onEditar, onEliminar, onInscribir, onDetalle, fixtures, puedeEditarEquipo }) {
     const [selectedEquipo, setSelectedEquipo] = useState('');
     const [selectedTorneo, setSelectedTorneo] = useState('');
@@ -26,9 +30,19 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
         const equiposInscriptos = competencia.equipos || [];
         const cupoCompleto = equiposInscriptos.length >= Number(competencia.maxEquipos || Infinity);
         const yaInscripto = equiposInscriptos.includes(parseInt(selectedEquipo));
+        const equipoSeleccionado = equipos.find(e => e.idEquipo === parseInt(selectedEquipo));
+        const capitanSeleccionado = normalizarTexto(equipoSeleccionado?.capitan);
+        const capitanYaInscripto = equiposInscriptos.some(idEquipo => {
+            const equipoInscripto = equipos.find(e => e.idEquipo === idEquipo);
+            return normalizarTexto(equipoInscripto?.capitan) === capitanSeleccionado;
+        });
         const cerrada = fixtures?.some(f => f.competenciaID === competencia.id) || competencia.estado === 'finalizado';
         if (yaInscripto) {
             setAdvertenciaInscripcion('Este equipo ya se encuentra inscripto en la competencia seleccionada.');
+            return;
+        }
+        if (capitanSeleccionado && capitanYaInscripto) {
+            setAdvertenciaInscripcion('Ya existe un equipo con el mismo capitán inscripto en la competencia seleccionada.');
             return;
         }
         if (cupoCompleto) {

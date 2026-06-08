@@ -86,6 +86,10 @@ function avanzarLlavesEliminacion(rondas) {
     return next;
 }
 
+function normalizarTexto(texto) {
+    return String(texto || '').trim().toLowerCase();
+}
+
 function mergePorIdGuardandoLocal(localItems, mockItems, idKey) {
     if (!Array.isArray(localItems) || localItems.length === 0) return mockItems;
     const idsLocales = new Set(localItems.map(item => item[idKey]));
@@ -239,7 +243,13 @@ export function TorneosProvider({ children }) {
                 const tieneCupo = equiposActuales.length < Number(c.maxEquipos || Infinity);
                 const tieneFixture = fixtures.some(f => f.competenciaID === competenciaId);
                 const abierta = c.estado !== 'finalizado' && !tieneFixture;
-                if (abierta && tieneCupo && !equiposActuales.includes(equipoId)) {
+                const equipoAInscribir = equipos.find(e => e.idEquipo === equipoId);
+                const capitanAInscribir = normalizarTexto(equipoAInscribir?.capitan);
+                const capitanYaInscripto = equiposActuales.some(idEquipo => {
+                    const equipoInscripto = equipos.find(e => e.idEquipo === idEquipo);
+                    return normalizarTexto(equipoInscripto?.capitan) === capitanAInscribir;
+                });
+                if (abierta && tieneCupo && !equiposActuales.includes(equipoId) && (!capitanAInscribir || !capitanYaInscripto)) {
                     return { ...c, equipos: [...equiposActuales, equipoId] };
                 }
                 return c;
