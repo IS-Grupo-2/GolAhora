@@ -47,6 +47,13 @@ function esProfesorActual(profesor, user) {
     return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
 }
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function ProfesoresPageContent() {
     const { profesores, loading, error, crearProfesor, modificarProfesor, darDeBaja } = useProfesores();
     const { user } = useAuth();
@@ -110,22 +117,25 @@ export default function ProfesoresPageContent() {
     const abrirBaja    = (p) => setModalBaja({ open: true, profesor: p });
 
     // ── Stats y Filtrado ──
+    const profesoresBase = Array.isArray(profesores) ? profesores : [];
     const profesoresVisibles = user?.role === 'Professor'
-        ? profesores.filter(p => esProfesorActual(p, user))
-        : profesores;
+        ? profesoresBase.filter(p => esProfesorActual(p, user))
+        : profesoresBase;
 
     const activos   = profesoresVisibles.filter(p => p.activo).length;
     const inactivos = profesoresVisibles.filter(p => !p.activo).length;
 
-    const profesoresFiltrados = filtro
-        ? profesoresVisibles.filter(p => {
-              const q = filtro.toLowerCase();
-              return (
-                  `${p.nombre} ${p.apellido}`.toLowerCase().includes(q) ||
-                  (p.especialidad || '').toLowerCase().includes(q) ||
-                  (p.email || '').toLowerCase().includes(q)
-              );
-          })
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const profesoresFiltrados = busqueda
+        ? profesoresVisibles.filter(p => [
+              p?.nombre,
+              p?.apellido,
+              p?.especialidad,
+              p?.email,
+              p?.username,
+              p?.userName,
+              p?.telefono,
+          ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
         : profesoresVisibles;
 
     if (loading) return <LoadingSpinner message="Cargando profesores..." />;

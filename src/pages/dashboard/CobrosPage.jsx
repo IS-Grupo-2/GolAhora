@@ -27,16 +27,22 @@ export default function CobrosPageContent() {
     const [modalForm, setModalForm] = useState({ open: false, modo: 'nuevo', cobro: null });
     const [modalDetalle, setModalDetalle] = useState({ open: false, cobro: null });
     const [modalBaja, setModalBaja] = useState({ open: false, cobro: null });
+    const cobrosBase = Array.isArray(cobros) ? cobros : [];
+    const clientesBase = Array.isArray(clientes) ? clientes : [];
+    const reservasBase = Array.isArray(reservas) ? reservas : [];
+    const clasesBase = Array.isArray(clases) ? clases : [];
+    const competenciasBase = Array.isArray(competencias) ? competencias : [];
+    const equiposBase = Array.isArray(equipos) ? equipos : [];
 
     const clienteId = (cliente) => cliente?.idUsuario || cliente?.id;
-    const cobroYaPagado = (cliente, concepto) => cobros.some(c =>
+    const cobroYaPagado = (cliente, concepto) => cobrosBase.some(c =>
         c.estado === 'pagado' &&
         clienteId(c.cliente) === clienteId(cliente) &&
         c.concepto === concepto
     );
 
     const operacionesPendientes = [
-        ...cobros
+        ...cobrosBase
             .filter(c => c.estado === 'pendiente')
             .map(c => ({
                 id: `cobro-${c.idCobro}`,
@@ -47,11 +53,11 @@ export default function CobrosPageContent() {
                 referencia: { idCobro: c.idCobro, idReserva: c.idReserva },
                 detalle: 'Cobro pendiente',
             })),
-        ...reservas
+        ...reservasBase
             .filter(r =>
                 r.estado !== 'cancelada' &&
                 r.cobro?.estado !== 'pagado' &&
-                !cobros.some(c => c.idReserva === r.idReserva)
+                !cobrosBase.some(c => c.idReserva === r.idReserva)
             )
             .map(r => ({
                 id: `reserva-${r.idReserva}`,
@@ -62,7 +68,7 @@ export default function CobrosPageContent() {
                 referencia: { idReserva: r.idReserva },
                 detalle: 'Reserva pendiente de pago',
             })),
-        ...clases.flatMap(clase => (clase.alumnos || []).map(alumno => {
+        ...clasesBase.flatMap(clase => (clase.alumnos || []).map(alumno => {
             const concepto = `Inscripcion clase: ${clase.nombre}`;
             return {
                 id: `clase-${clase.idClase}-${alumno.id}`,
@@ -74,11 +80,11 @@ export default function CobrosPageContent() {
                 detalle: `${clase.tipoClase} - ${clase.fecha} ${clase.horario || ''}`.trim(),
             };
         })),
-        ...competencias.flatMap(comp => (comp.equipos || []).flatMap(idEquipo => {
-            const equipo = equipos.find(e => e.idEquipo === idEquipo);
+        ...competenciasBase.flatMap(comp => (comp.equipos || []).flatMap(idEquipo => {
+            const equipo = equiposBase.find(e => e.idEquipo === idEquipo);
             const miembros = [equipo?.capitan, ...(equipo?.integrantes || [])].filter(Boolean);
             return miembros.map(nombreMiembro => {
-                const cliente = clientes.find(c => `${c.nombre} ${c.apellido}`.trim() === nombreMiembro);
+                const cliente = clientesBase.find(c => `${c.nombre} ${c.apellido}`.trim() === nombreMiembro);
                 const concepto = `Inscripcion competencia: ${comp.nombre}`;
                 return cliente ? {
                     id: `torneo-${comp.id}-${idEquipo}-${clienteId(cliente)}`,
@@ -92,7 +98,7 @@ export default function CobrosPageContent() {
             }).filter(Boolean);
         })),
     ].filter(op => {
-        const cliente = clientes.find(c => clienteId(c) === op.clienteId);
+        const cliente = clientesBase.find(c => clienteId(c) === op.clienteId);
         return op.monto > 0 && cliente && !cobroYaPagado(cliente, op.concepto);
     });
 
@@ -151,14 +157,13 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
     };
 
     const normalizarTexto = (texto) => {
-        return texto
-            .toString()
+        return String(texto || '')
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
     };
 
-    const cobrosFiltrados = cobros.filter(c => {
+    const cobrosFiltrados = cobrosBase.filter(c => {
         const busqueda = normalizarTexto(filtro);
 
         const nombreCompleto = normalizarTexto(`${c.cliente?.nombre || ''} ${c.cliente?.apellido || ''}`);
@@ -207,7 +212,7 @@ TOTAL A ABONAR:   $${Number(cobro.montoFinal || 0).toLocaleString('es-AR', { min
             </div>
 
             <CobroModal open={modalForm.open} modo={modalForm.modo} cobro={modalForm.cobro} 
-                clientes={clientes} descuentos={descuentos.filter(d => d.activo)} operacionesPendientes={operacionesPendientes} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
+                clientes={clientesBase} descuentos={(Array.isArray(descuentos) ? descuentos : []).filter(d => d.activo)} operacionesPendientes={operacionesPendientes} onGuardar={handleGuardar} onCerrar={() => setModalForm({ open: false, modo: 'nuevo', cobro: null })} />
             <CobroModalDetalle open={modalDetalle.open} cobro={modalDetalle.cobro} onImprimir={() => window.print()} onCerrar={() => setModalDetalle({ open: false, cobro: null })} />
             <CobroModalBaja open={modalBaja.open} cobro={modalBaja.cobro} onConfirmar={handleToggleEstado} onCerrar={() => setModalBaja({ open: false, cobro: null })} />
         </Can>

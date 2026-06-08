@@ -44,6 +44,13 @@ function clasePerteneceAlProfesor(clase, user) {
     return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
 }
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function AsistenciasPageContent() {
     const { user } = useAuth();
     const { isAdmin, isEmployee, isProfessor } = useRole();
@@ -86,14 +93,24 @@ export default function AsistenciasPageContent() {
     // ── Filtrado por rol ───────────────────────────────────────────────────────
     // admin y empleado ven TODAS las clases
     // profesor ve solo las que le pertenecen
+    const clasesBase = Array.isArray(clases) ? clases : [];
     const clasesPorRol = (() => {
-        if (isAdmin || isEmployee) return clases;
-        if (isProfessor && user) return clases.filter(c => clasePerteneceAlProfesor(c, user));
+        if (isAdmin || isEmployee) return clasesBase;
+        if (isProfessor && user) return clasesBase.filter(c => clasePerteneceAlProfesor(c, user));
         return []; // cliente: no debería llegar aquí (bloqueado en router)
     })();
 
-    const clasesFiltradas = filtro
-        ? clasesPorRol.filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()))
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const clasesFiltradas = busqueda
+        ? clasesPorRol.filter(c => [
+            c?.nombre,
+            c?.tipoClase,
+            c?.cancha,
+            c?.fecha,
+            c?.horario,
+            c?.profesor?.nombre,
+            c?.profesor?.apellido,
+        ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
         : clasesPorRol;
 
     // ── Stats ──────────────────────────────────────────────────────────────────

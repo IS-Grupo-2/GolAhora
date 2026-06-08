@@ -7,6 +7,90 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      (function () {
+        function toPascalCase(name) {
+          return String(name || '').split('-').filter(Boolean).map(function (part) {
+            return part.charAt(0).toUpperCase() + part.slice(1);
+          }).join('');
+        }
+
+        function setAttrs(el, attrs) {
+          Object.keys(attrs || {}).forEach(function (key) {
+            if (attrs[key] !== undefined && attrs[key] !== null) el.setAttribute(key, String(attrs[key]));
+          });
+        }
+
+        function appendNode(parent, node) {
+          if (!Array.isArray(node)) return;
+          var child = document.createElementNS('http://www.w3.org/2000/svg', node[0]);
+          setAttrs(child, node[1] || {});
+          if (Array.isArray(node[2])) node[2].forEach(function (grandChild) { appendNode(child, grandChild); });
+          parent.appendChild(child);
+        }
+
+        function renderInside(el, iconNode, attrs) {
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          setAttrs(svg, Object.assign({
+            xmlns: 'http://www.w3.org/2000/svg',
+            width: el.style.width || attrs.width || 24,
+            height: el.style.height || attrs.height || 24,
+            viewBox: '0 0 24 24',
+            fill: 'none',
+            stroke: 'currentColor',
+            'stroke-width': 2,
+            'stroke-linecap': 'round',
+            'stroke-linejoin': 'round'
+          }, attrs));
+          iconNode.forEach(function (node) { appendNode(svg, node); });
+          el.replaceChildren(svg);
+          el.dataset.lucideRendered = el.dataset.lucide;
+        }
+
+        function install() {
+          if (!window.lucide || window.lucide.__reactSafePatch) return;
+          var lucide = window.lucide;
+          lucide.createIcons = function (options) {
+            options = options || {};
+            var nameAttr = options.nameAttr || 'data-lucide';
+            var attrs = options.attrs || {};
+            var icons = options.icons || lucide.icons || {};
+            document.querySelectorAll('[' + nameAttr + ']').forEach(function (el) {
+              var iconName = el.getAttribute(nameAttr);
+              if (!iconName || (el.dataset.lucideRendered === iconName && el.querySelector('svg'))) return;
+              var iconNode = icons[toPascalCase(iconName)] || icons[iconName];
+              if (Array.isArray(iconNode)) renderInside(el, iconNode, attrs);
+            });
+          };
+          lucide.__reactSafePatch = true;
+
+          var observe = function () {
+            if (!document.body || window.__lucideReactSafeObserver) return;
+            var frameId = null;
+            var refresh = function () {
+              if (frameId !== null) return;
+              frameId = requestAnimationFrame(function () {
+                frameId = null;
+                lucide.createIcons();
+              });
+            };
+            window.__lucideReactSafeObserver = new MutationObserver(refresh);
+            window.__lucideReactSafeObserver.observe(document.body, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['data-lucide']
+            });
+          };
+
+          if (document.body) observe();
+          else document.addEventListener('DOMContentLoaded', observe, { once: true });
+          lucide.createIcons();
+        }
+
+        install();
+      }());
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gol Ahora</title>
   </head>

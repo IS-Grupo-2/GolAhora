@@ -12,6 +12,13 @@ const FORM_INICIAL = {
     activo: true,
 };
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 function DescuentoModal({ open, modo, descuento, descuentos, onGuardar, onCerrar }) {
     const [form, setForm] = useState(FORM_INICIAL);
     const [errores, setErrores] = useState({});
@@ -117,12 +124,15 @@ export default function DescuentosPage() {
     }, [descuentos, modal.open]);
 
     const descuentosFiltrados = useMemo(() => {
-        const q = filtro.trim().toLowerCase();
-        if (!q) return descuentos;
-        return descuentos.filter(d =>
-            d.codigo.toLowerCase().includes(q) ||
-            d.nombre.toLowerCase().includes(q)
-        );
+        const q = normalizarBusqueda(filtro.trim());
+        const descuentosBase = Array.isArray(descuentos) ? descuentos : [];
+        if (!q) return descuentosBase;
+        return descuentosBase.filter(d => [
+            d?.codigo,
+            d?.nombre,
+            d?.descripcion,
+            d?.porcentaje,
+        ].some(valor => normalizarBusqueda(valor).includes(q)));
     }, [descuentos, filtro]);
 
     async function guardar(datos) {
@@ -145,7 +155,7 @@ export default function DescuentosPage() {
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Gestión de Descuentos</h2>
-                    <span className="crud-count">{descuentos.length} registrados</span>
+                    <span className="crud-count">{(Array.isArray(descuentos) ? descuentos : []).length} registrados</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">

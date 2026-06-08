@@ -9,11 +9,13 @@ function BadgeEstado({ estado }) {
 }
 
 function formatMoneda(valor) {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(valor);
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(valor || 0));
 }
 
-export default function CobrosTable({ cobros, filtro, onLimpiarFiltro, isAdmin, onVer, onEditar, onBaja, onImprimir }) {
-    if (cobros.length === 0) {
+export default function CobrosTable({ cobros = [], filtro, onLimpiarFiltro, isAdmin, onVer, onEditar, onBaja, onImprimir }) {
+    const cobrosSeguros = Array.isArray(cobros) ? cobros : [];
+
+    if (cobrosSeguros.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="search-x" />
@@ -42,7 +44,7 @@ export default function CobrosTable({ cobros, filtro, onLimpiarFiltro, isAdmin, 
                     </tr>
                 </thead>
                 <tbody>
-                    {cobros.map((c) => (
+                    {cobrosSeguros.map((c) => (
                         <tr key={c.idCobro}>
                             <td>#{String(c.idCobro).padStart(5, '0')}</td>
                             <td>{c.cliente?.nombre} {c.cliente?.apellido}</td>

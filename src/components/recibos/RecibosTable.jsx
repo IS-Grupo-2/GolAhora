@@ -10,11 +10,13 @@ function BadgeEstado({ estado }) {
 }
 
 function formatMoneda(valor) {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(valor);
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(valor || 0));
 }
 
-export default function RecibosTable({ recibos, filtro, onLimpiarFiltro, isAdmin, onVer, onEditar, onBaja, onImprimir }) {
-    if (recibos.length === 0) {
+export default function RecibosTable({ recibos = [], filtro, onLimpiarFiltro, isAdmin, onVer, onEditar, onBaja, onImprimir }) {
+    const recibosSeguros = Array.isArray(recibos) ? recibos : [];
+
+    if (recibosSeguros.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="receipt" />
@@ -43,7 +45,7 @@ export default function RecibosTable({ recibos, filtro, onLimpiarFiltro, isAdmin
                     </tr>
                 </thead>
                 <tbody>
-                    {recibos.map((r) => (
+                    {recibosSeguros.map((r) => (
                         <tr key={r.idRecibo}>
                             <td>{r.nroRecibo}</td>
                             <td>{r.cliente?.nombre} {r.cliente?.apellido}</td>

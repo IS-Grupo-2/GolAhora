@@ -11,6 +11,13 @@ import ReciboModal from '../../components/recibos/ReciboModal';
 import ReciboModalDetalle from '../../components/recibos/ReciboModalDetalle';
 import ReciboModalBaja from '../../components/recibos/ReciboModalBaja';
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function RecibosPageContent() {
     const { items: recibos, loading, error, crearItem, modificarItem } = useRecibos();
     const { items: cobros, modificarItem: modificarCobro} = useCobros();
@@ -42,20 +49,27 @@ export default function RecibosPageContent() {
         setModalBaja({ open: false, recibo: null });
     };
 
-    const cobrosPendientes = cobros.filter(c => c.estado !== 'pagado');
+    const recibosBase = Array.isArray(recibos) ? recibos : [];
+    const cobrosBase = Array.isArray(cobros) ? cobros : [];
+    const cobrosPendientes = cobrosBase.filter(c => c.estado !== 'pagado');
 
     const recibosVisibles = isClient
-        ? recibos.filter(r =>
+        ? recibosBase.filter(r =>
             r.cliente?.idUsuario === (user?.idUsuario || user?.id) ||
             r.cliente?.email === user?.email
         )
-        : recibos;
+        : recibosBase;
 
-    const recibosFiltrados = filtro
-        ? recibosVisibles.filter(r =>
-            r.nroRecibo?.includes(filtro) ||
-            r.cobro?.concepto?.toLowerCase().includes(filtro.toLowerCase())
-        )
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const recibosFiltrados = busqueda
+        ? recibosVisibles.filter(r => [
+            r?.nroRecibo,
+            r?.cobro?.concepto,
+            r?.concepto,
+            r?.cliente?.nombre,
+            r?.cliente?.apellido,
+            r?.cliente?.email,
+        ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
         : recibosVisibles;
      useEffect(() => {
             if (typeof window !== 'undefined' && window.lucide) window.lucide.createIcons();

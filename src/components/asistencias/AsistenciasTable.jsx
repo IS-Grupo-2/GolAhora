@@ -8,14 +8,16 @@ function BadgeEstado({ estado }) {
 }
 
 export default function AsistenciasTable({
-    clases,
-    asistenciasPorClase,
+    clases = [],
+    asistenciasPorClase = {},
     filtro,
     onLimpiarFiltro,
     onVer,
     onTomar,
 }) {
-    if (clases.length === 0) {
+    const clasesSeguras = Array.isArray(clases) ? clases : [];
+
+    if (clasesSeguras.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="clipboard-x" />
@@ -44,8 +46,8 @@ export default function AsistenciasTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {clases.map(c => {
-                        const registros = asistenciasPorClase[c.idClase] || [];
+                    {clasesSeguras.map(c => {
+                        const registros = asistenciasPorClase?.[c.idClase] || [];
                         const tieneAsistencia = registros.length > 0;
                         const estado = tieneAsistencia ? 'registrada' : 'pendiente';
                         const presentes = registros.filter(r => r.presente).length;

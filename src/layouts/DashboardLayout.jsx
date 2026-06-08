@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import { NAV_CONFIG } from '../config/navConfig';
+import { patchLucideForReact } from '../utils/lucideReactSafe';
 import '../styles/layout/dashboard.css';
 
 // ── Mapa path → meta (título + subtítulo del topbar) ──────────────────────────
@@ -46,6 +47,7 @@ export default function DashboardLayout() {
     };
 
     useEffect(() => {
+        patchLucideForReact();
         if (typeof window !== 'undefined' && window.lucide) {
             window.lucide.createIcons();
         }

@@ -1,8 +1,10 @@
 import Can from '../Can';
 
-export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {
-    const activas = canchas.filter(c => c.estado === 'activa' || c.activa === true).length;
-    const inactivas = canchas.filter(c => c.estado === 'inactiva').length;
+export default function CanchasTable({ canchas = [], tipos = [], filtro, setFiltro, onNuevo, onVer, onEditar, onBaja, onVerDisp }) {
+    const canchasSeguras = Array.isArray(canchas) ? canchas : [];
+    const tiposSeguros = Array.isArray(tipos) ? tipos : [];
+    const activas = canchasSeguras.filter(c => c.estado === 'activa' || c.activa === true).length;
+    const inactivas = canchasSeguras.filter(c => c.estado === 'inactiva').length;
     const estadoCancha = (c) => {
         if (c.estado === 'mantenimiento') return { clase: 'warning', texto: 'Mantenimiento' };
         if (c.estado === 'activa' || c.activa === true) return { clase: 'success', texto: 'Activa' };
@@ -10,19 +12,18 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
     };
 
     const normalizarTexto = (texto) => {
-        return texto
-            .toString()
+        return String(texto || '')
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
     };
 
-    const filtradas = canchas.filter(c => {
+    const filtradas = canchasSeguras.filter(c => {
         if (!filtro) return true;
         
         const q = normalizarTexto(filtro);
         const nombreCancha = normalizarTexto(c.nombre || '');
-        const tipo = tipos.find(t => t.id === c.idTipo);
+        const tipo = tiposSeguros.find(t => t.id === c.idTipo);
         const nombreTipo = normalizarTexto(tipo?.nombre || '');
         
         return nombreCancha.includes(q) || nombreTipo.includes(q);
@@ -33,7 +34,7 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Canchas</h2>
-                    <span className="crud-count">{canchas.length} registradas</span>
+                    <span className="crud-count">{canchasSeguras.length} registradas</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -50,7 +51,7 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
 
             <div className="crud-mini-stats">
                 <div className="mini-stat">
-                    <span className="mini-stat-num">{canchas.length}</span>
+                    <span className="mini-stat-num">{canchasSeguras.length}</span>
                     <span className="mini-stat-label">Total</span>
                 </div>
                 <div className="mini-stat green">
@@ -84,7 +85,7 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                             </thead>
                             <tbody>
                                 {filtradas.map(c => {
-                                    const tipo = tipos.find(t => t.id === c.idTipo);
+                                    const tipo = tiposSeguros.find(t => t.id === c.idTipo);
                                     const estado = estadoCancha(c);
                                     return (
                                         <tr key={c.id}>

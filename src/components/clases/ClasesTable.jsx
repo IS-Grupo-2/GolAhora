@@ -3,7 +3,8 @@ import Can from '../Can';
 import { useAuth } from '../../context/AuthContext';
 import useRole from '../../hooks/useRole';
 
-function BadgeEstado({ estado }) {
+function BadgeEstado({ estado = 'programada' }) {
+    const estadoSeguro = String(estado || 'programada');
     const colores = {
         programada: 'info',
         en_curso:   'warning',
@@ -11,19 +12,20 @@ function BadgeEstado({ estado }) {
         cancelada:  'danger',
     };
     return (
-        <span className={`badge ${colores[estado] || 'info'}`} style={{ textTransform: 'capitalize' }}>
-            {estado.replace('_', ' ')}
+        <span className={`badge ${colores[estadoSeguro] || 'info'}`} style={{ textTransform: 'capitalize' }}>
+            {estadoSeguro.replace('_', ' ')}
         </span>
     );
 }
 
 export default function ClasesTable({
-    clases, filtro, onLimpiarFiltro, onVer, onEditar, onAsistencia, onCancelar, onSolicitarInscripcion
+    clases = [], filtro, onLimpiarFiltro, onVer, onEditar, onAsistencia, onCancelar, onSolicitarInscripcion
 }) {
     const { user } = useAuth();
     const { isClient } = useRole();
+    const clasesSeguras = Array.isArray(clases) ? clases : [];
 
-    if (clases.length === 0) {
+    if (clasesSeguras.length === 0) {
         return (
             <div className="tabla-empty">
                 <i data-lucide="calendar-x" />
@@ -49,7 +51,7 @@ export default function ClasesTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {clases.map(c => {
+                    {clasesSeguras.map(c => {
                         // Comprobaciones para el rol de Cliente
                         const yaInscripto = c.alumnos?.some(al => al.id === currentUserId);
                         const tieneCupo = (c.alumnos?.length || 0) < c.maxAlumnos;

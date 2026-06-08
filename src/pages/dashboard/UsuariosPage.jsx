@@ -24,6 +24,13 @@ function Toast({ toasts }) {
     );
 }
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 // ── Contenido de la Página ────────────────────────────────────────────────────
 export default function UsuariosPageContent() {
     const { clientes, loading, error, crearCliente, modificarCliente, darDeBaja } = useClientes();
@@ -82,20 +89,22 @@ export default function UsuariosPageContent() {
     }
 
     // ── Stats ──
-    const activos = clientes.filter(u => u.activo).length;
-    const inactivos = clientes.filter(u => !u.activo).length;
+    const clientesBase = Array.isArray(clientes) ? clientes : [];
+    const activos = clientesBase.filter(u => u.activo).length;
+    const inactivos = clientesBase.filter(u => !u.activo).length;
 
-    const usuariosFiltrados = filtro
-        ? clientes.filter(u => {
-              const q = filtro.toLowerCase();
-              return (
-                  `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
-                  u.dni.includes(q) ||
-                  u.email.toLowerCase().includes(q) ||
-                  u.username.toLowerCase().includes(q)
-              );
-          })
-        : clientes;
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const usuariosFiltrados = busqueda
+        ? clientesBase.filter(u => [
+              u?.nombre,
+              u?.apellido,
+              u?.dni,
+              u?.email,
+              u?.username,
+              u?.userName,
+              u?.telefono,
+          ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
+        : clientesBase;
 
     if (loading) return <LoadingSpinner message="Cargando clientes..." />;
     if (error) return <ErrorMessage message={`Ocurrió un error: ${error}`} />;
@@ -106,7 +115,7 @@ export default function UsuariosPageContent() {
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Clientes</h2>
-                    <span className="crud-count">{clientes.length} total</span>
+                    <span className="crud-count">{clientesBase.length} total</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -132,7 +141,7 @@ export default function UsuariosPageContent() {
             {/* MINI STATS */}
             <div className="crud-mini-stats">
                 <div className="mini-stat">
-                    <span className="mini-stat-num">{clientes.length}</span>
+                    <span className="mini-stat-num">{clientesBase.length}</span>
                     <span className="mini-stat-label">Total</span>
                 </div>
                 <div className="mini-stat green">

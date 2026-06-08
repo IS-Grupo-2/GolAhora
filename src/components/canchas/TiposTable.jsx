@@ -1,14 +1,16 @@
-export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo, onVer, onEditar, onBaja }) {
+export default function TiposTable({ tipos = [], canchas = [], filtro, setFiltro, onNuevo, onVer, onEditar, onBaja }) {
+    const tiposSeguros = Array.isArray(tipos) ? tipos : [];
+    const canchasSeguras = Array.isArray(canchas) ? canchas : [];
+
     const normalizarTexto = (texto) => {
-        return texto
-            .toString()
+        return String(texto || '')
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
     };
     
     
-    const filtrados = tipos.filter(t => {
+    const filtrados = tiposSeguros.filter(t => {
         if (!filtro) return true;
         
         const q = normalizarTexto(filtro);
@@ -23,7 +25,7 @@ export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo,
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Tipos de Cancha</h2>
-                    <span className="crud-count">{tipos.length} tipos</span>
+                    <span className="crud-count">{tiposSeguros.length} tipos</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -49,14 +51,14 @@ export default function TiposTable({ tipos, canchas, filtro, setFiltro, onNuevo,
                             </thead>
                             <tbody>
                                 {filtrados.map(t => {
-                                    const uso = canchas.filter(c => c.idTipo === t.id).length;
+                                    const uso = canchasSeguras.filter(c => c.idTipo === t.id).length;
                                     return (
                                         <tr key={t.id}>
                                             <td><strong>{t.nombre}</strong></td>
                                             <td>{t.superficie}</td>
                                             <td>{t.capacidadJugadores}</td>
                                             <td>{t.duracionMaxReservaMin} min</td>
-                                            <td>${t.precioHora.toLocaleString('es-AR')}</td>
+                                            <td>${Number(t.precioHora || 0).toLocaleString('es-AR')}</td>
                                             <td><span className={`badge ${uso > 0 ? 'info' : 'neutral'}`}>{uso} cancha{uso !== 1 ? 's' : ''}</span></td>
                                             <td>
                                                 <div className="action-btns">

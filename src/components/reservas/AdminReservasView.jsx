@@ -42,9 +42,10 @@ export default function AdminReservasView() {
 
     // Qué reservas puede ver cada rol
     const reservasVisibles = useMemo(() => {
-        if (isAdmin || isEmployee) return reservas;
-        if (isClient) return reservas.filter(r => r.cliente?.idUsuario === user?.idUsuario);
-        if (isProfessor) return reservas.filter(r =>
+        const reservasBase = Array.isArray(reservas) ? reservas : [];
+        if (isAdmin || isEmployee) return reservasBase;
+        if (isClient) return reservasBase.filter(r => r.cliente?.idUsuario === user?.idUsuario);
+        if (isProfessor) return reservasBase.filter(r =>
             r.profesor?.idUsuario === user?.idUsuario ||
             r.clase?.profesor?.idUsuario === user?.idUsuario
         );
@@ -52,7 +53,7 @@ export default function AdminReservasView() {
     }, [reservas, isAdmin, isEmployee, isProfessor, isClient, user?.idUsuario]);
 
     const normalizarTexto = (texto) =>
-        texto.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        String(texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
     const reservasFiltradas = useMemo(() => {
         const q = normalizarTexto(filtro);

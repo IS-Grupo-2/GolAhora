@@ -46,6 +46,13 @@ function clasePerteneceAlProfesor(clase, user) {
     return Boolean(usernameUsuario && usernameProfesor && usernameUsuario === usernameProfesor);
 }
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 // COMPONENTE LOCAL: Modal pasarela de pagos simulada
 function SimuladorPagoClaseModal({ open, clase, onConfirmar, onCerrar }) {
     const [procesando, setProcesando] = useState(false);
@@ -180,12 +187,24 @@ export default function ClasesPageContent() {
         setModalBaja({ open: false, clase: null });
     }
 
+    const clasesBase = Array.isArray(clases) ? clases : [];
     const clasesVisibles = user?.role === 'Professor'
-        ? clases.filter(c => clasePerteneceAlProfesor(c, user))
-        : clases;
+        ? clasesBase.filter(c => clasePerteneceAlProfesor(c, user))
+        : clasesBase;
 
-    const clasesFiltradas = filtro
-        ? clasesVisibles.filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()) || c.tipoClase.toLowerCase().includes(filtro.toLowerCase()))
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const clasesFiltradas = busqueda
+        ? clasesVisibles.filter(c => [
+            c?.nombre,
+            c?.tipoClase,
+            c?.cancha,
+            c?.fecha,
+            c?.horario,
+            c?.estado,
+            c?.profesor?.nombre,
+            c?.profesor?.apellido,
+            c?.profesor?.email,
+        ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
         : clasesVisibles;
 
     const programadas = clasesVisibles.filter(c => c.estado === 'programada').length;

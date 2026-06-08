@@ -23,6 +23,13 @@ function Toast({ toasts }) {
     );
 }
 
+function normalizarBusqueda(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 // ── Contenido de la Página ────────────────────────────────────────────────────
 export default function EmpleadosPageContent() {
     const { empleados, loading, error, crearEmpleado, modificarEmpleado, darDeBaja } = useEmpleados();
@@ -70,19 +77,23 @@ export default function EmpleadosPageContent() {
     const abrirDetalle = (e) => setModalDetalle({ open: true, empleado: e });
     const abrirBaja = (e) => setModalBaja({ open: true, empleado: e });
 
-    const activos = empleados.filter(e => e.activo).length;
-    const inactivos = empleados.filter(e => !e.activo).length;
+    const empleadosBase = Array.isArray(empleados) ? empleados : [];
+    const activos = empleadosBase.filter(e => e.activo).length;
+    const inactivos = empleadosBase.filter(e => !e.activo).length;
 
-    const empleadosFiltrados = filtro
-        ? empleados.filter(e => {
-              const q = filtro.toLowerCase();
-              return (
-                  `${e.nombre} ${e.apellido}`.toLowerCase().includes(q) ||
-                  (e.cargo || '').toLowerCase().includes(q) ||
-                  (e.sector || '').toLowerCase().includes(q)
-              );
-          })
-        : empleados;
+    const busqueda = normalizarBusqueda(filtro.trim());
+    const empleadosFiltrados = busqueda
+        ? empleadosBase.filter(e => [
+              e?.nombre,
+              e?.apellido,
+              e?.dni,
+              e?.email,
+              e?.username,
+              e?.userName,
+              e?.sector,
+              e?.turno,
+          ].some(valor => normalizarBusqueda(valor).includes(busqueda)))
+        : empleadosBase;
 
     if (loading) return <LoadingSpinner message="Cargando empleados..." />;
     if (error) return <ErrorMessage message={`Ocurrió un error: ${error}`} />;
@@ -96,7 +107,7 @@ export default function EmpleadosPageContent() {
             <div className="crud-toolbar">
                 <div className="crud-toolbar-left">
                     <h2 className="crud-title">Empleados</h2>
-                    <span className="crud-count">{empleados.length} total</span>
+                    <span className="crud-count">{empleadosBase.length} total</span>
                 </div>
                 <div className="crud-toolbar-right">
                     <div className="search-box">
@@ -119,7 +130,7 @@ export default function EmpleadosPageContent() {
             {/* MINI STATS */}
             <div className="crud-mini-stats">
                 <div className="mini-stat">
-                    <span className="mini-stat-num">{empleados.length}</span>
+                    <span className="mini-stat-num">{empleadosBase.length}</span>
                     <span className="mini-stat-label">Total</span>
                 </div>
                 <div className="mini-stat green">
