@@ -1,4 +1,5 @@
 import { horaAMinutos } from './reservasDisponibilidad';
+import { formatearFecha } from './fechas';
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -50,6 +51,6 @@ export function resumenReservasBloqueantes(reservas = []) {
     return reservas.map(r => {
         const cliente = `${r.cliente?.nombre || r.reservador?.nombre || 'Cliente'} ${r.cliente?.apellido || ''}`.trim();
         const pago = r.cobro?.estado === 'pagado' ? 'pagada' : 'pendiente';
-        return `${r.fechaUso} ${r.horaInicio}-${r.horaFin} · ${cliente} · ${pago}`;
+        return `${formatearFecha(r.fechaUso)} ${r.horaInicio}-${r.horaFin} · ${cliente} · ${pago}`;
     });
 }

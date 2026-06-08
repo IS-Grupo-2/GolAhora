@@ -1,4 +1,5 @@
 // src/components/recibos/RecibosTable.jsx
+import { formatearFecha } from '../../utils/fechas';
 
 function BadgeEstado({ estado }) {
     const isEmitido = estado === 'emitido';
@@ -50,7 +51,7 @@ export default function RecibosTable({ recibos = [], filtro, onLimpiarFiltro, is
                             <td>{r.nroRecibo}</td>
                             <td>{r.cliente?.nombre} {r.cliente?.apellido}</td>
                             <td>{r.cobro?.concepto}</td>
-                            <td>{r.fecha}</td>
+                            <td>{formatearFecha(r.fecha)}</td>
                             <td>{formatMoneda(r.total)}</td>
                             <td><BadgeEstado estado={r.estado} /></td>
                             <td>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function ReservaModalDetalle({ reserva, onClose, onConfirm }) {
     useEffect(() => {
@@ -32,7 +33,7 @@ export default function ReservaModalDetalle({ reserva, onClose, onConfirm }) {
                         </div>
                         <div className="detalle-campo">
                             <span className="detalle-label">Fecha Uso</span>
-                            <span className="detalle-valor">{reserva.fechaUso}</span>
+                            <span className="detalle-valor">{formatearFecha(reserva.fechaUso)}</span>
                         </div>
                         <div className="detalle-campo">
                             <span className="detalle-label">Horario</span>

@@ -5,6 +5,7 @@ import { useReservas } from '../../context/ReservasContext';
 import { useClientes } from '../../context/ClientesContext';
 import { useClases } from '../../context/ClasesContext';
 import { useTorneos } from '../../context/TorneosContext';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <i data-lucide={name} />;
@@ -21,20 +22,6 @@ const ALL_SHORTCUTS = [
     { path: '/dashboard/asistencias',  icon: 'clipboard-check', color: 'yellow', label: 'Tomar Asistencia', roles: ['Admin', 'Employee', 'Professor'] },
     { path: '/dashboard/reportes',     icon: 'bar-chart-3',     color: 'blue',   label: 'Métricas/Auditoría',roles: ['Admin', 'Employee'] },
 ];
-
-function StatCard({ icon, color, label, value }) {
-    return (
-        <article className="stat-card">
-            <div className={`stat-icon ${color}`}>
-                <Icon name={icon} />
-            </div>
-            <div>
-                <span className="stat-label">{label}</span>
-                <h2>{value}</h2>
-            </div>
-        </article>
-    );
-}
 
 function ShortcutCard({ icon, color, label, path, navigate }) {
     return (
@@ -53,7 +40,7 @@ export default function Dashboard() {
     
     // Conexión segura a los Contextos reales de la aplicación
     const { reservas, fetchReservas, loading: loadingRes } = useReservas();
-    const { clientes, fetchClientes, loading: loadingCli } = useClientes();
+    const { fetchClientes, loading: loadingCli } = useClientes();
     const { clases, fetchClases, loading: loadingCla } = useClases();
     const { competencias } = useTorneos();
 
@@ -61,9 +48,6 @@ export default function Dashboard() {
     const isAdminOrEmployee = rol === 'Admin' || rol === 'Employee';
     const isProfessor = rol === 'Professor';
     const isClient = rol === 'Client';
-
-    // Fecha actual simulada en base al contexto del sistema (2026-06-04)
-    const HOY_STR = '2026-06-04';
 
     // Carga inicial y reactiva de los contextos según los privilegios del token del usuario
     useEffect(() => {
@@ -97,31 +81,10 @@ export default function Dashboard() {
     }
 
     // ── PROCESAMIENTO DE ESTADÍSTICAS EN TIEMPO REAL ───────────────────────────
-    let statsData = [];
     let panelIzquierdo = null;
     let panelDerecho = null;
 
     if (isAdminOrEmployee) {
-        // --- MÉTRICAS DE ADMINISTRACIÓN GLOBAL ---
-        const reservasHoy = reservas.filter(r => r.fechaUso === HOY_STR && r.estado !== 'cancelada');
-        
-        const ingresosTotales = reservas
-            .filter(r => r.cobro?.estado === 'pagado')
-            .reduce((sum, r) => sum + (r.montoTotal || 0), 0);
-
-        const canchasActivasCount = new Set(
-            reservas.filter(r => r.fechaUso === HOY_STR && r.estado === 'confirmada').map(r => r.cancha?.idCancha)
-        ).size;
-
-        const clientesActivosCount = clientes.filter(c => c.activo).length;
-
-        statsData = [
-            { icon: 'calendar-check', color: 'purple', label: 'Reservas Hoy', value: reservasHoy.length.toString() },
-            { icon: 'wallet-cards', color: 'yellow', label: 'Ingresos Totales', value: `$${ingresosTotales.toLocaleString('es-AR')}` },
-            { icon: 'goal', color: 'green', label: 'Canchas Ocupadas Hoy', value: canchasActivasCount.toString() },
-            { icon: 'users', color: 'blue', label: 'Clientes Activos', value: clientesActivosCount.toString() }
-        ];
-
         // --- PANELES ADMINISTRATIVOS ---
         const proximasReservasGlobal = reservas
             .filter(r => r.estado !== 'cancelada')
@@ -151,7 +114,7 @@ export default function Dashboard() {
                                 <tr key={r.idReserva || i}>
                                     <td>{r.cliente?.nombre} {r.cliente?.apellido}</td>
                                     <td>{r.cancha?.nombre || `Nro ${r.cancha?.numero}`}</td>
-                                    <td>{r.horaInicio} hs ({r.fechaUso})</td>
+                                    <td>{r.horaInicio} hs ({formatearFecha(r.fechaUso)})</td>
                                     <td>
                                         <span className={`badge ${r.estado === 'confirmada' ? 'success' : 'warning'}`}>
                                             {r.estado.toUpperCase()}
@@ -191,17 +154,6 @@ export default function Dashboard() {
     } else if (isProfessor) {
         // Filtrar clases asignadas al profesor logueado
         const misClases = clases.filter(c => c.profesor?.idUsuario === user?.idUsuario || c.profesor === null);
-        const clasesPendientes = misClases.filter(c => c.estado === 'programada' || c.estado === 'en_curso');
-        
-        const totalAlumnosAsignados = misClases.reduce((sum, c) => sum + (c.alumnos?.length || 0), 0);
-
-        statsData = [
-            { icon: 'dumbbell', color: 'green', label: 'Mis Clases Totales', value: misClases.length.toString() },
-            { icon: 'calendar-days', color: 'purple', label: 'Clases Pendientes', value: clasesPendientes.length.toString() },
-            { icon: 'users', color: 'blue', label: 'Alumnos a Cargo', value: totalAlumnosAsignados.toString() },
-            { icon: 'clipboard-check', color: 'yellow', label: 'Hoy (Fecha)', value: HOY_STR }
-        ];
-
         // --- PANELES DEL PROFESOR ---
         panelIzquierdo = (
             <article className="panel-card">
@@ -227,7 +179,7 @@ export default function Dashboard() {
                                 <tr key={c.idClase || i}>
                                     <td><strong>{c.nombre}</strong> <span className="td-email">({c.tipoClase})</span></td>
                                     <td>{c.cancha}</td>
-                                    <td>{c.horario} hs ({c.fecha})</td>
+                                    <td>{c.horario} hs ({formatearFecha(c.fecha)})</td>
                                     <td>
                                         <span className="badge success">
                                             {c.alumnos?.length || 0} / {c.maxAlumnos} Inscriptos
@@ -273,13 +225,6 @@ export default function Dashboard() {
             c.alumnos?.some(al => al.id === user?.idUsuario || al.nombre?.includes(user?.nombre))
         );
 
-        statsData = [
-            { icon: 'calendar-days', color: 'purple', label: 'Mis Reservas Activas', value: misReservasActivas.length.toString() },
-            { icon: 'dumbbell', color: 'green', label: 'Mis Clases Semanales', value: misClasesInscripto.length.toString() },
-            { icon: 'trophy', color: 'yellow', label: 'Mis Torneos Activos', value: '1' },
-            { icon: 'wallet', color: 'blue', label: 'Historial de Pagos', value: misReservas.length.toString() }
-        ];
-
         // --- PANELES DEL CLIENTE ---
         panelIzquierdo = (
             <article className="panel-card">
@@ -305,7 +250,7 @@ export default function Dashboard() {
                                 misReservasActivas.slice(0, 5).map((r, i) => (
                                     <tr key={r.idReserva || i}>
                                         <td><strong>{r.cancha?.nombre || `Cancha N° ${r.cancha?.numero}`}</strong></td>
-                                        <td>{r.fechaUso}</td>
+                                        <td>{formatearFecha(r.fechaUso)}</td>
                                         <td>{r.horaInicio} a {r.horaFin} hs</td>
                                         <td>
                                             <span className={`badge ${r.estado === 'confirmada' ? 'success' : 'warning'}`}>
@@ -342,7 +287,7 @@ export default function Dashboard() {
                             <div className="activity-item" key={c.idClase || i}>
                                 <div className="activity-dot green" />
                                 <p>
-                                    Estás inscripto a <strong>{c.nombre}</strong> los días {c.fecha} a las {c.horario} hs en {c.cancha}.
+                                    Estás inscripto a <strong>{c.nombre}</strong> los días {formatearFecha(c.fecha)} a las {c.horario} hs en {c.cancha}.
                                 </p>
                             </div>
                         ))
@@ -358,11 +303,6 @@ export default function Dashboard() {
 
     return (
         <div className="dashboard-content">
-            {/* RENDERIZADO DINÁMICO DE MÉTRICAS */}
-            <section className="stats-grid">
-                {statsData.map(s => <StatCard key={s.label} {...s} />)}
-            </section>
-
             {/* ACCESOS RÁPIDOS DINÁMICOS BASADOS EN PERMISOS */}
             {shortcuts.length > 0 && (
                 <section className="shortcuts-section">

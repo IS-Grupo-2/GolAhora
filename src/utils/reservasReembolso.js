@@ -1,3 +1,5 @@
+import { formatearFecha } from './fechas';
+
 export function calcularPoliticaReembolso(reserva, ahora = new Date()) {
     const inicioReserva = new Date(`${reserva.fechaUso}T${reserva.horaInicio || '00:00'}:00`);
     const horasAntelacion = (inicioReserva.getTime() - ahora.getTime()) / (1000 * 60 * 60);
@@ -26,7 +28,7 @@ export function crearReciboReembolsoReserva({ reserva, cobroAsociado, politica }
         nroRecibo: `REEM-${String(idBase).padStart(8, '0')}-${politica.porcentaje}`,
         cobro: {
             idCobro: cobroAsociado?.idCobro || `RES-${idBase}`,
-            concepto: `Reembolso reserva ${reserva.cancha?.nombre || 'cancha'} - ${reserva.fechaUso}`,
+            concepto: `Reembolso reserva ${reserva.cancha?.nombre || 'cancha'} - ${formatearFecha(reserva.fechaUso)}`,
             montoFinal: total,
         },
         cliente: reserva.cliente || cobroAsociado?.cliente,

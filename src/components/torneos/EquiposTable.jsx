@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ModalEliminar from '../common/ModalEliminar';
 import Can from '../Can';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <i data-lucide={name} />;
@@ -141,7 +142,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                                         <td className="bold-text">{eq.nombre}</td>
                                         <td><span className="badge info">{eq.capitan || 'No asignado'}</span></td>
                                         <td>{eq.integrantes?.length || 0} Jugadores</td>
-                                        <td>{eq.fechaCreacion}</td>
+                                        <td>{formatearFecha(eq.fechaCreacion)}</td>
                                         <td>
                                             <div className="action-btns">
                                                 <button type="button" className="action-btn view" title="Ver Detalle" onClick={() => onDetalle?.(eq)}><Icon name="eye" /></button>

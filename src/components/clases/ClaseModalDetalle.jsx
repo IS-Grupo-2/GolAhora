@@ -1,5 +1,6 @@
 // src/components/clases/ClaseModalDetalle.jsx
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function formatFecha(fecha) {
     if (!fecha) return '—';
@@ -59,7 +60,7 @@ export default function ClaseModalDetalle({ open, clase, onCerrar }) {
                     <div className="detalle-grid">
                         <Campo label="Tipo de Clase" valor={clase.tipoClase} />
                         <Campo label="Cancha / Espacio" valor={clase.cancha} />
-                        <Campo label="Fecha" valor={formatFecha(clase.fecha)} />
+                        <Campo label="Fecha" valor={formatearFecha(clase.fecha)} />
                         <Campo label="Horario" valor={`${clase.horario} hs`} />
                         <Campo label="Duración" valor={`${clase.duracionMin} minutos`} />
                         <Campo label="Precio / Costo" valor={`$${clase.precio}`} />

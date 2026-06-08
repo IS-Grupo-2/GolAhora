@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { calcularPoliticaReembolso } from '../../utils/reservasReembolso';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function ReservaModalCancelar({ reserva, onClose, onCancel }) {
     const politica = useMemo(() => reserva ? calcularPoliticaReembolso(reserva) : null, [reserva]);
@@ -24,7 +25,7 @@ export default function ReservaModalCancelar({ reserva, onClose, onCancel }) {
                 </div>
                 <div className="dash-modal-body">
                     <p style={{ fontSize: '0.95rem', color: 'var(--text)', marginBottom: '8px' }}>
-                        Estás a punto de cancelar la reserva de <strong>{reserva.reservador.nombre}</strong> para el <strong>{reserva.fechaUso}</strong>.
+                        Estás a punto de cancelar la reserva de <strong>{reserva.reservador.nombre}</strong> para el <strong>{formatearFecha(reserva.fechaUso)}</strong>.
                     </p>
                     <div className="cancel-info-grid">
                         <div className="cancel-info-card">

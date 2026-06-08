@@ -1,3 +1,5 @@
+import { formatearFecha } from '../../utils/fechas';
+
 function BadgeEstado({ estado }) {
     if (estado === 'pagado') {
         return <span className="badge success">Pagado / Acreditado</span>;
@@ -49,7 +51,7 @@ export default function CobrosTable({ cobros = [], filtro, onLimpiarFiltro, isAd
                             <td>#{String(c.idCobro).padStart(5, '0')}</td>
                             <td>{c.cliente?.nombre} {c.cliente?.apellido}</td>
                             <td>{c.concepto}</td>
-                            <td>{c.fecha}</td>
+                            <td>{formatearFecha(c.fecha)}</td>
                             <td>{formatMoneda(c.montoFinal)}</td>
                             <td><BadgeEstado estado={c.estado} /></td>
                             <td>

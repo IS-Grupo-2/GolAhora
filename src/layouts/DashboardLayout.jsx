@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import { NAV_CONFIG } from '../config/navConfig';
+import { useAuth } from '../context/AuthContext';
 import { patchLucideForReact } from '../utils/lucideReactSafe';
 import '../styles/layout/dashboard.css';
 
@@ -40,11 +41,14 @@ function Icon({ name }) {
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
+    const { user } = useAuth();
 
     const meta = PATH_META[location.pathname] ?? {
         title: 'Dashboard',
         subtitle: 'Bienvenido al panel de administración.',
     };
+    const nombreUsuario = [user?.nombre, user?.apellido].filter(Boolean).join(' ') || user?.username || user?.email || 'usuario';
+    const subtitle = location.pathname === '/dashboard' ? `Bienvenido ${nombreUsuario}` : meta.subtitle;
 
     useEffect(() => {
         patchLucideForReact();
@@ -71,7 +75,7 @@ export default function DashboardLayout() {
                         </button>
                         <div>
                             <h1 id="topbar-title">{meta.title}</h1>
-                            <p id="topbar-subtitle">{meta.subtitle}</p>
+                            <p id="topbar-subtitle">{subtitle}</p>
                         </div>
                     </div>
 

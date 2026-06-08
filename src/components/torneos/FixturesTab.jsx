@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Can from '../Can';
 import { calcularTablaLiga } from '../../utils/fixtures';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${name}"></i>` }} />;
@@ -172,7 +173,7 @@ export default function FixturesTab({ competencias, fixtures, equipos, onGenerar
                             <h3 className="ronda-header">
                                 <Icon name={esLiga ? 'calendar-days' : 'git-branch'} /> {ronda.nombre}
                                 {ronda.fecha && (
-                                    <span className="badge info" style={{ marginLeft: '10px' }}>{ronda.fecha}</span>
+                                    <span className="badge info" style={{ marginLeft: '10px' }}>{formatearFecha(ronda.fecha)}</span>
                                 )}
                             </h3>
                             <div className="grid-cards">

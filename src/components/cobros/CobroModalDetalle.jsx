@@ -1,5 +1,6 @@
 // src/components/pagos/CobroModalDetalle.jsx
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function Campo({ label, valor, full }) {
     return (
@@ -48,7 +49,7 @@ export default function CobroModalDetalle({ open, cobro, onCerrar, onImprimir })
                         <Campo label="Cliente" valor={`${cobro.cliente.nombre} ${cobro.cliente.apellido} (DNI: ${cobro.cliente.dni})`} full />
                         <Campo label="Concepto" valor={cobro.concepto} />
                         <Campo label="Tipo de Operación" valor={cobro.tipoCobro} />
-                        <Campo label="Fecha" valor={cobro.fecha} />
+                        <Campo label="Fecha" valor={formatearFecha(cobro.fecha)} />
                         <Campo label="Monto Base" valor={formatMoneda(cobro.monto)} />
                         
                         <Campo 

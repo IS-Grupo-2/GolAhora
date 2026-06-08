@@ -2,6 +2,7 @@
 import Can from '../Can';
 import { useAuth } from '../../context/AuthContext';
 import useRole from '../../hooks/useRole';
+import { formatearFecha } from '../../utils/fechas';
 
 function BadgeEstado({ estado = 'programada' }) {
     const estadoSeguro = String(estado || 'programada');
@@ -66,7 +67,7 @@ export default function ClasesTable({
                                 </td>
                                 <td>
                                     <div className="user-cell-info">
-                                        <strong>{c.fecha}</strong>
+                                        <strong>{formatearFecha(c.fecha)}</strong>
                                         <span>{c.horario} ({c.duracionMin}m)</span>
                                     </div>
                                 </td>

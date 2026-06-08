@@ -1,5 +1,6 @@
 // src/components/torneos/ClienteCompetenciasTab.jsx
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <i data-lucide={name} />;
@@ -69,8 +70,8 @@ export default function ClienteCompetenciasTab({ competencias, onDetalle }) {
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <small>Inicio: {comp.fechaInicio || '-'}</small>
-                                            <small>Fin: {comp.fechaFin || '-'}</small>
+                                            <small>Inicio: {formatearFecha(comp.fechaInicio)}</small>
+                                            <small>Fin: {formatearFecha(comp.fechaFin)}</small>
                                         </div>
                                     </td>
                                     <td>

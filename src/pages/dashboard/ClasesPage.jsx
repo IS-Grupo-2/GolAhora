@@ -14,6 +14,7 @@ import PagoReservaModal from '../../components/reservas/PagoReservaModal';
 import Can              from '../../components/Can';
 import LoadingSpinner   from '../../components/ui/LoadingSpinner';
 import ErrorMessage     from '../../components/ui/ErrorMessage';
+import { formatearFecha } from '../../utils/fechas';
 
 function Toast({ toasts }) {
     return (
@@ -77,7 +78,7 @@ function SimuladorPagoClaseModal({ open, clase, onConfirmar, onCerrar }) {
                     <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Estás inscribiéndote a:</p>
                         <h4 style={{ fontSize: '1.2rem', color: 'var(--text)', margin: '4px 0' }}>{clase.nombre}</h4>
-                        <span className="badge info" style={{ marginTop: '4px' }}>{clase.fecha} — {clase.horario} hs</span>
+                        <span className="badge info" style={{ marginTop: '4px' }}>{formatearFecha(clase.fecha)} — {clase.horario} hs</span>
                     </div>
                     <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Monto Final a abonar:</span>
@@ -289,7 +290,7 @@ export default function ClasesPageContent() {
                     }}
                     titulo="Pagar inscripcion"
                     detalleLabel="Clase"
-                    detalleTexto={`${modalPago.clase.nombre} - ${modalPago.clase.fecha} a las ${modalPago.clase.horario} hs`}
+                    detalleTexto={`${modalPago.clase.nombre} - ${formatearFecha(modalPago.clase.fecha)} a las ${modalPago.clase.horario} hs`}
                     onClose={() => setModalPago({ open: false, clase: null })}
                     onConfirmar={handleConfirmarPago}
                 />

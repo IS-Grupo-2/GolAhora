@@ -15,6 +15,7 @@ import ReservaModalCancelar from './ReservaModalCancelar';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
 import EmptyState from '../ui/EmptyState';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function AdminReservasView() {
     const {
@@ -88,7 +89,7 @@ export default function AdminReservasView() {
                 await crearCobro({
                     idReserva: reservaCreada.idReserva,
                     cliente: reservaData.cliente,
-                    concepto: `Reserva ${reservaData.cancha.nombre} - ${reservaData.fechaUso}`,
+                    concepto: `Reserva ${reservaData.cancha.nombre} - ${formatearFecha(reservaData.fechaUso)}`,
                     tipoCobro: 'Reserva Cancha',
                     monto: reservaData.montoTotal,
                     montoFinal: reservaData.montoTotal,

@@ -1,5 +1,6 @@
 // src/components/reservas/ReservaCard.jsx
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function ReservaCard({ reserva, onCancelar, onPagar }) {
     useEffect(() => {
@@ -36,7 +37,7 @@ export default function ReservaCard({ reserva, onCancelar, onPagar }) {
             <div className="detalle-grid" style={{ gridTemplateColumns: '1fr', gap: '0.5rem', marginBottom: '1.25rem' }}>
                 <div className="detalle-campo" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', padding: '0.5rem' }}>
                     <i data-lucide="calendar" style={{ color: 'var(--purple)', width: '16px' }} />
-                    <span className="detalle-valor">{reserva.fechaUso}</span>
+                    <span className="detalle-valor">{formatearFecha(reserva.fechaUso)}</span>
                 </div>
                 <div className="detalle-campo" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', padding: '0.5rem' }}>
                     <i data-lucide="clock" style={{ color: 'var(--purple)', width: '16px' }} />

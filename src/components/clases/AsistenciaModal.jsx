@@ -1,5 +1,6 @@
 // src/components/clases/AsistenciaModal.jsx
 import { useState, useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function AsistenciaModal({ open, clase, onGuardar, onCerrar }) {
     const [asistencias, setAsistencias] = useState({});
@@ -38,7 +39,7 @@ export default function AsistenciaModal({ open, clase, onGuardar, onCerrar }) {
 
                 <div className="dash-modal-body">
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
-                        Clase: <strong>{clase.nombre}</strong> ({clase.fecha})
+                        Clase: <strong>{clase.nombre}</strong> ({formatearFecha(clase.fecha)})
                     </p>
                     
                     {(!clase.alumnos || clase.alumnos.length === 0) ? (

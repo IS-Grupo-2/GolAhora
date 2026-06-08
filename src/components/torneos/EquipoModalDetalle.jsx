@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <i data-lucide={name} />;
@@ -54,8 +55,8 @@ export default function EquipoModalDetalle({ open, equipo, competencias, onClose
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                        <Campo label="Capitán" valor={equipo.capitan || 'No asignado'} />
-                        <Campo label="Fecha de creación" valor={equipo.fechaCreacion || '—'} />
+                        <Campo label="Capitan" valor={equipo.capitan || 'No asignado'} />
+                        <Campo label="Fecha de creacion" valor={formatearFecha(equipo.fechaCreacion)} />
                         <Campo label="Integrantes" valor={`${equipo.integrantes?.length || 0} jugadores`} />
                         <Campo label="ID Interno" valor={`#${equipo.idEquipo}`} />
                         <div className="detalle-campo detalle-full" style={{ gridColumn: '1 / -1' }}>
@@ -70,7 +71,7 @@ export default function EquipoModalDetalle({ open, equipo, competencias, onClose
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>Este equipo no tiene integrantes registrados aún.</p>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>Este equipo no tiene integrantes registrados aun.</p>
                                 )}
                             </div>
                         </div>
@@ -85,7 +86,7 @@ export default function EquipoModalDetalle({ open, equipo, competencias, onClose
                                     ))}
                                 </div>
                             ) : (
-                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>El equipo no está inscrito en ninguna competencia.</p>
+                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>El equipo no esta inscrito en ninguna competencia.</p>
                             )}
                         </div>
                     </div>

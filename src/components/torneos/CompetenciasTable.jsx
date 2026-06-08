@@ -2,6 +2,7 @@
 import { useState, useEffect} from 'react';
 import ModalEliminar from '../common/ModalEliminar';
 import Can from '../Can';
+import { formatearFecha } from '../../utils/fechas';
 
 function Icon({ name }) {
     return <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${name}"></i>` }} />;
@@ -165,8 +166,8 @@ export default function CompetenciasTable({
 
                                             <td>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                    <small>Inicio: {comp.fechaInicio || '-'}</small>
-                                                    <small>Fin: {comp.fechaFin || '-'}</small>
+                                                    <small>Inicio: {formatearFecha(comp.fechaInicio)}</small>
+                                                    <small>Fin: {formatearFecha(comp.fechaFin)}</small>
                                                 </div>
                                             </td>
 

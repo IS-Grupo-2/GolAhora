@@ -10,6 +10,7 @@ import ReservaModalCancelar from './ReservaModalCancelar';
 import PagoReservaModal from './PagoReservaModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import EmptyState from '../ui/EmptyState';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function ClienteReservasView() {
     const { reservas, loading, fetchReservas, cancelarReserva, confirmarReserva } = useReservas();
@@ -83,7 +84,7 @@ export default function ClienteReservasView() {
             await crearCobro({
                 idReserva: reserva.idReserva,
                 cliente: reserva.cliente,
-                concepto: `Reserva ${reserva.cancha?.nombre || 'Cancha'} - ${reserva.fechaUso}`,
+                concepto: `Reserva ${reserva.cancha?.nombre || 'Cancha'} - ${formatearFecha(reserva.fechaUso)}`,
                 tipoCobro: 'Reserva Cancha',
                 monto: reserva.montoTotal,
                 montoFinal: datosPago.montoFinal ?? reserva.montoTotal,

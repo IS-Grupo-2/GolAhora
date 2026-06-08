@@ -1,5 +1,6 @@
 // src/components/recibos/ReciboModalDetalle.jsx
 import { useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function Campo({ label, valor, full }) {
     return (
@@ -57,7 +58,7 @@ export default function ReciboModalDetalle({ open, recibo, onCerrar, onImprimir 
                         <Campo label="Método de Pago" valor={recibo.pago.metodoPago} />
                         <Campo label="N° Transacción" valor={recibo.pago.nroTransaccion} />
                         
-                        <Campo label="Fecha de Emisión" valor={recibo.fecha} />
+                        <Campo label="Fecha de Emisión" valor={formatearFecha(recibo.fecha)} />
                         <Campo label="Detalles / Observaciones" valor={recibo.detalles} />
                     </div>
                 </div>

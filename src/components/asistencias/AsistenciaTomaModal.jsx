@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatearFecha } from '../../utils/fechas';
 
 function nombreAlumno(alumno) {
     return [alumno.nombre, alumno.apellido].filter(Boolean).join(' ') || alumno.email || `Alumno #${alumno.id}`;
@@ -77,7 +78,7 @@ export default function AsistenciaTomaModal({ open, clase, registrosPrevios, onG
                 <div className="dash-modal-body" style={{ padding: '0' }}>
                     <div style={{ padding: '1rem 1.4rem', background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            Fecha: <strong>{clase.fecha}</strong> | Horario: <strong>{clase.horario} hs</strong>
+                            Fecha: <strong>{formatearFecha(clase.fecha)}</strong> | Horario: <strong>{clase.horario} hs</strong>
                         </span>
                     </div>
 

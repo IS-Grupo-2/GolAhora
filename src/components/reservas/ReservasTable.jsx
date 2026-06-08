@@ -1,4 +1,6 @@
 // src/components/reservas/ReservasTable.jsx
+import { formatearFecha } from '../../utils/fechas';
+
 export default function ReservasTable({
     reservas,
     filtro,
@@ -51,7 +53,7 @@ export default function ReservasTable({
                                 </td>
 
                                 <td>
-                                    <strong>{r.fechaUso}</strong>
+                                    <strong>{formatearFecha(r.fechaUso)}</strong>
                                     <br />
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                         {r.horaInicio} – {r.horaFin} ({r.duracionMin}m)

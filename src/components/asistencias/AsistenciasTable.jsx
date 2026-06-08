@@ -1,3 +1,5 @@
+import { formatearFecha } from '../../utils/fechas';
+
 function BadgeEstado({ estado }) {
     const isTomada = estado === 'registrada';
     return (
@@ -71,7 +73,7 @@ export default function AsistenciasTable({
                                 </td>
                                 <td>
                                     <div className="user-cell-info">
-                                        <strong>{c.fecha}</strong>
+                                        <strong>{formatearFecha(c.fecha)}</strong>
                                         <span>{c.horario} hs ({c.duracionMin}m)</span>
                                     </div>
                                 </td>

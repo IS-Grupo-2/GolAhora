@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDescuentos } from '../../context/DescuentosContext';
+import { formatearFecha } from '../../utils/fechas';
 
 const CBU_TRANSFERENCIA = '0000003100015903634731';
 
@@ -125,7 +126,7 @@ export default function PagoReservaModal({
                     <div className="detalle-campo detalle-full" style={{ marginBottom: '14px' }}>
                         <span className="detalle-label">{detalleLabel}</span>
                         <span className="detalle-valor">
-                            {detalleTexto || `${reserva.cancha?.nombre} - ${reserva.fechaUso} de ${reserva.horaInicio} a ${reserva.horaFin}`}
+                            {detalleTexto || `${reserva.cancha?.nombre} - ${formatearFecha(reserva.fechaUso)} de ${reserva.horaInicio} a ${reserva.horaFin}`}
                         </span>
                     </div>
 

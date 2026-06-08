@@ -5,6 +5,7 @@ import { useCobros } from '../../context/CobrosContext';
 import { useAuth } from '../../context/AuthContext';
 import { useClases } from '../../context/ClasesContext';
 import { validarReservaCancha } from '../../utils/reservasDisponibilidad';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function NuevaReservaClienteModal({ onClose }) {
     const { canchas = [], tiposCanchas = [], disponibilidades = [] } = useCanchas();
@@ -80,7 +81,7 @@ export default function NuevaReservaClienteModal({ onClose }) {
                 await cobrosContext.crearItem({
                     idReserva: reservaCreada.idReserva,
                     cliente: { idUsuario: userId, nombre: userNombre, apellido: userApellido, dni: user?.dni || '33788901' },
-                    concepto: `Reserva ${detallesCancha.cancha.nombre} - ${form.fechaUso}`,
+                    concepto: `Reserva ${detallesCancha.cancha.nombre} - ${formatearFecha(form.fechaUso)}`,
                     tipoCobro: 'Reserva Cancha',
                     monto: detallesCancha.precioTotal,
                     montoFinal: detallesCancha.precioTotal,

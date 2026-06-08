@@ -14,6 +14,7 @@ import CobrosTable from '../../components/cobros/CobrosTable';
 import CobroModal from '../../components/cobros/CobroModal';
 import CobroModalDetalle from '../../components/cobros/CobroModalDetalle';
 import CobroModalBaja from '../../components/cobros/CobroModalBaja';
+import { formatearFecha } from '../../utils/fechas';
 
 export default function CobrosPageContent() {
     const { items: cobros, loading, error, crearItem, modificarItem } = useCobros();
@@ -63,7 +64,7 @@ export default function CobrosPageContent() {
                 id: `reserva-${r.idReserva}`,
                 clienteId: clienteId(r.cliente) || r.reservador?.id,
                 tipoCobro: 'Reserva Cancha',
-                concepto: `Reserva ${r.cancha?.nombre || 'Cancha'} - ${r.fechaUso} ${r.horaInicio || ''}`.trim(),
+                concepto: `Reserva ${r.cancha?.nombre || 'Cancha'} - ${formatearFecha(r.fechaUso)} ${r.horaInicio || ''}`.trim(),
                 monto: Number(r.montoTotal || 0),
                 referencia: { idReserva: r.idReserva },
                 detalle: 'Reserva pendiente de pago',
@@ -77,7 +78,7 @@ export default function CobrosPageContent() {
                 concepto,
                 monto: Number(clase.precio || 0),
                 referencia: { idClase: clase.idClase },
-                detalle: `${clase.tipoClase} - ${clase.fecha} ${clase.horario || ''}`.trim(),
+                detalle: `${clase.tipoClase} - ${formatearFecha(clase.fecha)} ${clase.horario || ''}`.trim(),
             };
         })),
         ...competenciasBase.flatMap(comp => (comp.equipos || []).flatMap(idEquipo => {
@@ -130,7 +131,7 @@ export default function CobrosPageContent() {
             Comprobante de Cobro Interno                 
 ============================================================
 ID de Cobro:      #${String(cobro.idCobro || cobro.id).padStart(5, '0')}
-Fecha de Emisión: ${cobro.fecha}
+Fecha de Emisión: ${formatearFecha(cobro.fecha)}
 Estado:           ${cobro.estado.toUpperCase()}
 ------------------------------------------------------------
 DATOS DEL CLIENTE:
