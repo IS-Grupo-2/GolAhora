@@ -41,7 +41,13 @@ export default function CanchaModal({ open, modo, cancha, tipos, canchasActivas,
         }
 
         setErrores(errs);
-        if (ok) onGuardar({ ...form, numero, idTipo: parseInt(form.idTipo) });
+        if (ok) onGuardar({
+            ...(cancha ? { id: cancha.id, estado: cancha.estado, activa: cancha.activa } : {}),
+            ...form,
+            numero,
+            idTipo: parseInt(form.idTipo),
+            tipoCanchaId: parseInt(form.idTipo),
+        });
     }
 
     return (
@@ -123,13 +129,13 @@ export function CanchaModalBaja({ open, cancha, onConfirmar, onCerrar }) {
         <div className="dash-modal-overlay activo" onClick={(e) => e.target === e.currentTarget && onCerrar()}>
             <div className="dash-modal dash-modal--sm">
                 <div className="dash-modal-header">
-                    <h3>{esBaja ? 'Dar de baja' : 'Reactivar cancha'}</h3>
+                    <h3>{esBaja ? 'Deshabilitar cancha' : 'Reactivar cancha'}</h3>
                     <button className="dash-modal-close" onClick={onCerrar}><i data-lucide="x" /></button>
                 </div>
                 <div className="dash-modal-body">
                     <p style={{ color: 'var(--text)', lineHeight: 1.6 }}>
                         {esBaja 
-                            ? <>¿Dar de baja a <strong>"{cancha.nombre}"</strong>? Se bloquearán todas sus disponibilidades vinculadas.</>
+                            ? <>¿Deshabilitar a <strong>"{cancha.nombre}"</strong>? Se bloquearán todas sus disponibilidades vinculadas.</>
                             : <>¿Reactivar <strong>"{cancha.nombre}"</strong>?</>}
                     </p>
                 </div>

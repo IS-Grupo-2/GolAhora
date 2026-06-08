@@ -110,6 +110,7 @@ export function CanchasProvider({ children }) {
             c = id;
             id = c.id;
         }
+        if (!id) return;
         setCanchas(prev => { const n = prev.map(x => x.id === id ? { ...x, ...c } : x); localStorage.setItem('canchas_db', JSON.stringify(n)); return n; });
     };
     const toggleEstadoCancha = async (id) => {
@@ -131,6 +132,11 @@ export function CanchasProvider({ children }) {
         setTiposCanchas(prev => { const n = [...prev, item]; localStorage.setItem('tipos_canchas_db', JSON.stringify(n)); return n; });
     };
     const modificarTipo = async (id, t) => {
+        if (typeof id === 'object') {
+            t = id;
+            id = t.id;
+        }
+        if (!id) return;
         setTiposCanchas(prev => { const n = prev.map(x => x.id === id ? { ...x, ...t } : x); localStorage.setItem('tipos_canchas_db', JSON.stringify(n)); return n; });
     };
     const eliminarTipo = async (id) => {

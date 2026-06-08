@@ -34,6 +34,20 @@ const MOCK_FIXTURES = [
     }
 ];
 
+const MAX_INTEGRANTES_EQUIPO = 16;
+
+function normalizarEquipo(equipo) {
+    const integrantes = Array.from(new Set([
+        equipo.capitan,
+        ...(equipo.integrantes || []),
+    ].filter(Boolean)));
+
+    return {
+        ...equipo,
+        integrantes: integrantes.slice(0, MAX_INTEGRANTES_EQUIPO),
+    };
+}
+
 function mergePorIdGuardandoLocal(localItems, mockItems, idKey) {
     if (!Array.isArray(localItems) || localItems.length === 0) return mockItems;
     const idsLocales = new Set(localItems.map(item => item[idKey]));
@@ -145,20 +159,21 @@ export function TorneosProvider({ children }) {
 
     // --- CRUD EQUIPOS ---
     const guardarEquipo = async (equipo) => {
+        const equipoNormalizado = normalizarEquipo(equipo);
         if (USE_MOCK) {
-            if (equipo.idEquipo) setEquipos(prev => prev.map(e => e.idEquipo === equipo.idEquipo ? { ...e, ...equipo } : e));
-            else setEquipos(prev => [...prev, { ...equipo, idEquipo: Date.now(), fechaCreacion: new Date().toISOString().split('T')[0] }]);
+            if (equipoNormalizado.idEquipo) setEquipos(prev => prev.map(e => e.idEquipo === equipoNormalizado.idEquipo ? { ...e, ...equipoNormalizado } : e));
+            else setEquipos(prev => [...prev, { ...equipoNormalizado, idEquipo: Date.now(), fechaCreacion: new Date().toISOString().split('T')[0] }]);
             return;
         }
 
-        const isEdit = !!equipo.idEquipo;
+        const isEdit = !!equipoNormalizado.idEquipo;
         const method = isEdit ? 'PUT' : 'POST';
-        const url = isEdit ? `${API_URL}/equipos/${equipo.idEquipo}` : `${API_URL}/equipos`;
+        const url = isEdit ? `${API_URL}/equipos/${equipoNormalizado.idEquipo}` : `${API_URL}/equipos`;
         
         const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(equipo)
+            body: JSON.stringify(equipoNormalizado)
         });
         if (!res.ok) throw new Error('Error al guardar equipo');
         const data = await res.json();

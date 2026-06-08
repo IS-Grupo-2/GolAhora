@@ -73,14 +73,6 @@ export default function DashboardLayout() {
                         </div>
                     </div>
 
-                    <div className="topbar-actions">
-                        <button className="icon-btn" aria-label="Notificaciones">
-                            <Icon name="bell" />
-                        </button>
-                        <button className="icon-btn" aria-label="Configuración">
-                            <Icon name="settings-2" />
-                        </button>
-                    </div>
                 </header>
 
                 {/* CONTENIDO — cada sub-ruta renderiza acá */}

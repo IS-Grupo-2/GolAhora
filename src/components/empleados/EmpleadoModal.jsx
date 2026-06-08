@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 
 const FORM_VACIO = {
     nombre: '', apellido: '', dni: '', email: '', telefono: '',
-    legajo: '', userName: '', cargo: '', turno: '', sector: '',
+    legajo: '', userName: '', turno: '', sector: '',
     password: '', activo: 'true',
 };
 
 const ERRORES_VACIOS = {
     nombre: '', apellido: '', dni: '', email: '', telefono: '',
-    legajo: '', userName: '', cargo: '', turno: '', sector: '', password: '',
+    legajo: '', userName: '', turno: '', sector: '', password: '',
 };
 
 function Field({ label, required, error, children }) {
@@ -44,7 +44,6 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
                 telefono: empleado.telefono || '',
                 legajo:   empleado.legajo   || '',
                 userName: empleado.userName || '',
-                cargo:    empleado.cargo    || '',
                 turno:    empleado.turno    || '',
                 sector:   empleado.sector   || '',
                 password: '',
@@ -87,7 +86,6 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
         if (!form.email.includes('@') || !form.email.includes('.')) { errs.email = 'Email inválido'; ok = false; }
         if (form.legajo.trim().length < 4) { errs.legajo = 'Legajo inválido'; ok = false; }
         if (form.userName.trim().length < 4 || form.userName.trim().length > 20) { errs.userName = 'Entre 4 y 20 caracteres'; ok = false; }
-        if (!form.cargo) { errs.cargo = 'Seleccione un cargo'; ok = false; }
         if (!form.turno) { errs.turno = 'Seleccione un turno'; ok = false; }
         if (form.sector.trim().length < 2) { errs.sector = 'Sector muy corto'; ok = false; }
         if (esNuevo && form.password.length < 6) { errs.password = 'Mínimo 6 caracteres'; ok = false; }
@@ -108,7 +106,6 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
             telefono: form.telefono.trim(),
             legajo:   form.legajo.trim(),
             userName: form.userName.trim(),
-            cargo:    form.cargo,
             turno:    form.turno,
             sector:   form.sector.trim(),
             rol:      'empleado',
@@ -161,15 +158,6 @@ export default function EmpleadoModal({ open, modo, empleado, onGuardar, onCerra
                     <div className="form-row">
                         <Field label="Username" required error={errores.userName}>
                             <input type="text" value={form.userName} onChange={e => set('userName', e.target.value)} className={errores.userName ? 'input-error-field' : ''} />
-                        </Field>
-                        <Field label="Cargo" required error={errores.cargo}>
-                            <select value={form.cargo} onChange={e => set('cargo', e.target.value)} className={errores.cargo ? 'input-error-field' : ''}>
-                                <option value="">Seleccionar</option>
-                                <option value="Cajero">Cajero</option>
-                                <option value="Administrativo">Administrativo</option>
-                                <option value="Operador">Operador</option>
-                                <option value="Limpieza">Limpieza</option>
-                            </select>
                         </Field>
                     </div>
 

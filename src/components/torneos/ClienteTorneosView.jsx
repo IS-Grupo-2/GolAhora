@@ -1,24 +1,60 @@
 import { useEffect, useState } from 'react';
 import { useTorneos } from '../../context/TorneosContext';
+import { useAuth } from '../../context/AuthContext';
 import ClienteCompetenciasTab from './ClienteCompetenciasTab';
 import ClienteFixturesTab from './ClienteFixtureTab';
 import EquiposTable from './EquiposTable';
 import EquipoModal from './EquipoModal';
 import CompetenciaModalDetalle from './CompetenciaModalDetalle';
 import EquipoModalDetalle from './EquipoModalDetalle';
+import CompetenciasFooter from './CompetenciasFooter';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
+
+function nombreUsuario(usuario) {
+    return `${usuario?.nombre || ''} ${usuario?.apellido || ''}`.trim() || usuario?.username || usuario?.email || '';
+}
+
+function equipoPerteneceAlUsuario(equipo, user) {
+    if (!user) return false;
+
+    const idsUsuario = [user.idUsuario, user.id].filter(Boolean).map(String);
+    const creadoPor = equipo.creadoPor || {};
+    const idsEquipo = [creadoPor.idUsuario, creadoPor.id].filter(Boolean).map(String);
+
+    if (idsUsuario.some(id => idsEquipo.includes(id))) return true;
+
+    const emailUsuario = user.email?.toLowerCase();
+    if (emailUsuario && creadoPor.email?.toLowerCase() === emailUsuario) return true;
+
+    const usernameUsuario = (user.username || user.userName)?.toLowerCase();
+    if (usernameUsuario && (creadoPor.username || creadoPor.userName)?.toLowerCase() === usernameUsuario) return true;
+
+    const nombreActual = nombreUsuario(user);
+    return Boolean(nombreActual && (
+        equipo.capitan === nombreActual ||
+        equipo.integrantes?.includes(nombreActual)
+    ));
+}
+
+function usuarioEsCapitan(equipo, user) {
+    const nombreActual = nombreUsuario(user);
+    return Boolean(nombreActual && equipo?.capitan === nombreActual);
+}
 
 export default function ClienteTorneosView() {
     const { 
         competencias, equipos, fixtures, loading, error, 
-        guardarEquipo 
+        guardarEquipo,
+        inscribirEquipo,
     } = useTorneos();
+    const { user } = useAuth();
 
     const [activeTab, setActiveTab] = useState('disponibles');
 
     // Estados para Modales
     const [modalEquipoOpen, setModalEquipoOpen] = useState(false);
+    const [equipoAEditar, setEquipoAEditar] = useState(null);
     const [modalDetalleCompOpen, setModalDetalleCompOpen] = useState(false);
     const [competenciaDetalle, setCompetenciaDetalle] = useState(null);
     const [modalDetalleEquipoOpen, setModalDetalleEquipoOpen] = useState(false);
@@ -32,6 +68,8 @@ export default function ClienteTorneosView() {
 
     const handleVerDetalleComp = (competencia) => { setCompetenciaDetalle(competencia); setModalDetalleCompOpen(true); };
     const handleVerDetalleEquipoClick = (equipo) => { setEquipoDetalle(equipo); setModalDetalleEquipoOpen(true); };
+    const handleEditarEquipoClick = (equipo) => { setEquipoAEditar(equipo); setModalEquipoOpen(true); };
+    const misEquipos = equipos.filter(equipo => equipoPerteneceAlUsuario(equipo, user));
 
     if (loading) return <LoadingSpinner />;
     if (error) return <ErrorMessage message={error} />;
@@ -67,15 +105,16 @@ export default function ClienteTorneosView() {
             
             {activeTab === 'mis equipos' && (
                 <EquiposTable 
-                    equipos={equipos} 
+                    equipos={misEquipos} 
                     competencias={competencias} 
                     fixtures={fixtures}
-                    onNuevo={() => setModalEquipoOpen(true)}
+                    onNuevo={() => { setEquipoAEditar(null); setModalEquipoOpen(true); }}
                     onDetalle={handleVerDetalleEquipoClick}
                     // Pasamos props vacías para funciones que el cliente no tiene acceso
-                    onEditar={() => {}} 
+                    onEditar={handleEditarEquipoClick} 
                     onEliminar={() => {}} 
-                    onInscribir={() => {}}
+                    onInscribir={inscribirEquipo}
+                    puedeEditarEquipo={(equipo) => usuarioEsCapitan(equipo, user)}
                 />
             )}
 
@@ -90,16 +129,18 @@ export default function ClienteTorneosView() {
             {/* MODALES DEL CLIENTE */}
             <EquipoModal 
                 isOpen={modalEquipoOpen} 
-                onClose={() => setModalEquipoOpen(false)} 
+                onClose={() => { setModalEquipoOpen(false); setEquipoAEditar(null); }} 
                 onSave={guardarEquipo} 
-                equipoEditar={null} // El cliente solo crea equipos nuevos
+                equipoEditar={equipoAEditar}
+                usuarioActual={user}
+                modoCliente
             />
             
             <CompetenciaModalDetalle 
                 open={modalDetalleCompOpen} 
                 competencia={competenciaDetalle} 
                 onClose={() => setModalDetalleCompOpen(false)} 
-                onEditar={null} 
+                onEditar={usuarioEsCapitan(equipoDetalle, user) ? handleEditarEquipoClick : null} 
             />
             
             <EquipoModalDetalle 
@@ -109,6 +150,8 @@ export default function ClienteTorneosView() {
                 onClose={() => setModalDetalleEquipoOpen(false)} 
                 onEditar={null} 
             />
+
+            <CompetenciasFooter />
         </div>
     );
 }

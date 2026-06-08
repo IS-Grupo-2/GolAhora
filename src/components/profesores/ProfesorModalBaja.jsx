@@ -46,7 +46,7 @@ export default function ProfesorModalBaja({ open, profesor, onConfirmar, onCerra
                 <div className="dash-modal-body">
                     <p style={{ color: 'var(--text)', lineHeight: 1.6 }}>
                         {deBaja ? (
-                            <>¿Deseás dar de baja a <strong>{profesor.nombre} {profesor.apellido}</strong>?</>
+                            <>¿Deseás deshabilitar a <strong>{profesor.nombre} {profesor.apellido}</strong>?</>
                         ) : (
                             <>¿Deseás reactivar a <strong>{profesor.nombre} {profesor.apellido}</strong>?</>
                         )}
@@ -58,7 +58,7 @@ export default function ProfesorModalBaja({ open, profesor, onConfirmar, onCerra
                     <button className="btn-modal-cancel" onClick={onCerrar}>Cancelar</button>
                     <button className="btn-modal-danger" onClick={() => onConfirmar(profesor)}>
                         <i data-lucide={deBaja ? 'user-x' : 'user-check'} />
-                        {deBaja ? 'Dar de baja' : 'Reactivar'}
+                        {deBaja ? 'Deshabilitar' : 'Reactivar'}
                     </button>
                 </div>
             </div>

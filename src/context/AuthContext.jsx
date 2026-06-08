@@ -65,6 +65,61 @@ const MOCK_USERS = [
     },
 ];
 
+function readLocalArray(key) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(value) ? value : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeLocalArray(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function userIdentifier(usuario) {
+    return {
+        id: usuario?.id,
+        idUsuario: usuario?.idUsuario,
+        email: usuario?.email?.toLowerCase(),
+        username: (usuario?.username || usuario?.userName)?.toLowerCase(),
+    };
+}
+
+function sameUser(a, b) {
+    const left = userIdentifier(a);
+    const right = userIdentifier(b);
+    return Boolean(
+        (left.id && (left.id === right.id || left.id === right.idUsuario)) ||
+        (left.idUsuario && (left.idUsuario === right.id || left.idUsuario === right.idUsuario)) ||
+        (left.email && left.email === right.email) ||
+        (left.username && left.username === right.username)
+    );
+}
+
+function syncInactiveUserInStorage(usuario) {
+    const updatedUser = {
+        ...usuario,
+        activo: false,
+        estado: 'inactivo',
+    };
+
+    ['clientes_db', 'empleados_db', 'profesores_db', 'gol_mock_registered_users'].forEach(key => {
+        const items = readLocalArray(key);
+        if (items.length === 0) return;
+        const next = items.map(item => sameUser(item, usuario) ? { ...item, activo: false, estado: 'inactivo' } : item);
+        writeLocalArray(key, next);
+    });
+
+    const disabledUsers = readLocalArray('gol_disabled_users');
+    if (!disabledUsers.some(item => sameUser(item, usuario))) {
+        writeLocalArray('gol_disabled_users', [...disabledUsers, userIdentifier(updatedUser)]);
+    }
+
+    return updatedUser;
+}
+
 export function AuthProvider({ children }) {
 
     // Cargo el usuario del localStorage para mantener la sesión activa al recargar la
@@ -85,18 +140,11 @@ export function AuthProvider({ children }) {
 // 1. Convertimos login en ASYNC para dejarlo listo para la API
     async function login({ email, password }) {
         if (USE_MOCK) {
-            const readLocalUsers = (key) => {
-                try {
-                    return JSON.parse(localStorage.getItem(key) || '[]');
-                } catch {
-                    return [];
-                }
-            };
-
-            const registeredUsers = readLocalUsers('gol_mock_registered_users');
-            const adminCreatedClients = readLocalUsers('clientes_db');
-            const adminCreatedEmployees = readLocalUsers('empleados_db');
-            const adminCreatedProfessors = readLocalUsers('profesores_db');
+            const registeredUsers = readLocalArray('gol_mock_registered_users');
+            const adminCreatedClients = readLocalArray('clientes_db');
+            const adminCreatedEmployees = readLocalArray('empleados_db');
+            const adminCreatedProfessors = readLocalArray('profesores_db');
+            const disabledUsers = readLocalArray('gol_disabled_users');
 
             const found = [
                 ...MOCK_USERS,
@@ -111,7 +159,7 @@ export function AuthProvider({ children }) {
                 u.estado !== 'inactivo'
             );
 
-            if (!found) {
+            if (!found || disabledUsers.some(item => sameUser(item, found))) {
                 return { ok: false, error: 'Credenciales incorrectas.' };
             }
 
@@ -225,7 +273,7 @@ export function AuthProvider({ children }) {
     }
 
     function deactivateAccount() {
-        const updatedUser = {...user, estado: 'inactivo',};
+        const updatedUser = syncInactiveUserInStorage(user);
         persistUser(updatedUser);
 
         return {ok: true, message: 'Cuenta dada de baja.'};

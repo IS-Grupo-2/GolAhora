@@ -128,7 +128,7 @@ export default function ProfesoresTable({
                                         <Can roles={['Admin']}>
                                             <button
                                                 className="action-btn toggle"
-                                                title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                                title={isActivo ? 'Deshabilitar' : 'Reactivar'}
                                                 onClick={() => onBaja(p)}
                                             >
                                                 <i data-lucide={isActivo ? 'user-x' : 'user-check'} />

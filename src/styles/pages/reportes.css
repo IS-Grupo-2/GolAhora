@@ -65,6 +65,30 @@
 
 .filtro-fecha input:focus { border-color: var(--purple); }
 
+.reportes-print-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.reportes-print-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.reportes-print-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+}
+
 /* ── Bento Grid (Grilla de Reportes) ─────────────────────────────────────────── */
 .bento-grid {
     display: grid;
@@ -179,6 +203,11 @@
 @media print {
     .sidebar, .topbar, .reportes-filtros, .reportes-tabs { display: none !important; }
     .main-content { margin: 0; padding: 0; width: 100%; }
+    .reportes-print-meta {
+        border: 1px solid #222;
+        box-shadow: none;
+        margin-bottom: 18px;
+    }
     .bento-card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
 }
 

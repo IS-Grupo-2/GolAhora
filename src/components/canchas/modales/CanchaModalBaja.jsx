@@ -26,13 +26,13 @@ export default function CanchaModalBaja({ open, cancha, onConfirmar, onCerrar })
         <div className="dash-modal-overlay activo" role="dialog" aria-modal="true" onClick={(e) => e.target === e.currentTarget && onCerrar()}>
             <div className="dash-modal dash-modal--sm">
                 <div className="dash-modal-header">
-                    <h3>{esBaja ? 'Dar de baja' : 'Reactivar cancha'}</h3>
+                    <h3>{esBaja ? 'Deshabilitar cancha' : 'Reactivar cancha'}</h3>
                     <button className="dash-modal-close" onClick={onCerrar} aria-label="Cerrar"><i data-lucide="x" /></button>
                 </div>
                 <div className="dash-modal-body">
                     <p style={{ color: 'var(--text)', lineHeight: 1.6 }}>
                         {esBaja 
-                            ? <>¿Deseás dar de baja a <strong>"{cancha.nombre}"</strong>? Se bloquearán todas sus disponibilidades vinculadas.</>
+                            ? <>¿Deseás deshabilitar a <strong>"{cancha.nombre}"</strong>? Se bloquearán todas sus disponibilidades vinculadas.</>
                             : <>¿Deseás reactivar <strong>"{cancha.nombre}"</strong>?</>}
                     </p>
                 </div>

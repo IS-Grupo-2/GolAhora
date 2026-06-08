@@ -177,7 +177,7 @@ function HomePage() {
             <footer>
                 <p>© 2026 Gol Ahora. Todos los derechos reservados.</p>
                 <p>Creado por el grupo 2 de la comisión 1</p>
-                <p>Integrantes: Franco Díaz, Milena, Nahuel, Cristian, Mateo, Julieta, Joaquin</p>
+                <p>Integrantes: Franco Díaz, Milena Paulo, Nahuel Coronel, Cristian Segovia, Mateo Montiel, Julieta Paz, Joaquin Vega, Nicolas Suarez </p>
             </footer>
         </div>
     )

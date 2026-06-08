@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getNavForRole } from '../../config/navConfig';
@@ -76,10 +76,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
             <aside className={`sidebar${isOpen ? ' open' : ''}`} id="sidebar">
                 <div className="sidebar-top">
-                    <a href="/" className="logo">
+                    <Link to="/dashboard" className="logo" onClick={onClose}>
                         <span className="logo-ball">⚽</span>
                         <span>Gol Ahora</span>
-                    </a>
+                    </Link>
 
                     <nav className="sidebar-nav">
                         {navSections.map(({ section, items }) => (

@@ -8,11 +8,14 @@ function nombreUsuario(usuario) {
     return `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || usuario.username || usuario.email;
 }
 
-export default function EquipoModal({ isOpen, onClose, onSave, equipoEditar, usuarios = [] }) {
+const MAX_INTEGRANTES = 16;
+
+export default function EquipoModal({ isOpen, onClose, onSave, equipoEditar, usuarios = [], usuarioActual = null, modoCliente = false }) {
     const [nombre, setNombre] = useState('');
     const [capitan, setCapitan] = useState('');
     const [nuevoIntegrante, setNuevoIntegrante] = useState('');
     const [integrantes, setIntegrantes] = useState([]);
+    const [errorIntegrantes, setErrorIntegrantes] = useState('');
 
     useEffect(() => {
         if (!isOpen) return;
@@ -23,11 +26,13 @@ export default function EquipoModal({ isOpen, onClose, onSave, equipoEditar, usu
             setIntegrantes(equipoEditar.integrantes || []);
         } else {
             setNombre('');
-            setCapitan('');
-            setIntegrantes([]);
+            const nombreActual = usuarioActual ? nombreUsuario(usuarioActual) : '';
+            setCapitan(modoCliente ? nombreActual : '');
+            setIntegrantes(modoCliente && nombreActual ? [nombreActual] : []);
         }
         setNuevoIntegrante('');
-    }, [equipoEditar, isOpen]);
+        setErrorIntegrantes('');
+    }, [equipoEditar, isOpen, modoCliente, usuarioActual]);
 
     useEffect(() => {
         if (isOpen && window.lucide) window.lucide.createIcons();
@@ -38,23 +43,43 @@ export default function EquipoModal({ isOpen, onClose, onSave, equipoEditar, usu
     const usuariosDisponibles = usuarios.filter(u => u.activo !== false && u.estado !== 'inactivo');
 
     const handleAddIntegrante = () => {
-        if (!nuevoIntegrante) return;
-        if (integrantes.includes(nuevoIntegrante)) return;
-        setIntegrantes([...integrantes, nuevoIntegrante]);
+        const nombre = nuevoIntegrante.trim();
+        setErrorIntegrantes('');
+        if (!nombre) return;
+        if (integrantes.some(integrante => integrante.toLowerCase() === nombre.toLowerCase())) return;
+        if (integrantes.length >= MAX_INTEGRANTES) {
+            setErrorIntegrantes(`Cada equipo puede tener como máximo ${MAX_INTEGRANTES} integrantes.`);
+            return;
+        }
+        setIntegrantes([...integrantes, nombre]);
         setNuevoIntegrante('');
     };
 
     const handleRemoveIntegrante = (index) => {
+        setErrorIntegrantes('');
         setIntegrantes(integrantes.filter((_, i) => i !== index));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const integrantesFinales = integrantes.includes(capitan) ? integrantes : [capitan, ...integrantes];
+        if (integrantesFinales.length > MAX_INTEGRANTES) {
+            setErrorIntegrantes(`Cada equipo puede tener como máximo ${MAX_INTEGRANTES} integrantes incluyendo al capitán.`);
+            return;
+        }
         onSave({
             ...(equipoEditar && { idEquipo: equipoEditar.idEquipo, fechaCreacion: equipoEditar.fechaCreacion }),
             nombre,
             capitan,
-            integrantes
+            integrantes: integrantesFinales,
+            creadoPor: usuarioActual ? {
+                idUsuario: usuarioActual.idUsuario || usuarioActual.id,
+                id: usuarioActual.id || usuarioActual.idUsuario,
+                email: usuarioActual.email,
+                username: usuarioActual.username || usuarioActual.userName,
+                nombre: usuarioActual.nombre,
+                apellido: usuarioActual.apellido,
+            } : equipoEditar?.creadoPor,
         });
         onClose();
     };
@@ -78,33 +103,38 @@ export default function EquipoModal({ isOpen, onClose, onSave, equipoEditar, usu
 
                         <div className="form-group">
                             <label>Capitan del equipo <span className="req">*</span></label>
-                            <select value={capitan} onChange={e => setCapitan(e.target.value)} required>
-                                <option value="">Seleccionar usuario</option>
-                                {usuariosDisponibles.map(usuario => {
-                                    const nombre = nombreUsuario(usuario);
-                                    return <option key={`${usuario.rol}-${usuario.idUsuario || usuario.id}`} value={nombre}>{nombre}</option>;
-                                })}
-                            </select>
-                        </div>
-
-                        <div className="form-group" style={{ borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
-                            <label>Integrantes</label>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <select value={nuevoIntegrante} onChange={e => setNuevoIntegrante(e.target.value)}>
+                            {modoCliente ? (
+                                <input value={capitan} readOnly />
+                            ) : (
+                                <select value={capitan} onChange={e => setCapitan(e.target.value)} required>
                                     <option value="">Seleccionar usuario</option>
                                     {usuariosDisponibles.map(usuario => {
                                         const nombre = nombreUsuario(usuario);
-                                        return (
-                                            <option key={`${usuario.rol}-${usuario.idUsuario || usuario.id}`} value={nombre}>
-                                                {nombre}
-                                            </option>
-                                        );
+                                        return <option key={`${usuario.rol}-${usuario.idUsuario || usuario.id}`} value={nombre}>{nombre}</option>;
                                     })}
                                 </select>
-                                <button type="button" className="btn-primary-action" style={{ padding: '0 12px' }} onClick={handleAddIntegrante}>
+                            )}
+                        </div>
+
+                        <div className="form-group" style={{ borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
+                            <label>Integrantes ({integrantes.length}/{MAX_INTEGRANTES})</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    value={nuevoIntegrante}
+                                    onChange={e => setNuevoIntegrante(e.target.value)}
+                                    placeholder="Nombre y apellido"
+                                    disabled={integrantes.length >= MAX_INTEGRANTES}
+                                />
+                                <button type="button" className="btn-primary-action" style={{ padding: '0 12px' }} onClick={handleAddIntegrante} disabled={integrantes.length >= MAX_INTEGRANTES}>
                                     <Icon name="plus" />
                                 </button>
                             </div>
+                            {errorIntegrantes && (
+                                <p style={{ margin: '8px 0 0', color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    {errorIntegrantes}
+                                </p>
+                            )}
 
                             <ul style={{ marginTop: '12px', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 {integrantes.map((player, index) => (

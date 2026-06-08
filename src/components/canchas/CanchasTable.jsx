@@ -119,7 +119,7 @@ export default function CanchasTable({ canchas, tipos, filtro, setFiltro, onNuev
                                                         <i data-lucide="calendar-clock" />
                                                     </button>
                                                     <Can roles={['Admin']}>
-                                                        <button className="action-btn toggle" title={c.estado === 'inactiva' ? 'Reactivar' : 'Dar de baja'} onClick={() => onBaja(c)}>
+                                                        <button className="action-btn toggle" title={c.estado === 'inactiva' ? 'Reactivar' : 'Deshabilitar'} onClick={() => onBaja(c)}>
                                                             <i data-lucide={c.estado === 'inactiva' ? 'check-circle' : 'x-circle'} />
                                                         </button>
                                                     </Can>

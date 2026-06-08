@@ -25,7 +25,7 @@ export default function AdminReservasView() {
     const { crearItem: crearCobro, items: cobros, modificarItem: modificarCobro } = useCobros();
     const { items: recibos, crearItem: crearRecibo } = useRecibos();
     const { user } = useAuth();
-    const { isAdmin, isEmpleado, isProfesor, isCliente } = useRole();
+    const { isAdmin, isEmployee, isProfessor, isClient } = useRole();
     const [filtro, setFiltro] = useState('');
 
     const [modalForm, setModalForm] = useState({ isOpen: false, data: null });
@@ -42,14 +42,14 @@ export default function AdminReservasView() {
 
     // Qué reservas puede ver cada rol
     const reservasVisibles = useMemo(() => {
-        if (isAdmin || isEmpleado) return reservas;
-        if (isCliente) return reservas.filter(r => r.cliente?.idUsuario === user?.idUsuario);
-        if (isProfesor) return reservas.filter(r =>
+        if (isAdmin || isEmployee) return reservas;
+        if (isClient) return reservas.filter(r => r.cliente?.idUsuario === user?.idUsuario);
+        if (isProfessor) return reservas.filter(r =>
             r.profesor?.idUsuario === user?.idUsuario ||
             r.clase?.profesor?.idUsuario === user?.idUsuario
         );
         return [];
-    }, [reservas, isAdmin, isEmpleado, isProfesor, isCliente, user?.idUsuario]);
+    }, [reservas, isAdmin, isEmployee, isProfessor, isClient, user?.idUsuario]);
 
     const normalizarTexto = (texto) =>
         texto.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -195,9 +195,9 @@ export default function AdminReservasView() {
                         onCancelar={r => setModalCancelar({ isOpen: true, data: r })}
                         onConfirmar={handleConfirmar}
                         canVer
-                        canEditar={isAdmin || isEmpleado}
-                        canCancelar={isAdmin || isEmpleado}
-                        canConfirmar={isAdmin || isEmpleado}
+                        canEditar={isAdmin || isEmployee}
+                        canCancelar={isAdmin || isEmployee}
+                        canConfirmar={isAdmin || isEmployee}
                     />
                 )}
             </div>

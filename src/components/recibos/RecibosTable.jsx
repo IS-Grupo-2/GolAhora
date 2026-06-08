@@ -58,16 +58,7 @@ export default function RecibosTable({ recibos, filtro, onLimpiarFiltro, isAdmin
                                     </button>
 
                                     {/* RBAC: Solo el administrador puede editar o anular recibos */}
-                                    {isAdmin && (
-                                        <>
-                                            <button className="action-btn edit" title="Editar" onClick={() => onEditar(r)} disabled={r.estado === 'anulado'}>
-                                                <i data-lucide="pencil" />
-                                            </button>
-                                            <button className="action-btn toggle" title={r.estado === 'emitido' ? 'Anular recibo' : 'Reactivar recibo'} onClick={() => onBaja(r)}>
-                                                <i data-lucide={r.estado === 'emitido' ? 'ban' : 'check-circle'} />
-                                            </button>
-                                        </>
-                                    )}
+                                    
 
                                     
                                 </div>

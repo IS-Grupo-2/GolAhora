@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar }) {
-    const deBaja = usuario?.estado === 'activo';
+    const deBaja = usuario?.activo ?? (usuario?.estado === 'activo');
 
     useEffect(() => {
         if (!open) return;
@@ -31,7 +31,7 @@ export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar 
             <div className="dash-modal dash-modal--sm">
                 {/* HEADER */}
                 <div className="dash-modal-header">
-                    <h3>{deBaja ? 'Dar de baja' : 'Reactivar cliente'}</h3>
+                    <h3>{deBaja ? 'Deshabilitar cliente' : 'Reactivar cliente'}</h3>
                     <button className="dash-modal-close" aria-label="Cerrar" onClick={onCerrar}>
                         <i data-lucide="x" />
                     </button>
@@ -42,7 +42,7 @@ export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar 
                     <p style={{ color: 'var(--text)', lineHeight: 1.6 }}>
                         {deBaja ? (
                             <>
-                                ¿Estás seguro que querés dar de baja a{' '}
+                                ¿Estás seguro que querés deshabilitar a{' '}
                                 <strong>{usuario.nombre} {usuario.apellido}</strong>?
                                 <br />
                                 El cliente no podrá acceder al sistema.
@@ -61,7 +61,7 @@ export default function UsuarioModalBaja({ open, usuario, onConfirmar, onCerrar 
                     <button className="btn-modal-cancel" onClick={onCerrar}>Cancelar</button>
                     <button className="btn-modal-danger" onClick={() => onConfirmar(usuario)}>
                         <i data-lucide={deBaja ? 'user-x' : 'user-check'} />
-                        {deBaja ? 'Dar de baja' : 'Reactivar'}
+                        {deBaja ? 'Deshabilitar' : 'Reactivar'}
                     </button>
                 </div>
             </div>

@@ -93,7 +93,7 @@ export default function UsuariosTable({ usuarios, filtro, onLimpiarFiltro, onVer
                                         <Can roles={['Admin']}>
                                             <button
                                                 className="action-btn toggle"
-                                                title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                                title={isActivo ? 'Deshabilitar' : 'Reactivar'}
                                                 onClick={() => onBaja(u)}
                                             >
                                                 <i data-lucide={isActivo ? 'user-x' : 'user-check'} />

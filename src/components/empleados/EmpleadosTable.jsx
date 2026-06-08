@@ -89,7 +89,7 @@ export default function EmpleadosTable({
                                         </button>
                                         <button
                                             className="action-btn toggle"
-                                            title={isActivo ? 'Dar de baja' : 'Reactivar'}
+                                            title={isActivo ? 'Deshabilitar' : 'Reactivar'}
                                             onClick={() => onBaja(e)}
                                         >
                                             <i data-lucide={isActivo ? 'user-x' : 'user-check'} />

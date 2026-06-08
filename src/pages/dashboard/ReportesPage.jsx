@@ -7,6 +7,12 @@ import ReporteAsistencias from '../../components/reportes/ReporteAsistencias';
 import ReporteReservas from '../../components/reportes/ReporteReservas';
 import '../../styles/pages/reportes.css';
 
+function formatearFecha(fecha) {
+    if (!fecha) return '-';
+    const [anio, mes, dia] = fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
+}
+
 export default function ReportesPageContent() {
     const [tabActiva, setTabActiva] = useState('ingresos');
     const { loading } = useReportes();
@@ -45,6 +51,16 @@ export default function ReportesPageContent() {
                 </div>
 
                 <div className="reportes-body">
+                    <div className="reportes-print-meta">
+                        <div>
+                            <span className="reportes-print-label">Reporte</span>
+                            <strong>{tabActiva.charAt(0).toUpperCase() + tabActiva.slice(1)}</strong>
+                        </div>
+                        <div>
+                            <span className="reportes-print-label">Rango utilizado</span>
+                            <strong>Desde {formatearFecha(fechaDesde)} hasta {formatearFecha(fechaHasta)}</strong>
+                        </div>
+                    </div>
                     {tabActiva === 'ingresos' && <ReporteIngresos periodoDesde={fechaDesde} periodoHasta={fechaHasta} />}
                     {tabActiva === 'asistencias' && <ReporteAsistencias periodoDesde={fechaDesde} periodoHasta={fechaHasta} />}
                     {tabActiva === 'reservas' && <ReporteReservas periodoDesde={fechaDesde} periodoHasta={fechaHasta} />}

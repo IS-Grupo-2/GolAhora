@@ -33,7 +33,7 @@ export default function EmpleadoModalBaja({ open, empleado, onConfirmar, onCerra
                 <div className="dash-modal-body">
                     <p style={{ color: 'var(--text)', lineHeight: 1.6 }}>
                         {deBaja ? (
-                            <>¿Deseás dar de baja a <strong>{empleado.nombre} {empleado.apellido}</strong>?</>
+                            <>¿Deseás deshabilitar a <strong>{empleado.nombre} {empleado.apellido}</strong>?</>
                         ) : (
                             <>¿Deseás reactivar a <strong>{empleado.nombre} {empleado.apellido}</strong>?</>
                         )}
@@ -44,7 +44,7 @@ export default function EmpleadoModalBaja({ open, empleado, onConfirmar, onCerra
                     <button className="btn-modal-cancel" onClick={onCerrar}>Cancelar</button>
                     <button className="btn-modal-danger" onClick={() => onConfirmar(empleado)}>
                         <i data-lucide={deBaja ? 'user-x' : 'user-check'} />
-                        {deBaja ? 'Dar de baja' : 'Reactivar'}
+                        {deBaja ? 'Deshabilitar' : 'Reactivar'}
                     </button>
                 </div>
             </div>

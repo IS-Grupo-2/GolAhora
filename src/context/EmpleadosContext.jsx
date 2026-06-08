@@ -121,7 +121,7 @@ export function EmpleadosProvider({ children }) {
             setEmpleados(prev => {
                 const next = prev.map(e =>
                     e.idUsuario === empleadoModificado.idUsuario
-                        ? { ...e, ...empleadoModificado }
+                        ? { ...e, ...empleadoModificado, rol: 'empleado' }
                         : e
                 );
                 localStorage.setItem('empleados_db', JSON.stringify(next));

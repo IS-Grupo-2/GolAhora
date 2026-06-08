@@ -8,6 +8,7 @@ import EquiposTable from '../../components/torneos/EquiposTable';
 import EquipoModal from '../../components/torneos/EquipoModal';
 import EquipoModalDetalle from '../../components/torneos/EquipoModalDetalle';
 import FixturesTab from '../../components/torneos/FixturesTab';
+import CompetenciasFooter from '../../components/torneos/CompetenciasFooter';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 
@@ -166,6 +167,8 @@ export default function TorneosPageContent() {
                 onClose={() => setModalDetalleEquipoOpen(false)} 
                 onEditar={handleEditarEquipoClick} 
             />
+
+            <CompetenciasFooter />
             
         </div>
     );

@@ -6,10 +6,11 @@ function Icon({ name }) {
     return <i data-lucide={name} />;
 }
 
-export default function EquiposTable({ equipos, competencias, onNuevo, onEditar, onEliminar, onInscribir, onDetalle, fixtures }) {
+export default function EquiposTable({ equipos, competencias, onNuevo, onEditar, onEliminar, onInscribir, onDetalle, fixtures, puedeEditarEquipo }) {
     const [selectedEquipo, setSelectedEquipo] = useState('');
     const [selectedTorneo, setSelectedTorneo] = useState('');
     const [modalEliminar, setModalEliminar] = useState({ open: false, equipo: null });
+    const [advertenciaInscripcion, setAdvertenciaInscripcion] = useState('');
 
     const handleEliminar = (eq) => setModalEliminar({ open: true, equipo: eq });
     const confirmarEliminar = () => {
@@ -18,6 +19,7 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
 
     const handleInscripcionSubmit = (e) => {
         e.preventDefault();
+        setAdvertenciaInscripcion('');
         if (!selectedEquipo || !selectedTorneo) return;
         const competencia = competencias.find(c => c.id === parseInt(selectedTorneo));
         if (!competencia) return;
@@ -25,9 +27,21 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
         const cupoCompleto = equiposInscriptos.length >= Number(competencia.maxEquipos || Infinity);
         const yaInscripto = equiposInscriptos.includes(parseInt(selectedEquipo));
         const cerrada = fixtures?.some(f => f.competenciaID === competencia.id) || competencia.estado === 'finalizado';
-        if (cupoCompleto || yaInscripto || cerrada) return;
+        if (yaInscripto) {
+            setAdvertenciaInscripcion('Este equipo ya se encuentra inscripto en la competencia seleccionada.');
+            return;
+        }
+        if (cupoCompleto) {
+            setAdvertenciaInscripcion('La competencia seleccionada ya no tiene cupos disponibles.');
+            return;
+        }
+        if (cerrada) {
+            setAdvertenciaInscripcion('La competencia seleccionada se encuentra cerrada o ya tiene fixture generado.');
+            return;
+        }
         onInscribir(parseInt(selectedTorneo), parseInt(selectedEquipo));
         setSelectedEquipo(''); setSelectedTorneo('');
+        setAdvertenciaInscripcion('');
     };
 
     useEffect(() => {
@@ -86,6 +100,12 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                             Inscribir Equipo
                         </button>
                     </form>
+                    {advertenciaInscripcion && (
+                        <div className="badge warning" style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Icon name="alert-triangle" />
+                            {advertenciaInscripcion}
+                        </div>
+                    )}
                 </div>
             </Can>
 
@@ -114,6 +134,9 @@ export default function EquiposTable({ equipos, competencias, onNuevo, onEditar,
                                                 <Can roles={['Admin', 'Employee']}>
                                                     <button type="button" className="action-btn edit" title="Editar" onClick={() => onEditar(eq)}><Icon name="pencil" /></button>
                                                 </Can>
+                                                {puedeEditarEquipo?.(eq) && (
+                                                    <button type="button" className="action-btn edit" title="Editar equipo" onClick={() => onEditar(eq)}><Icon name="pencil" /></button>
+                                                )}
                                                 <Can roles={['Admin', 'Employee']}>
                                                     <button type="button" className="action-btn toggle" style={{ color: '#ef4444' }} title="Eliminar" onClick={() => handleEliminar(eq)}><Icon name="trash-2" /></button>
                                                 </Can>
